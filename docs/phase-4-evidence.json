@@ -1,0 +1,112 @@
+{
+  "schema": 1,
+  "phase": 4,
+  "status": "policy software verified locally; complete phase and full delivery remain open",
+  "date": "2026-09-07",
+  "source_commit": "fe26332680bb07c5b1916df2d6f126d46f3afb4e",
+  "local_check": "passed",
+  "skip_flags": [],
+  "windows": {
+    "unit": "passed",
+    "race": "passed",
+    "coverage_percent": {
+      "portico.local/portico/internal/adminauth": 81.1,
+      "portico.local/portico/internal/cli": 84.6,
+      "portico.local/portico/internal/controller": 78.4,
+      "portico.local/portico/internal/issuer": 77.9,
+      "portico.local/portico/internal/pki": 90.1,
+      "portico.local/portico/internal/wire": 78.6,
+      "portico.local/portico/issuer": 77.7,
+      "portico.local/portico/issuer/cmd/portico-issuer": 33.3
+    },
+    "fuzz_executions": {
+      "CLI": 126103.0,
+      "destination": 3378.0,
+      "PKI": 43673.0,
+      "WebAuthn": 315.0,
+      "control JSON": 84575.0
+    },
+    "log_sha256": "53D6F724885846A424297CD511C4C59D00C288CB3B872651A7E4CD6A80C1CCDD"
+  },
+  "linux": {
+    "result": "passed",
+    "passed_top_level_tests": 62,
+    "passed_subtests": 203,
+    "fuzz_seeds": 26,
+    "skipped_helper_tests": 1,
+    "kernel": "6.18.35-0-virt",
+    "qemu": "11.1.0",
+    "accelerator": "TCG",
+    "network_devices": 0,
+    "loopback": "guest only",
+    "filesystem": "guest tmpfs",
+    "race_run": false,
+    "log_sha256": "F843CE1CF92F265F88ADDC0A74B6F25904B47C38CA334D870A10E7C7F1CBCE35"
+  },
+  "hosted": {
+    "status": "pending",
+    "pull_request": "https://github.com/lutralutraq77/Portico/pull/3"
+  },
+  "builds": [
+    {
+      "file": "portico-windows-amd64.exe",
+      "sha256": "85DDC3E27FFCEBFFF21101606BB1A098788E1E796DF5C558B69DFA539FA65F6E"
+    },
+    {
+      "file": "portico-linux-amd64",
+      "sha256": "97248D8F96C4863B95A3D0E3C34343CA555B9D4C8DD554AFC2CAA19CF785E2FB"
+    },
+    {
+      "file": "portico-issuer-windows-amd64.exe",
+      "sha256": "E07B31D3FCC28C541689F35165A3A220666356B76524F7FBCC8F9CF03387EFB9"
+    },
+    {
+      "file": "portico-issuer-linux-amd64",
+      "sha256": "A0DA1C0A109986B018327E69A514DDEF3A909913475A8A6B878D8442711E1478"
+    }
+  ],
+  "evidence_artifacts": [
+    {
+      "name": "build-hashes.json",
+      "sha256": "0D943053E6916F1045B354EC5FCFA675F5D3A74A07B912F4F24EA5145018F4AE"
+    },
+    {
+      "name": "sbom.cdx.json",
+      "sha256": "3E8BF8343CA4B8BD1591423F21B0F1DFDA363A6BCCC4561D55197EFF84EEC8C5"
+    },
+    {
+      "name": "issuer-windows-sbom.cdx.json",
+      "sha256": "2F6E08242434AC2D6974FECA315B08E664314E902A6C52EA255A6AB9213B9AD7"
+    },
+    {
+      "name": "issuer-linux-sbom.cdx.json",
+      "sha256": "ADAC461DAE67C2E446BCA21653E2CA26FD5AB7A84778EDB0061173866537C5A6"
+    },
+    {
+      "name": "issuer-windows-buildinfo.json",
+      "sha256": "B54DA39C42B27CA4D09AFC402A88E5D1A5E598F86A75C288D67B5C630E8E10C1"
+    },
+    {
+      "name": "issuer-linux-buildinfo.json",
+      "sha256": "683C33349FEC225B739621970F7C52746A89D9A04EBE748230235BE93056586C"
+    },
+    {
+      "name": "coverage.out",
+      "sha256": "273B40779DE364F855B70E4841794252E2F78D33CB5C8C04EA06B48977723127"
+    },
+    {
+      "name": "issuer-coverage.out",
+      "sha256": "5F0FB3A5C456AB7EAD2C77153B04DF5821C42DA6DE590CC873693EB73DFADFBF"
+    },
+    {
+      "name": "gitleaks.json",
+      "sha256": "37517E5F3DC66819F61F5A7BB8ACE1921282415F10551D2DEFA5C3EB0985B570"
+    }
+  ],
+  "acceptance": {
+    "total": 91,
+    "implemented": 1,
+    "planned": 90,
+    "note": "Component tests do not qualify full socket, hardware, browser or platform scenarios."
+  }
+}
