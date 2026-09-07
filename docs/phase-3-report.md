@@ -17,7 +17,21 @@ The [PKI decision](../ADR-003-pki-enrollment-boundary.md) records the exact impl
 
 Focused Windows tests have passed for strict profiles/CSRs, real TLS positive and negative handshakes, concurrent redemption, provider constraint changes, uncertain issuance/restart reconciliation, actual process exit inside the issuance provider, renewal, live revocation, schema migration, audit rollback and snapshot quarantine. TLS runs over in-memory net.Pipe connections, with both peers performing actual certificate/signature verification; it opens no host listening port.
 
-Full local quality, isolated Linux and current-branch hosted CI results will be recorded after their runs complete. Reports and all local tool/cache/test storage remain under E:/Portico/work. No machine routes, firewall, DNS, Mullvad or global trust configuration are changed.
+Implementation commit 2aedf7cb329449ed7bef1104f72f97b119f80bb6 passed the complete local check.ps1 suite with no skips, the isolated Linux VM, and all hosted checks. The [machine-readable evidence](phase-3-evidence.json) records commit, runs, measurements and log hashes.
+
+| Environment/check | Result |
+|---|---|
+| Local Windows | Unit, race, fuzz, vet, Staticcheck, module verification, vulnerability/secret scans and positive controls, documentation/workflow checks, builds and SBOM passed |
+| Isolated Linux kernel 6.18.35-0-virt / QEMU TCG | 35 top-level tests, 76 subtests and 16 fuzz seeds passed; no network devices or host filesystem shares |
+| Hosted Windows Server 2022 and Ubuntu 24.04 | Full [quality run 34149427817](https://github.com/lutralutraq77/Portico/actions/runs/34149427817) passed, including native race tests on both systems |
+| CodeQL | [Run 34149427803](https://github.com/lutralutraq77/Portico/actions/runs/34149427803) passed |
+| Dependency review | [Run 34149427808](https://github.com/lutralutraq77/Portico/actions/runs/34149427808) passed; no new module dependencies |
+
+Local coverage was CLI 84.6%, controller 76.5% and PKI 90.1%. Five-second bounded fuzz runs executed 77,934 CLI, 10,959 destination and 39,790 PKI cases; these counts are executions, not unique security acceptance scenarios. The final Linux run includes migration data-preservation and audit-failure rollback tests. TLS/X.509 code was also updated to use supported Go APIs after Staticcheck flagged deprecated coordinate/attribute access.
+
+Application and imported development-tool package vulnerability checks passed. The previously documented unimported legacy OpenPGP module advisory remains visible; it is not suppressed or introduced by this change. Both scanner positive controls detected their intentionally unsafe fixtures.
+
+Reports and all local tool/cache/test storage remain under E:/Portico/work. Full logs are phase3-check.log, linux-runtime.log and phase3-hosted-{windows,ubuntu}.log under work/reports. No machine routes, firewall, DNS, Mullvad or global trust configuration are changed. This evidence covers the implementation commit; GitHub checks on later documentation commits are displayed on [PR #2](https://github.com/lutralutraq77/Portico/pull/2).
 
 The canonical acceptance manifest still contains 91 cases: AUDIT-01 implemented; 90 planned. The new tests provide component coverage of AUTH/PKI/REC requirements, but do not claim the full issuer, platform, admin, recovery or data-plane scenarios passed.
 
