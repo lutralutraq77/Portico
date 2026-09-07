@@ -1,0 +1,12 @@
+title = "Portico source scanning"
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "Generated development caches and binaries are not source; checked independently where applicable."
+paths = [
+  '''(^|[/\\])work[/\\]''',
+  '''(^|[/\\])build[/\\]''',
+  '''(^|[/\\])\.git[/\\]'''
+]
+

@@ -1,0 +1,466 @@
+{
+  "schema": 2,
+  "phase": 2,
+  "cases": [
+    {
+      "id": "AUTH-01",
+      "earliest_phase": 3,
+      "status": "planned"
+    },
+    {
+      "id": "AUTH-02",
+      "earliest_phase": 3,
+      "status": "planned"
+    },
+    {
+      "id": "AUTH-03",
+      "earliest_phase": 3,
+      "status": "planned"
+    },
+    {
+      "id": "AUTH-04",
+      "earliest_phase": 3,
+      "status": "planned"
+    },
+    {
+      "id": "AUTH-05",
+      "earliest_phase": 3,
+      "status": "planned"
+    },
+    {
+      "id": "AUTH-06",
+      "earliest_phase": 3,
+      "status": "planned"
+    },
+    {
+      "id": "AUTH-07",
+      "earliest_phase": 3,
+      "status": "planned"
+    },
+    {
+      "id": "AUTH-08",
+      "earliest_phase": 3,
+      "status": "planned"
+    },
+    {
+      "id": "PKI-01",
+      "earliest_phase": 3,
+      "status": "planned"
+    },
+    {
+      "id": "PKI-02",
+      "earliest_phase": 3,
+      "status": "planned"
+    },
+    {
+      "id": "PKI-03",
+      "earliest_phase": 3,
+      "status": "planned"
+    },
+    {
+      "id": "PKI-04",
+      "earliest_phase": 3,
+      "status": "planned"
+    },
+    {
+      "id": "PKI-05",
+      "earliest_phase": 3,
+      "status": "planned"
+    },
+    {
+      "id": "PKI-06",
+      "earliest_phase": 3,
+      "status": "planned"
+    },
+    {
+      "id": "AUTHZ-01",
+      "earliest_phase": 4,
+      "status": "planned"
+    },
+    {
+      "id": "AUTHZ-02",
+      "earliest_phase": 4,
+      "status": "planned"
+    },
+    {
+      "id": "AUTHZ-03",
+      "earliest_phase": 4,
+      "status": "planned"
+    },
+    {
+      "id": "AUTHZ-04",
+      "earliest_phase": 4,
+      "status": "planned"
+    },
+    {
+      "id": "AUTHZ-05",
+      "earliest_phase": 4,
+      "status": "planned"
+    },
+    {
+      "id": "AUTHZ-06",
+      "earliest_phase": 4,
+      "status": "planned"
+    },
+    {
+      "id": "AUTHZ-07",
+      "earliest_phase": 4,
+      "status": "planned"
+    },
+    {
+      "id": "AUTHZ-08",
+      "earliest_phase": 4,
+      "status": "planned"
+    },
+    {
+      "id": "CONN-01",
+      "earliest_phase": 5,
+      "status": "planned"
+    },
+    {
+      "id": "CONN-02",
+      "earliest_phase": 5,
+      "status": "planned"
+    },
+    {
+      "id": "CONN-03",
+      "earliest_phase": 5,
+      "status": "planned"
+    },
+    {
+      "id": "CONN-04",
+      "earliest_phase": 5,
+      "status": "planned"
+    },
+    {
+      "id": "ADMIN-01",
+      "earliest_phase": 3,
+      "status": "planned"
+    },
+    {
+      "id": "ADMIN-02",
+      "earliest_phase": 3,
+      "status": "planned"
+    },
+    {
+      "id": "ADMIN-03",
+      "earliest_phase": 3,
+      "status": "planned"
+    },
+    {
+      "id": "ADMIN-04",
+      "earliest_phase": 3,
+      "status": "planned"
+    },
+    {
+      "id": "ADMIN-05",
+      "earliest_phase": 3,
+      "status": "planned"
+    },
+    {
+      "id": "ADMIN-06",
+      "earliest_phase": 3,
+      "status": "planned"
+    },
+    {
+      "id": "ADMIN-07",
+      "earliest_phase": 3,
+      "status": "planned"
+    },
+    {
+      "id": "ADMIN-08",
+      "earliest_phase": 3,
+      "status": "planned"
+    },
+    {
+      "id": "SESSION-01",
+      "earliest_phase": 5,
+      "status": "planned"
+    },
+    {
+      "id": "SESSION-02",
+      "earliest_phase": 5,
+      "status": "planned"
+    },
+    {
+      "id": "SESSION-03",
+      "earliest_phase": 5,
+      "status": "planned"
+    },
+    {
+      "id": "SESSION-04",
+      "earliest_phase": 5,
+      "status": "planned"
+    },
+    {
+      "id": "SESSION-05",
+      "earliest_phase": 5,
+      "status": "planned"
+    },
+    {
+      "id": "SESSION-06",
+      "earliest_phase": 5,
+      "status": "planned"
+    },
+    {
+      "id": "NET-01",
+      "earliest_phase": 10,
+      "status": "planned"
+    },
+    {
+      "id": "NET-02",
+      "earliest_phase": 10,
+      "status": "planned"
+    },
+    {
+      "id": "NET-03",
+      "earliest_phase": 10,
+      "status": "planned"
+    },
+    {
+      "id": "NET-04",
+      "earliest_phase": 10,
+      "status": "planned"
+    },
+    {
+      "id": "NET-05",
+      "earliest_phase": 10,
+      "status": "planned"
+    },
+    {
+      "id": "NET-06",
+      "earliest_phase": 10,
+      "status": "planned"
+    },
+    {
+      "id": "NET-07",
+      "earliest_phase": 10,
+      "status": "planned"
+    },
+    {
+      "id": "NET-08",
+      "earliest_phase": 10,
+      "status": "planned"
+    },
+    {
+      "id": "VPN-01",
+      "earliest_phase": 11,
+      "status": "planned"
+    },
+    {
+      "id": "VPN-02",
+      "earliest_phase": 11,
+      "status": "planned"
+    },
+    {
+      "id": "VPN-03",
+      "earliest_phase": 11,
+      "status": "planned"
+    },
+    {
+      "id": "VPN-04",
+      "earliest_phase": 11,
+      "status": "planned"
+    },
+    {
+      "id": "VPN-05",
+      "earliest_phase": 11,
+      "status": "planned"
+    },
+    {
+      "id": "DNS-01",
+      "earliest_phase": 11,
+      "status": "planned"
+    },
+    {
+      "id": "DNS-02",
+      "earliest_phase": 11,
+      "status": "planned"
+    },
+    {
+      "id": "DNS-03",
+      "earliest_phase": 11,
+      "status": "planned"
+    },
+    {
+      "id": "DNS-04",
+      "earliest_phase": 11,
+      "status": "planned"
+    },
+    {
+      "id": "REC-01",
+      "earliest_phase": 3,
+      "status": "planned"
+    },
+    {
+      "id": "REC-02",
+      "earliest_phase": 3,
+      "status": "planned"
+    },
+    {
+      "id": "REC-03",
+      "earliest_phase": 3,
+      "status": "planned"
+    },
+    {
+      "id": "REC-04",
+      "earliest_phase": 3,
+      "status": "planned"
+    },
+    {
+      "id": "REC-05",
+      "earliest_phase": 3,
+      "status": "planned"
+    },
+    {
+      "id": "REC-06",
+      "earliest_phase": 3,
+      "status": "planned"
+    },
+    {
+      "id": "BOOT-01",
+      "earliest_phase": 3,
+      "status": "planned"
+    },
+    {
+      "id": "BOOT-02",
+      "earliest_phase": 3,
+      "status": "planned"
+    },
+    {
+      "id": "BOOT-03",
+      "earliest_phase": 3,
+      "status": "planned"
+    },
+    {
+      "id": "BOOT-04",
+      "earliest_phase": 3,
+      "status": "planned"
+    },
+    {
+      "id": "BOOT-05",
+      "earliest_phase": 3,
+      "status": "planned"
+    },
+    {
+      "id": "UPDATE-01",
+      "earliest_phase": 13,
+      "status": "planned"
+    },
+    {
+      "id": "UPDATE-02",
+      "earliest_phase": 13,
+      "status": "planned"
+    },
+    {
+      "id": "UPDATE-03",
+      "earliest_phase": 13,
+      "status": "planned"
+    },
+    {
+      "id": "UPDATE-04",
+      "earliest_phase": 13,
+      "status": "planned"
+    },
+    {
+      "id": "UPDATE-05",
+      "earliest_phase": 13,
+      "status": "planned"
+    },
+    {
+      "id": "UPDATE-06",
+      "earliest_phase": 13,
+      "status": "planned"
+    },
+    {
+      "id": "SECRET-01",
+      "earliest_phase": 3,
+      "status": "planned"
+    },
+    {
+      "id": "SECRET-02",
+      "earliest_phase": 3,
+      "status": "planned"
+    },
+    {
+      "id": "SECRET-03",
+      "earliest_phase": 3,
+      "status": "planned"
+    },
+    {
+      "id": "SECRET-04",
+      "earliest_phase": 3,
+      "status": "planned"
+    },
+    {
+      "id": "PROTO-01",
+      "earliest_phase": 5,
+      "status": "planned"
+    },
+    {
+      "id": "PROTO-02",
+      "earliest_phase": 5,
+      "status": "planned"
+    },
+    {
+      "id": "PROTO-03",
+      "earliest_phase": 5,
+      "status": "planned"
+    },
+    {
+      "id": "PROTO-04",
+      "earliest_phase": 5,
+      "status": "planned"
+    },
+    {
+      "id": "PROTO-05",
+      "earliest_phase": 5,
+      "status": "planned"
+    },
+    {
+      "id": "AUDIT-01",
+      "earliest_phase": 2,
+      "status": "implemented",
+      "test_file": "internal/controller/store_test.go",
+      "test_name": "TestAUDIT01ProcessCrashAtomicity"
+    },
+    {
+      "id": "AUDIT-02",
+      "earliest_phase": 2,
+      "status": "planned",
+      "component_evidence": "Phase 2 domain tests provide partial coverage; full operational scenario remains planned."
+    },
+    {
+      "id": "AUDIT-03",
+      "earliest_phase": 2,
+      "status": "planned",
+      "component_evidence": "Phase 2 domain tests provide partial coverage; full operational scenario remains planned."
+    },
+    {
+      "id": "AUDIT-04",
+      "earliest_phase": 2,
+      "status": "planned",
+      "component_evidence": "Phase 2 domain tests provide partial coverage; full operational scenario remains planned."
+    },
+    {
+      "id": "PLATFORM-01",
+      "earliest_phase": 8,
+      "status": "planned"
+    },
+    {
+      "id": "PLATFORM-02",
+      "earliest_phase": 8,
+      "status": "planned"
+    },
+    {
+      "id": "PLATFORM-03",
+      "earliest_phase": 8,
+      "status": "planned"
+    },
+    {
+      "id": "PLATFORM-04",
+      "earliest_phase": 8,
+      "status": "planned"
+    }
+  ]
+}

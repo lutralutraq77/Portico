@@ -1,0 +1,11 @@
+/work/
+/build/
+/coverage.out
+*.test
+*.exe
+*.key
+*.p12
+*.pfx
+.env
+.env.*
+!.env.example

@@ -1,0 +1,61 @@
+{
+  "schema": 1,
+  "phase": 2,
+  "date": "2026-09-07",
+  "local_check": "passed",
+  "skip_flags": [],
+  "windows": {
+    "unit": "passed",
+    "race": "passed",
+    "cli_coverage_percent": 84.6,
+    "controller_coverage_percent": 76.4,
+    "cli_fuzz_executions": 168944,
+    "destination_fuzz_executions": 42716
+  },
+  "linux": {
+    "result": "passed",
+    "kernel": "6.18.35-0-virt",
+    "distribution_kernel": "Alpine 3.24.1",
+    "emulator": "QEMU 11.1.0 TCG",
+    "top_level_tests": 17,
+    "subtests": 27,
+    "fuzz_seeds": 11,
+    "network_devices": 0,
+    "filesystem": "guest tmpfs",
+    "race_run": false
+  },
+  "acceptance": {
+    "total": 91,
+    "implemented": [
+      "AUDIT-01"
+    ],
+    "passed_this_run": [
+      "AUDIT-01"
+    ],
+    "planned": 90
+  },
+  "security_scanners": {
+    "application_govulncheck": "No vulnerabilities found",
+    "devtools_govulncheck": "No vulnerabilities found",
+    "gitleaks_source_findings": 0,
+    "gitleaks_positive_control_findings": 1,
+    "staticcheck": "passed",
+    "actionlint": "passed"
+  },
+  "logs": {
+    "windows_sha256": "99E29E8C774950E1B1703CE747B257AB5AB955A3F194513661B03C74D522F812",
+    "linux_sha256": "D0F1BE2773F2C6FDFB6F2EBB7CB4F157CA063ABD6C7CDA654CE01ABB09446241"
+  },
+  "build_hashes": [
+    {
+      "Path": "E:\\Portico\\build\\portico-windows-amd64.exe",
+      "Hash": "A2CAB6CC1C870DA83D2D497956E5C1365E6FA17D4D22B25CD98F53103D6BD44A"
+    },
+    {
+      "Path": "E:\\Portico\\build\\portico-linux-amd64",
+      "Hash": "5CBAFBDBA41A53C9299F2AF11AB1E4B8485C59927F6E6119B81E7F3C6001749E"
+    }
+  ],
+  "hosted_results": "Run-specific outcomes are retained in GitHub Actions for lutralutraq77/Portico",
+  "phase3_started": false
+}
