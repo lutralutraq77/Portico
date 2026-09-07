@@ -1,6 +1,6 @@
 # Roadmap and Phase 0 handoff
 
-Status: Phase 2 domain foundation implemented; local Windows and Linux domain tests passed. Complete local quality verification passed. Hosted results are tracked in the private repository Actions.
+Status: Phase 2 domain foundation implemented; local Windows and Linux domain tests passed. Complete local quality verification passed. Hosted workflows were triggered but blocked before execution by GitHub account billing/limits.
 
 ## Delivery phases and gates
 | Phase | Scope | Required exit evidence |

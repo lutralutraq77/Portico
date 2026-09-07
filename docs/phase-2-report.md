@@ -1,6 +1,6 @@
 # Phase 2 implementation and local verification
 
-Status: **controller domain foundation implemented and local verification passed on 2026-09-07.** Phase 3 has not started. Hosted CI is tracked separately in the private [Portico repository](https://github.com/lutralutraq77/Portico/actions).
+Status: **controller domain foundation implemented and local verification passed on 2026-09-07.** Phase 3 has not started. Hosted CI was triggered but GitHub blocked the jobs before execution because of account billing/limits; see [the execution record](hosted-ci.md).
 
 ## Delivered
 

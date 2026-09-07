@@ -18,7 +18,7 @@ From PowerShell 7 in the repository:
 Go 1.27.1, scanner modules/checksums, compiler archives and CI action commits are pinned.
 Setup changes only the current process environment. It does not modify the machine's routes, DNS, firewall, Mullvad or global tool configuration.
 
-See [development](docs/development.md), [testing](docs/testing.md) and [Phase 2 evidence](docs/phase-2-report.md). Windows/Linux CI, CodeQL and dependency review are configured locally; hosted results require an actual repository run.
+See [development](docs/development.md), [testing](docs/testing.md) and [Phase 2 evidence](docs/phase-2-report.md). Windows/Linux CI, CodeQL and dependency review were triggered in the private repository. GitHub blocked execution because of account billing/limits; see [hosted CI evidence](docs/hosted-ci.md).
 
 ## Design package
 - [Project brief](PROJECT_BRIEF.md), [architecture](ARCHITECTURE.md), [resource model](RESOURCE_MODEL.md)
