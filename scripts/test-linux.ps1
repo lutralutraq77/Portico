@@ -14,7 +14,7 @@ try {
  $env:GOOS='linux';$env:GOARCH='amd64';$env:CGO_ENABLED='0'
  & go build -trimpath -buildvcs=false -o (Join-Path $vm 'init') ./tools/linuxvm/init/main_linux.go
  if ($LASTEXITCODE -ne 0){throw 'Linux test init build failed'}
- foreach($package in @('cli','controller','pki','adminauth','wire','carrier','control')){
+ foreach($package in @('cli','controller','pki','adminauth','wire','carrier','control','boottime')){
   & go test -c -o (Join-Path $vm $package) ('./internal/'+$package)
   if ($LASTEXITCODE -ne 0){throw ('Linux test build failed: '+$package)}
  }
@@ -28,7 +28,7 @@ try {
  & go build -trimpath -buildvcs=false '-ldflags=-buildid=' -o (Join-Path $vm 'portico') ./cmd/portico
  if ($LASTEXITCODE -ne 0){throw 'Linux application build failed'}
  $env:GOOS=$priorOS;$env:GOARCH=$priorArch;$env:CGO_ENABLED=$priorCGO
- & go run ./tools/linuxvm/archive/main.go (Join-Path $vm 'tests.cpio.gz') (Join-Path $vm 'init') (Join-Path $vm 'cli') (Join-Path $vm 'controller') (Join-Path $vm 'pki') (Join-Path $vm 'adminauth') (Join-Path $vm 'wire') (Join-Path $vm 'carrier') (Join-Path $vm 'control') (Join-Path $vm 'adapter') (Join-Path $vm 'issuer') (Join-Path $vm 'portico')
+ & go run ./tools/linuxvm/archive/main.go (Join-Path $vm 'tests.cpio.gz') (Join-Path $vm 'init') (Join-Path $vm 'cli') (Join-Path $vm 'controller') (Join-Path $vm 'pki') (Join-Path $vm 'adminauth') (Join-Path $vm 'wire') (Join-Path $vm 'carrier') (Join-Path $vm 'control') (Join-Path $vm 'boottime') (Join-Path $vm 'adapter') (Join-Path $vm 'issuer') (Join-Path $vm 'portico')
  if ($LASTEXITCODE -ne 0){throw 'Test initramfs creation failed'}
  $log=Join-Path $PorticoWork 'reports/linux-runtime.log'
  & $qemu -accel tcg -cpu max -smp 2 -m 1536 -nodefaults -display none -serial stdio -monitor none -nic none -kernel $kernel -initrd (Join-Path $vm 'tests.cpio.gz') -append 'console=ttyS0 panic=-1 rdinit=/init' -no-reboot *> $log

@@ -42,6 +42,7 @@ func main() {
 		args []string
 	}{
 		{"/tests/cli", []string{"-test.v", "-test.shuffle=on", "-test.timeout=180s"}},
+		{"/tests/boottime", []string{"-test.v", "-test.shuffle=on", "-test.timeout=30s"}},
 		{"/tests/controller", []string{"-test.v", "-test.shuffle=on", "-test.timeout=300s"}},
 		{"/tests/pki", []string{"-test.v", "-test.shuffle=on", "-test.timeout=180s"}},
 		{"/tests/adminauth", []string{"-test.v", "-test.shuffle=on", "-test.timeout=180s"}},

@@ -1,0 +1,9 @@
+# Connector elapsed clock
+
+The internal/boottime component reads a native elapsed clock that includes suspend. It is an input for request-start lease deadlines; the workload runtime, deadline enforcement and physical suspend/hibernate qualification are still being implemented. Readings are not serialized, persisted or accepted from the network.
+
+Linux uses CLOCK_BOOTTIME, which continues across suspend. CLOCK_MONOTONIC stops during suspend and is unsuitable for this requirement. [Linux timekeeping documentation](https://docs.kernel.org/core-api/timekeeping.html).
+
+Windows uses QueryInterruptTimePrecise in 100-nanosecond units. Ordinary interrupt time includes sleep/hibernation; the unbiased variant excludes it. [Interrupt-time semantics](https://learn.microsoft.com/en-us/windows/win32/sysinfo/interrupt-time), [precise API](https://learn.microsoft.com/en-us/windows/win32/api/realtimeapiset/nf-realtimeapiset-queryinterrupttimeprecise). The system-only DLL loader resolves the published api-ms-win-core-realtime-l1-1-1.dll contract. A runtime test found no direct kernel32 export on this host, so relying on that implementation DLL failed. The API-set contract is listed in Microsoft's [Windows API inventory](https://learn.microsoft.com/en-us/uwp/win32-and-com/win32-apis#apis-from-api-ms-win-core-realtime-l1-1-1dll).
+
+Missing APIs, failed native reads and conversion overflow return an error. Unsupported platforms have no fallback. The caller must invalidate sessions on error or decreasing time, and after restart. This component does not establish UTC accuracy or clock-health evidence, enforce lease deadlines, or prove physical suspend behavior. The eventual runtime must check its deadline before every forwarding operation and actively close blocked handles on expiry; Go timers alone cannot establish the resume boundary.
