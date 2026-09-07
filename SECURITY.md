@@ -5,7 +5,7 @@ Portico is a development foundation, not a supported access service. No producti
 The [security invariants](SECURITY_INVARIANTS.md), [threat model](THREAT_MODEL.md) and [acceptance plan](ACCEPTANCE_TEST_PLAN.md) are mandatory review inputs.
 
 ## Reporting
-No public repository or private reporting channel has been established. Report concerns directly to the project owner through the private channel already in use. Do not post secrets or exploit details in a public issue. Before public publication, the owner must establish and test private vulnerability reporting and maintainer response commitments (Q13).
+The development repository is public, and GitHub private vulnerability reporting is enabled. Use the private reporting flow from the [repository Security page](https://github.com/lutralutraq77/Portico/security). Do not post secrets or exploit details in a public issue. Maintainer response commitments and an end-to-end reporting exercise remain governance work under Q13; enabling the setting alone does not establish a response SLA.
 
 No invented email address or unsupported response SLA is promised here.
 

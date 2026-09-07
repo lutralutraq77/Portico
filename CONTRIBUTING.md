@@ -13,6 +13,6 @@ Before a change:
 
 Keep changes small and explain what changed, why and how it was verified. Do not modify real networking or publish experimental services. Do not add generic controller/connector placeholders that pretend to authorize access.
 
-The private development repository is lutralutraq77/Portico. Project licensing, disclosure arrangements and external contribution terms remain Q13. No license has been selected on the owner's behalf.
+The development repository is public at lutralutraq77/Portico. Private vulnerability reporting is enabled. Project licensing, maintainer response commitments and external contribution terms remain Q13. No license has been selected on the owner's behalf.
 
-Before accepting external contributions or approving production use, establish private reporting, required checks/branch protection and maintainer review ownership. The current private PR is development work; local workflow files alone do not establish those server-side controls.
+Before accepting external contributions or approving production use, establish required checks/branch protection, maintainer review ownership and reporting response commitments. The current PR is development work; local workflow files alone do not establish those server-side controls.

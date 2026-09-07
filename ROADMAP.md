@@ -24,7 +24,7 @@ Status: Phase 2 domain foundation and verification complete. Local Windows and i
 Basic version visibility and authenticated MVP artifacts must arrive before any claimed supported distribution, even if automatic updating remains Phase 13. Phase numbers do not authorize releasing unsigned interim clients.
 
 ## Current work and next phase
-The user authorized hosted CI, Linux execution and Phase 2. The controller domain is implemented locally, with results in the [Phase 2 report](docs/phase-2-report.md). Q09 is resolved by [ADR-002](ADR-002-controller-storage.md). The private development repository is lutralutraq77/Portico; no public release or network deployment is implied.
+The user authorized hosted CI, Linux execution and Phase 2. The controller domain is implemented and verified, with results in the [Phase 2 report](docs/phase-2-report.md). Q09 is resolved by [ADR-002](ADR-002-controller-storage.md). The development repository at lutralutraq77/Portico is now public, and private vulnerability reporting is enabled. No supported release or network deployment is implied.
 
 Phase 3 is PKI and enrollment. Before its dependent implementation, resolve issuer constraints and administrator identity/hardware-key gates. Full resource policy and connector networking remain Phase 4 and Phase 5. The 90 remaining acceptance cases stay visible until their full scenarios can execute.
 

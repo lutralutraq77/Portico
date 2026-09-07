@@ -25,7 +25,7 @@ Windows and Linux executable hashes match across the local Windows build and bot
 
 ## Corrections verified by these runs
 
-The account restriction that prevented earlier jobs from starting was cleared before the 15:29 UTC retry. The first real execution exposed these issues, which are now resolved:
+The jobs that previously failed before startup began executing on the 15:29 UTC retry. GitHub now reports the repository as public; the agent did not change its visibility or billing settings. The first real execution exposed these issues, which are now resolved:
 
 - Windows Server 2022 tar lacked LZMA support. Bootstrap uses .NET ZIP extraction for Go and the checksum-verified compiler self-extractor. Quoting the compiler command also supports WorkRoot paths containing spaces; a fresh E: setup and race test verified this.
 - The repository dependency graph was disabled. It is now enabled, allowing dependency review to execute.
@@ -45,4 +45,4 @@ Quality artifacts contain coverage, documentation results, redacted secret-scan 
 | quality-evidence-windows-2022 | 10025474417 | 1220c5aa700d6a095c310afbc9787edeed494a71754dded8efcf6f659016eba8 |
 | quality-evidence-ubuntu-24.04 | 10025461513 | 4fac776970c55e61b3e0db07c6d0a57c1458e9a349c62d6d85d4b1521a4da009 |
 
-The repository remains private. No release, merge, deployment or production network change is part of this verification. AUDIT-01 has executable Windows/Linux evidence; the other 90 acceptance scenarios remain scheduled for later phases. See the [Phase 2 report](phase-2-report.md) for scope and limitations.
+GitHub repository metadata reported public visibility during final verification. Private vulnerability reporting was enabled and its saved state verified; response commitments remain owner governance work. No release, merge, deployment or production network change is part of this verification. AUDIT-01 has executable Windows/Linux evidence; the other 90 acceptance scenarios remain scheduled for later phases. See the [Phase 2 report](phase-2-report.md) for scope and limitations.

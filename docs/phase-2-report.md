@@ -63,6 +63,6 @@ See [Linux harness setup](linux-runtime.md) for the pinned VM assets. No Windows
 
 The database and snapshot primitive contain plaintext metadata and require appropriate filesystem ownership/ACLs and deployment disk encryption. Snapshot quarantine is not the encrypted recovery ceremony. EmergencyDeny is process-local containment, not durable remote revocation. An audit hash chain cannot stop root rewriting local history and its head.
 
-No production ports, routes, DNS, firewall or Mullvad settings were changed. No private device keys, real users, production policy or live resources were created. The private GitHub repository is for development CI; licensing, production deployment, signing custody and further application phases remain separate decisions.
+No production ports, routes, DNS, firewall or Mullvad settings were changed. No private device keys, real users, production policy or live resources were created. The GitHub development repository is now public, with private vulnerability reporting enabled; licensing, production deployment, signing custody and further application phases remain separate decisions.
 
 This report records the verified implementation snapshot. Use the repository's Actions results for checks on subsequent documentation commits and exact commit attribution.

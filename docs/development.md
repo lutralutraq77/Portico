@@ -41,4 +41,4 @@ A disposable Linux test VM with networking disabled is available. No multi-node 
 
 work/ and build/ are disposable generated outputs, excluded from Git. Do not recursively delete them while tests/builds are running. Keys, certificates and production configuration do not belong there or in this repository.
 
-The internal module path remains portico.local/portico. The development repository is private at lutralutraq77/Portico; licensing and any public module-path change remain separate decisions.
+The internal module path remains portico.local/portico. The development repository is public at lutralutraq77/Portico; licensing and any public module-path change remain separate decisions.

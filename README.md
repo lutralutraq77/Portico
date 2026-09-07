@@ -18,7 +18,7 @@ From PowerShell 7 in the repository:
 Go 1.27.1, scanner modules/checksums, compiler archives and CI action commits are pinned.
 Setup changes only the current process environment. It does not modify the machine's routes, DNS, firewall, Mullvad or global tool configuration.
 
-See [development](docs/development.md), [testing](docs/testing.md) and [Phase 2 evidence](docs/phase-2-report.md). Hosted Windows/Ubuntu quality, CodeQL and dependency review passed in the private repository; see [hosted CI evidence](docs/hosted-ci.md).
+See [development](docs/development.md), [testing](docs/testing.md) and [Phase 2 evidence](docs/phase-2-report.md). Hosted Windows/Ubuntu quality, CodeQL and dependency review passed; see [hosted CI evidence](docs/hosted-ci.md).
 
 ## Design package
 - [Project brief](PROJECT_BRIEF.md), [architecture](ARCHITECTURE.md), [resource model](RESOURCE_MODEL.md)
@@ -34,4 +34,4 @@ Foundation test results do not demonstrate certificate authentication, resource 
 
 Go is selected for the initial core foundation. Android integration, browser/device authentication, hardware-key policy and the mature transport adapter remain explicit design gates. See the [domain implementation](docs/controller-domain.md) and [storage decision](ADR-002-controller-storage.md).
 
-Read [SECURITY.md](SECURITY.md), [CONTRIBUTING.md](CONTRIBUTING.md) and [dependency policy](docs/dependency-policy.md) before changing security-relevant behavior. The development repository is private at lutralutraq77/Portico. Licensing and supported release governance remain unresolved.
+Read [SECURITY.md](SECURITY.md), [CONTRIBUTING.md](CONTRIBUTING.md) and [dependency policy](docs/dependency-policy.md) before changing security-relevant behavior. The development repository is public at lutralutraq77/Portico, with private vulnerability reporting enabled. Licensing and supported release governance remain unresolved.
