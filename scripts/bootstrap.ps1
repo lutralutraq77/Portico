@@ -16,14 +16,19 @@ if ($IsWindows) {
     Get-VerifiedArchive $lock.go.windows_amd64.url $lock.go.windows_amd64.sha256 $goArchive
     $portableGo = Join-Path $PorticoWork 'toolchains/go/bin/go.exe'
     if (-not (Test-Path -LiteralPath $portableGo)) {
-        & tar -xf $goArchive -C (Join-Path $PorticoWork 'toolchains')
-        if ($LASTEXITCODE -ne 0) { throw 'Go extraction failed' }
+        [IO.Compression.ZipFile]::ExtractToDirectory($goArchive, (Join-Path $PorticoWork 'toolchains'))
     }
     $compilerArchive = Join-Path $PorticoWork ('downloads/w64devkit-x64-' + $lock.windows_compiler.version + '.7z.exe')
     Get-VerifiedArchive $lock.windows_compiler.url $lock.windows_compiler.sha256 $compilerArchive
     if (-not (Test-Path -LiteralPath (Join-Path $PorticoWork 'toolchains/w64devkit/bin/gcc.exe'))) {
-        & tar -xf $compilerArchive -C (Join-Path $PorticoWork 'toolchains')
-        if ($LASTEXITCODE -ne 0) { throw 'Compiler extraction failed' }
+        # Server 2022's tar lacks the LZMA codec. The checksum-verified archive
+        # includes its own extractor and needs no installer or external codec.
+        $extractRoot = Join-Path $PorticoWork 'toolchains'
+        $extractor = Start-Process -FilePath $compilerArchive -ArgumentList @('-y', ('-o"' + $extractRoot + '"')) -WindowStyle Hidden -Wait -PassThru
+        if ($extractor.ExitCode -ne 0) { throw 'Compiler extraction failed' }
+        if (-not (Test-Path -LiteralPath (Join-Path $extractRoot 'w64devkit/bin/gcc.exe'))) {
+            throw 'Compiler archive did not produce gcc.exe'
+        }
     }
     . (Join-Path $PSScriptRoot 'env.ps1') -WorkRoot $WorkRoot
 }

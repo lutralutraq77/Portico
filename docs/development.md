@@ -15,6 +15,8 @@ Run from the repository with PowerShell 7:
 
 The bootstrap verifies pinned SDK/compiler archive SHA-256 values before extraction, downloads checksum-verified pinned Go tool modules, and builds the tools locally. It requires internet access only for initial downloads and vulnerability database checks. It does not install services or modify networking.
 
+Windows SDK extraction uses .NET ZIP support, and the compiler uses its checksum-verified self-extractor in unattended mode. Neither depends on the host's tar codecs. WorkRoot paths containing spaces are supported.
+
 Dot-source scripts/env.ps1 before manual Go commands so caches and temporary files remain on E:. GOTOOLCHAIN=local prevents unreviewed automatic toolchain downloads; GOENV=off avoids global Go config writes; Windows APPDATA/LOCALAPPDATA and platform configuration paths are redirected into work/ for these processes before go telemetry off configures telemetry. The check command verifies effective storage paths and telemetry state. A nested work/go.mod prevents Go from discovering SDK/cache sources as application packages.
 
 ## Linux/CI
