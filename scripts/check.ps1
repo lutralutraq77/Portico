@@ -54,6 +54,7 @@ try {
     }
     Invoke-Check 'bounded CLI fuzzing' 'go' @('test','./internal/cli','-run=^$','-fuzz=FuzzCommandSurface','-fuzztime=5s','-parallel=2')
     Invoke-Check 'bounded destination fuzzing' 'go' @('test','./internal/controller','-run=^$','-fuzz=FuzzDestination','-fuzztime=5s','-parallel=2')
+    Invoke-Check 'bounded PKI fuzzing' 'go' @('test','./internal/pki','-run=^$','-fuzz=FuzzPKIInputs','-fuzztime=5s','-parallel=2')
     & (Join-Path $PSScriptRoot 'build.ps1') -WorkRoot $PorticoWork
     if (-not $SkipScanners) {
         Invoke-Check 'static analysis' 'staticcheck' @('./...')

@@ -6,7 +6,7 @@ Phase 2 implements users, devices, connectors, issuer/certificate metadata, immu
 
 Store.Update and its Tx methods are trusted in-process storage operations. They do not verify TLS identities, hardware approval, enrollment or administrator roles. An actor UUID or approval reference is metadata, never authentication evidence. No listener exposes these methods. Phase 3 and Phase 4 must introduce the authenticated command and authorization boundaries before any API can call them on behalf of an untrusted caller.
 
-The version-only executable reports Phase 2. Application state is exercised through the domain tests; no CLI command can create a network permit.
+The version-only executable now reports Phase 3; PKI/enrollment additions are described in [the progress report](phase-3-report.md). Application state is exercised through the domain tests; no CLI command can create a network permit.
 
 ## Rules enforced now
 

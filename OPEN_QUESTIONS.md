@@ -1,6 +1,6 @@
 # Open questions and decision gates
 
-Status: active design gates. Q09 is resolved for Phase 2 local storage by ADR-002; deployment qualification remains required. Recommended assumptions never authorize an insecure fallback.
+Status: active design gates. Q09 is resolved for Phase 2 local storage by ADR-002; ADR-003 defines the Phase 3 component boundary without closing Q02/Q03/Q08. Deployment qualification remains required. Recommended assumptions never authorize an insecure fallback.
 
 | ID | Decision / conflict | Recommended direction | Evidence required and owner role | Gate |
 |---|---|---|---|---|

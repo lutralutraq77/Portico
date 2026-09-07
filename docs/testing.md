@@ -4,7 +4,7 @@ Run scripts/check.ps1 for the complete repository check suite. The tests verify 
 
 Foundation and domain checks:
 - Unit tests reject unsupported commands and avoid reflecting secret-like arguments.
-- JSON output explicitly identifies a Phase 2 development binary; output errors return failure.
+- JSON output explicitly identifies a Phase 3 development binary; output errors return failure.
 - Bounded CLI fuzzing checks arbitrary command input.
 - Race detector and go vet run against actual Go packages.
 - Documentation checker validates required files, local links, references, the preserved brief and all 91 specified runtime case IDs and executable references for implemented cases.
@@ -18,7 +18,7 @@ Reports are generated under work/reports. CI uploads only redacted JSON and cove
 
 SkipScanners or SkipRace are explicit convenience options and do not constitute a complete repository validation. Report skipped checks honestly.
 
-AUDIT-01 among the [91 runtime acceptance cases](../ACCEPTANCE_TEST_PLAN.md) has a real process-crash test. The remaining 90 stay planned. The manifest links implemented tests and is never a permanent passing report. No certificate, policy, revocation, Docker, Mullvad or hardware-key behavior exists to test yet.
+AUDIT-01 among the [91 runtime acceptance cases](../ACCEPTANCE_TEST_PLAN.md) has a real process-crash test. The remaining 90 stay planned. The manifest links implemented tests and is never a permanent passing report. Phase 3 adds actual X.509/TLS component, durable enrollment and renewal tests, described in [its progress report](phase-3-report.md). Full issuer/admin, policy, Docker, Mullvad and hardware-key scenarios remain pending.
 
 The [Phase 2 report](phase-2-report.md) records what actually ran locally versus CI that is merely configured.
 

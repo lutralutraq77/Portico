@@ -27,6 +27,7 @@ func main() {
 	}{
 		{"/tests/cli", []string{"-test.v", "-test.shuffle=on", "-test.timeout=180s"}},
 		{"/tests/controller", []string{"-test.v", "-test.shuffle=on", "-test.timeout=180s"}},
+		{"/tests/pki", []string{"-test.v", "-test.shuffle=on", "-test.timeout=180s"}},
 		{"/portico", []string{"version", "--json"}},
 	} {
 		fmt.Printf("PORTICO_BEGIN %s\n", test.name)

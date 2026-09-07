@@ -20,6 +20,9 @@ import (
 //go:embed schema.sql
 var schema string
 
+//go:embed enrollment.sql
+var enrollmentSchema string
+
 const applicationID = 0x50525443
 
 type Store struct {
@@ -82,28 +85,36 @@ func (s *Store) initialize(ctx context.Context) error {
 	if e = tx.QueryRowContext(ctx, "PRAGMA application_id").Scan(&app); e != nil {
 		return ErrStorage
 	}
-	h := sha256.Sum256([]byte(schema))
+	h := sha256.Sum256([]byte(schema + enrollmentSchema))
 	want := hex.EncodeToString(h[:])
 	if version == 0 && app == 0 {
 		var n int
 		if e = tx.QueryRowContext(ctx, "SELECT count(*) FROM sqlite_master WHERE name NOT LIKE 'sqlite_%'").Scan(&n); e != nil || n != 0 {
 			return ErrIntegrity
 		}
-		if _, e = tx.ExecContext(ctx, schema); e != nil {
+		if _, e = tx.ExecContext(ctx, schema+enrollmentSchema); e != nil {
 			return classify(e)
 		}
 		if _, e = tx.ExecContext(ctx, "INSERT INTO meta(singleton,schema_digest) VALUES(1,?)", want); e != nil {
 			return ErrStorage
 		}
-		if _, e = tx.ExecContext(ctx, "PRAGMA user_version=1; PRAGMA application_id=1347572803"); e != nil {
+		if _, e = tx.ExecContext(ctx, "PRAGMA user_version=2; PRAGMA application_id=1347572803"); e != nil {
 			return ErrStorage
 		}
-	} else if version != 1 || app != applicationID {
+	} else if (version != 1 && version != 2) || app != applicationID {
 		return ErrIntegrity
 	}
 	var got string
 	var quarantined int
-	if e = tx.QueryRowContext(ctx, "SELECT schema_digest,quarantined FROM meta WHERE singleton=1").Scan(&got, &quarantined); e != nil || got != want {
+	if e = tx.QueryRowContext(ctx, "SELECT schema_digest,quarantined FROM meta WHERE singleton=1").Scan(&got, &quarantined); e != nil {
+		return ErrIntegrity
+	}
+	old := sha256.Sum256([]byte(schema))
+	if version == 1 {
+		if got != hex.EncodeToString(old[:]) {
+			return ErrIntegrity
+		}
+	} else if got != want {
 		return ErrIntegrity
 	}
 	if quarantined != 0 {
@@ -125,6 +136,21 @@ func (s *Store) initialize(ctx context.Context) error {
 	}
 	if e = verifyAudit(ctx, tx); e != nil {
 		return e
+	}
+	if version == 1 {
+		if _, e = tx.ExecContext(ctx, enrollmentSchema); e != nil {
+			return ErrStorage
+		}
+		if _, e = tx.ExecContext(ctx, "UPDATE meta SET schema_digest=? WHERE singleton=1", want); e != nil {
+			return ErrStorage
+		}
+		if _, e = tx.ExecContext(ctx, "PRAGMA user_version=2"); e != nil {
+			return ErrStorage
+		}
+		t := &Tx{tx: tx, ctx: ctx, now: s.now().UTC(), actor: NewID(), correlation: NewID()}
+		if e = t.event("schema.enrollment", t.actor); e != nil {
+			return e
+		}
 	}
 	// Leases never survive process restart. Phase 2 records have no forwarding authority.
 	var live int
@@ -168,6 +194,16 @@ func (s *Store) Update(ctx context.Context, actor string, change func(*Tx) error
 	defer func() { _ = tx.Rollback() }()
 	t := &Tx{tx: tx, ctx: ctx, now: s.now().UTC(), actor: actor, correlation: NewID()}
 	defer func() { t.closed = true }()
+	// Read-only identity checks also fail closed if wall time precedes durable
+	// security history. Full clock-health qualification remains a deployment gate.
+	var previousTime int64
+	e = tx.QueryRowContext(ctx, "SELECT occurred_at FROM audit_events ORDER BY sequence DESC LIMIT 1").Scan(&previousTime)
+	if e != nil && e != sql.ErrNoRows {
+		return ErrStorage
+	}
+	if e == nil && t.now.UnixNano() < previousTime {
+		return ErrDenied
+	}
 	if e = change(t); e != nil {
 		return e
 	}

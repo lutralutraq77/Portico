@@ -62,6 +62,9 @@ func (s *Store) Snapshot(ctx context.Context, destination string) error {
 	if e = t.exec("UPDATE sessions SET state='closed' WHERE state='requested'"); e != nil {
 		return e
 	}
+	if e = t.exec("UPDATE enrollments SET state='revoked'"); e != nil {
+		return e
+	}
 	if e = t.event("snapshot.quarantine", t.actor); e != nil {
 		return e
 	}

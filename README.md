@@ -2,7 +2,7 @@
 
 Self-hosted, resource-oriented private access: identity → policy → resource → connector → destination.
 
-**Current state: Phase 2 controller domain foundation.** SQLite-backed domain operations and their tests are implemented in internal/controller. The executable still exposes only help/version; no network service, enrollment, connector forwarding or dashboard is available.
+**Current state: Phase 3 PKI/enrollment component foundation, in progress.** Strict certificate validation, durable enrollment, real TLS possession tests and ordinary renewal are implemented alongside the SQLite controller domain. The executable still exposes only help/version; no network service, production issuer or administrator enrollment is available.
 
 The project and all generated development storage on this machine are in **E:\Portico**.
 
@@ -30,7 +30,7 @@ See [development](docs/development.md), [testing](docs/testing.md) and [Phase 2 
 - [91 specified runtime acceptance cases](ACCEPTANCE_TEST_PLAN.md), [manifest](tests/acceptance/manifest.json), [historical Phase 0 review](PHASE_0_REVIEW.md)
 
 ## Scope and next work
-Foundation test results do not demonstrate certificate authentication, resource isolation, revocation, recovery or Mullvad compatibility. AUDIT-01 has Windows/Linux process-crash evidence; the other 90 cases remain planned.
+The [Phase 3 progress report](docs/phase-3-report.md) records the new PKI/enrollment component work and its open issuer, hardware-key and recovery gates. Real TLS component tests do not demonstrate resource isolation, full recovery or Mullvad compatibility. AUDIT-01 has Windows/Linux process-crash evidence; the other 90 cases remain planned.
 
 Go is selected for the initial core foundation. Android integration, browser/device authentication, hardware-key policy and the mature transport adapter remain explicit design gates. See the [domain implementation](docs/controller-domain.md) and [storage decision](ADR-002-controller-storage.md).
 
