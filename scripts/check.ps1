@@ -54,8 +54,48 @@ try {
     }
     Invoke-Check 'bounded CLI fuzzing' 'go' @('test','./internal/cli','-run=^$','-fuzz=FuzzCommandSurface','-fuzztime=5s','-parallel=2')
     Invoke-Check 'bounded destination fuzzing' 'go' @('test','./internal/controller','-run=^$','-fuzz=FuzzDestination','-fuzztime=5s','-parallel=2')
+    Invoke-Check 'bounded PKI fuzzing' 'go' @('test','./internal/pki','-run=^$','-fuzz=FuzzPKIInputs','-fuzztime=5s','-parallel=2')
+    Invoke-Check 'bounded WebAuthn fuzzing' 'go' @('test','./internal/adminauth','-run=^$','-fuzz=FuzzWebAuthnResponses','-fuzztime=5s','-parallel=2')
+    Push-Location (Join-Path $PorticoRoot 'issuer')
+    try {
+        Invoke-Check 'issuer module verification' 'go' @('mod','verify')
+        Invoke-Check 'issuer vet' 'go' @('vet','./...')
+        Invoke-Check 'real issuer runtime tests' 'go' @('test','-count=1','-shuffle=on',('-coverprofile=' + (Join-Path $reportRoot 'issuer-coverage.out')),'./...')
+        if (-not $SkipRace) {
+            $priorCGO = $env:CGO_ENABLED
+            try { $env:CGO_ENABLED='1'; Invoke-Check 'issuer race detector' 'go' @('test','-race','-count=1','./...') }
+            finally { $env:CGO_ENABLED=$priorCGO }
+        }
+        if (-not $SkipScanners) {
+            Invoke-Check 'issuer static analysis' 'staticcheck' @('./...')
+            Invoke-Check 'issuer package vulnerabilities' 'govulncheck' @('-scan=package','./...')
+        }
+    } finally { Pop-Location }
     & (Join-Path $PSScriptRoot 'build.ps1') -WorkRoot $PorticoWork
     if (-not $SkipScanners) {
+        # Binary mode records linked dependencies and binary hashes. Module mode
+        # recursively hashes the local parent replacement, including work caches.
+        foreach ($target in @('windows','linux')) {
+            $suffix=''; if ($target -eq 'windows') { $suffix='.exe' }
+            $binary=Join-Path $PorticoRoot ('build/portico-issuer-'+$target+'-amd64'+$suffix)
+            $bomPath=Join-Path $reportRoot ('issuer-'+$target+'-sbom.cdx.json')
+            Invoke-Check ('issuer '+$target+' binary SBOM') 'cyclonedx-gomod' @('bin','-std','-json','-output',$bomPath,$binary)
+            $bom=Get-Content -LiteralPath $bomPath -Raw | ConvertFrom-Json
+            foreach ($required in @('..','github.com/smallstep/certificates','std')) {
+                if ($required -notin $bom.components.name) { throw ('Issuer SBOM missing component: '+$required) }
+            }
+            # CycloneDX names a local replacement by its path. Retain the Go
+            # build metadata to identify that component without inventing hashes.
+            $buildInfo=(& go version -m -json $binary) | ConvertFrom-Json
+            if ($LASTEXITCODE -ne 0) { throw 'Cannot read issuer build metadata' }
+            $localModule=@($buildInfo.Deps | Where-Object Path -eq 'portico.local/portico')
+            if ($localModule.Count -ne 1 -or $localModule[0].Replace.Path -ne '..') { throw 'Issuer local module binding missing' }
+            $buildInfo | ConvertTo-Json -Depth 20 | Set-Content -LiteralPath (Join-Path $reportRoot ('issuer-'+$target+'-buildinfo.json'))
+            $recordedHash=@($bom.metadata.properties | Where-Object name -eq 'cdx:gomod:binary:hash:SHA-256')
+            if ($recordedHash.Count -ne 1 -or $recordedHash[0].value -ine (Get-FileHash -LiteralPath $binary -Algorithm SHA256).Hash) {
+                throw 'Issuer SBOM does not identify the built binary'
+            }
+        }
         Invoke-Check 'static analysis' 'staticcheck' @('./...')
         Invoke-Check 'application vulnerabilities' 'govulncheck' @('./...')
 

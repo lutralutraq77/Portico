@@ -1,6 +1,6 @@
 # Dependency and supply-chain policy
 
-Application module: Phase 2 pins modernc.org/sqlite v1.58.0, its required modernc.org/libc v1.75.6, and github.com/google/uuid v1.6.0. See ADR-002-controller-storage.md for review and boundaries. TLS adapters, WebAuthn, UI frameworks and CA dependencies remain unselected.
+Application module: modernc.org/sqlite v1.58.0, modernc.org/libc v1.75.6, github.com/google/uuid v1.6.0, age v1.3.2, go-webauthn v0.18.0 and go-jose v4.1.5. The separate issuer module pins Smallstep certificates v0.30.2. See [ADR-002](../ADR-002-controller-storage.md) and [ADR-004](../ADR-004-restricted-issuer-admin-recovery.md) for review, licenses and boundaries. The issuer's inherited gRPC/OpenTelemetry/pgx/JOSE v3/x-crypto packages have explicit security updates in issuer/go.mod. UI and forwarding transport remain unselected.
 
 Development tools are isolated in tools/go.mod and tools/go.sum with exact versions and Go checksum verification. tools/toolchain.lock.json pins local SDK/compiler downloads and their SHA-256 values from official Go/GitHub release metadata. Those hashes provide download integrity relative to those trusted sources, not an independent cryptographic audit.
 

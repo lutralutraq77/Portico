@@ -1,6 +1,6 @@
 # PKI and enrollment design
 
-Status: Phase 0 proposal. No CA or credentials have been created.
+Status: Phase 3 component foundation implemented in internal/pki and internal/controller; see [ADR-003](ADR-003-pki-enrollment-boundary.md) and [progress](docs/phase-3-report.md). Only isolated tests generate ephemeral CA/leaf keys. No deployed issuer, OS key provider or administrator enrollment exists.
 
 ## Architecture
 Use an offline root and restricted online issuing service. Smallstep documents offline root custody and controlled intermediate operation; current documentation also describes limited CRL support. Live Portico authorization checks remain necessary regardless of CA revocation features. [Production guidance](https://smallstep.com/docs/step-ca/certificate-authority-server-production/) · [Revocation](https://smallstep.com/docs/step-ca/revocation/).

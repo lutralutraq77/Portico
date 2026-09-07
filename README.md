@@ -2,7 +2,7 @@
 
 Self-hosted, resource-oriented private access: identity → policy → resource → connector → destination.
 
-**Current state: Phase 2 controller domain foundation.** SQLite-backed domain operations and their tests are implemented in internal/controller. The executable still exposes only help/version; no network service, enrollment, connector forwarding or dashboard is available.
+**Current state: Phase 3 issuer, administrator and recovery components, in progress.** Strict PKI, durable enrollment/renewal, a separate restricted step-ca service, TLS-bound WebAuthn approvals and encrypted quarantined recovery are implemented. The main CLI still exposes only help/version; the development issuer command permits loopback only. Physical security keys, the private sign-in origin and production recovery remain unqualified.
 
 The project and all generated development storage on this machine are in **E:\Portico**.
 
@@ -30,7 +30,7 @@ See [development](docs/development.md), [testing](docs/testing.md) and [Phase 2 
 - [91 specified runtime acceptance cases](ACCEPTANCE_TEST_PLAN.md), [manifest](tests/acceptance/manifest.json), [historical Phase 0 review](PHASE_0_REVIEW.md)
 
 ## Scope and next work
-Foundation test results do not demonstrate certificate authentication, resource isolation, revocation, recovery or Mullvad compatibility. AUDIT-01 has Windows/Linux process-crash evidence; the other 90 cases remain planned.
+The [Phase 3 integration report](docs/phase-3-integration-report.md) records current implementation, tests and open hardware/browser/recovery gates. [ADR-004](ADR-004-restricted-issuer-admin-recovery.md) and the [issuer guide](docs/issuer.md) describe the new boundaries. The [earlier foundation report](docs/phase-3-report.md) preserves its original evidence. Component tests do not demonstrate resource isolation, physical recovery or Mullvad compatibility. AUDIT-01 has Windows/Linux process-crash evidence; the other 90 cases remain planned.
 
 Go is selected for the initial core foundation. Android integration, browser/device authentication, hardware-key policy and the mature transport adapter remain explicit design gates. See the [domain implementation](docs/controller-domain.md) and [storage decision](ADR-002-controller-storage.md).
 

@@ -1,0 +1,99 @@
+{
+  "schema": 1,
+  "phase": 3,
+  "status": "component foundation; phase incomplete",
+  "date": "2026-09-07",
+  "implementation_commit": "2aedf7cb329449ed7bef1104f72f97b119f80bb6",
+  "local_check": "passed",
+  "skip_flags": [],
+  "windows": {
+    "unit": "passed",
+    "race": "passed",
+    "coverage_percent": {
+      "cli": 84.6,
+      "controller": 76.5,
+      "pki": 90.1
+    },
+    "fuzz_executions": {
+      "cli": 77934,
+      "destination": 10959,
+      "pki": 39790
+    },
+    "log_sha256": "999D4BF1081F9A8243129718F34DF64310F146210692FB1E65AFECDBAC6E1DF0"
+  },
+  "linux": {
+    "source_commit": "2aedf7cb329449ed7bef1104f72f97b119f80bb6",
+    "result": "passed",
+    "top_level_tests": 35,
+    "subtests": 76,
+    "fuzz_seeds": 16,
+    "log_sha256": "A11C5B7FB1B8AB776F934E442A3D3C827808A8886DE0E994BAEACDBF22562183",
+    "kernel": "6.18.35-0-virt",
+    "network_devices": 0,
+    "filesystem": "guest tmpfs",
+    "race_run": false
+  },
+  "builds": [
+    {
+      "Path": "E:\\Portico\\build\\portico-windows-amd64.exe",
+      "Hash": "D7B213344BD04DA1C9F5C16817A2A662F58DB175DE676D532CA9F06CDF836F60"
+    },
+    {
+      "Path": "E:\\Portico\\build\\portico-linux-amd64",
+      "Hash": "C981539A9C40CF8EADB68AA4421E08C91F4F965733E9CEA25D21201218722FC4"
+    }
+  ],
+  "acceptance": {
+    "total": 91,
+    "implemented": [
+      "AUDIT-01"
+    ],
+    "planned": 90
+  },
+  "gates_open": [
+    "Q02",
+    "Q03",
+    "Q06",
+    "Q08"
+  ],
+  "hosted": {
+    "quality_run": 34149427817,
+    "quality_status": "success",
+    "codeql_run": 34149427803,
+    "codeql_status": "success",
+    "dependency_review_run": 34149427808,
+    "dependency_review_status": "success",
+    "windows": {
+      "job_id": 101828362144,
+      "unit": "passed",
+      "race": "passed",
+      "coverage_percent": {
+        "cli": 84.6,
+        "controller": 76.5,
+        "pki": 90.1
+      },
+      "fuzz_executions": {
+        "cli": 167214,
+        "destination": 54478,
+        "pki": 60022
+      },
+      "log_sha256": "518674D68509BD4382F9EF5E19E6030AA3C15675CCD3470405AB6F32BB8230C1"
+    },
+    "ubuntu": {
+      "job_id": 101828362086,
+      "unit": "passed",
+      "race": "passed",
+      "coverage_percent": {
+        "cli": 84.6,
+        "controller": 76.4,
+        "pki": 90.1
+      },
+      "fuzz_executions": {
+        "cli": 165931,
+        "destination": 47467,
+        "pki": 22430
+      },
+      "log_sha256": "8325695A666CD7627F7F45CFB5DCF97B8E20A8EC8D98A0034EF8178CCECEEC2A"
+    }
+  }
+}

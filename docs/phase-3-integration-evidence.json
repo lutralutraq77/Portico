@@ -1,0 +1,153 @@
+{
+  "schema": 1,
+  "phase": 3,
+  "status": "issuer, administrator and recovery components verified; phase incomplete",
+  "date": "2026-09-07",
+  "source_commit": "42bb1b9b59488157c0246083f3f12f17b5c4219d",
+  "local_check": "passed",
+  "skip_flags": [],
+  "windows": {
+    "unit": "passed",
+    "race": "passed",
+    "metrics": {
+      "coverage_percent": {
+        "portico.local/portico/internal/adminauth": 81.8,
+        "portico.local/portico/internal/cli": 84.6,
+        "portico.local/portico/internal/controller": 76.8,
+        "portico.local/portico/internal/issuer": 77.9,
+        "portico.local/portico/internal/pki": 90.1,
+        "portico.local/portico/issuer": 77.7,
+        "portico.local/portico/issuer/cmd/portico-issuer": 33.3
+      },
+      "fuzz_executions": {
+        "CLI": 28320,
+        "destination": 4101,
+        "PKI": 22,
+        "WebAuthn": 85
+      }
+    },
+    "log_sha256": "0E900B079E3816FEB84EF00A52A3886623E2ECFAB73E6FB5FB496E2EBA5C5FC0"
+  },
+  "linux": {
+    "source_commit": "42bb1b9b59488157c0246083f3f12f17b5c4219d",
+    "result": "passed",
+    "passed_top_level_tests": 48,
+    "passed_subtests": 132,
+    "fuzz_seeds": 21,
+    "skipped_helper_tests": 1,
+    "kernel": "6.18.35-0-virt",
+    "qemu": "11.1.0",
+    "accelerator": "TCG",
+    "network_devices": 0,
+    "loopback": "guest only",
+    "filesystem": "guest tmpfs",
+    "race_run": false,
+    "log_sha256": "F487B18565E6DCA3EF88FC79BA28DA7E43F76A291B1B8D0985B9A5172B9394C9"
+  },
+  "hosted": {
+    "source_commit": "42bb1b9b59488157c0246083f3f12f17b5c4219d",
+    "quality_run": 34155035446,
+    "quality_status": "success",
+    "codeql_run": 34155035518,
+    "codeql_status": "success",
+    "dependency_review_run": 34155035451,
+    "dependency_review_status": "success",
+    "platforms": {
+      "windows": {
+        "result": "passed",
+        "metrics": {
+          "coverage_percent": {
+            "portico.local/portico/internal/adminauth": 81.8,
+            "portico.local/portico/internal/cli": 84.6,
+            "portico.local/portico/internal/controller": 76.8,
+            "portico.local/portico/internal/issuer": 77.9,
+            "portico.local/portico/internal/pki": 90.1,
+            "portico.local/portico/issuer": 77.7,
+            "portico.local/portico/issuer/cmd/portico-issuer": 33.3
+          },
+          "fuzz_executions": {
+            "CLI": 136139,
+            "destination": 40223,
+            "PKI": 41244,
+            "WebAuthn": 296
+          }
+        },
+        "log_sha256": "70F5D9BD551DDDD6E377574645DB5EA17560777A765C0F9C0F6FC841791EF10A"
+      },
+      "ubuntu": {
+        "result": "passed",
+        "metrics": {
+          "coverage_percent": {
+            "portico.local/portico/internal/adminauth": 81.8,
+            "portico.local/portico/internal/cli": 84.6,
+            "portico.local/portico/internal/controller": 76.7,
+            "portico.local/portico/internal/issuer": 77.9,
+            "portico.local/portico/internal/pki": 90.1,
+            "portico.local/portico/issuer": 77.7,
+            "portico.local/portico/issuer/cmd/portico-issuer": 33.3
+          },
+          "fuzz_executions": {
+            "CLI": 240346,
+            "destination": 51443,
+            "PKI": 61667,
+            "WebAuthn": 34565
+          }
+        },
+        "log_sha256": "6E167D4C6A47D872F59676300428240936F2367790F31F4B5B740EC2982D2AD8"
+      }
+    }
+  },
+  "builds": [
+    {
+      "Path": "E:\\Portico\\build\\portico-windows-amd64.exe",
+      "Hash": "D7B213344BD04DA1C9F5C16817A2A662F58DB175DE676D532CA9F06CDF836F60"
+    },
+    {
+      "Path": "E:\\Portico\\build\\portico-linux-amd64",
+      "Hash": "C981539A9C40CF8EADB68AA4421E08C91F4F965733E9CEA25D21201218722FC4"
+    },
+    {
+      "Path": "E:\\Portico\\build\\portico-issuer-windows-amd64.exe",
+      "Hash": "E07B31D3FCC28C541689F35165A3A220666356B76524F7FBCC8F9CF03387EFB9"
+    },
+    {
+      "Path": "E:\\Portico\\build\\portico-issuer-linux-amd64",
+      "Hash": "A0DA1C0A109986B018327E69A514DDEF3A909913475A8A6B878D8442711E1478"
+    }
+  ],
+  "sboms": [
+    {
+      "file": "sbom.cdx.json",
+      "sha256": "7962318DD7BC800BCF643A1059B438B94A3504D1DC09B93BC1B0FBB096AB3F95"
+    },
+    {
+      "file": "issuer-windows-sbom.cdx.json",
+      "sha256": "0B1A2E4777794D87B9DA7812D42BDFAC636E409F71610D53D050F54F238FBCA2"
+    },
+    {
+      "file": "issuer-linux-sbom.cdx.json",
+      "sha256": "FB19C8ACF670C54C45BA5E94C7BD5C40BCA6F4AA58862794130426BABC45ABC2"
+    }
+  ],
+  "scanner_exceptions": [],
+  "unimported_module_advisories": [
+    "GO-2026-5932 (golang.org/x/crypto/openpgp; unmaintained, not imported)"
+  ],
+  "acceptance": {
+    "total": 91,
+    "implemented": [
+      "AUDIT-01"
+    ],
+    "planned": 90
+  },
+  "physical_hardware_tested": false,
+  "production_issuer_deployed": false,
+  "key_models": "undecided",
+  "private_sign_in_hostname": "undecided",
+  "gates_open": [
+    "Q02",
+    "Q03",
+    "Q06",
+    "Q08"
+  ]
+}

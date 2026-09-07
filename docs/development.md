@@ -1,6 +1,6 @@
 # Development environment
 
-Phase 2 adds a local controller domain implementation to the tool/build environment. The executable has only help/version commands and no listener, route, DNS or credential behavior. Runtime network labs are deferred until the connector phase.
+Phase 3 adds PKI/enrollment components and real TLS tests to the Phase 2 controller domain. See [the progress report](phase-3-report.md) for integration gates. The executable has only help/version commands and no listener, route, DNS or credential behavior. Runtime network labs are deferred until the connector phase.
 
 On this machine the project is E:\Portico. Portable Go, compiler, module/build caches, temporary files and reports live under its ignored work/ directory. Existing Git/PowerShell may be read from their installed locations; setup writes no global PATH, Go configuration or machine settings.
 

@@ -1,6 +1,6 @@
 # Roadmap and Phase 0 handoff
 
-Status: Phase 2 domain foundation and verification complete. Local Windows and isolated Linux tests passed; hosted Windows/Ubuntu quality, CodeQL and dependency review also passed. Phase 3 has not started.
+Status: Phase 2 domain foundation and verification complete and merged. Phase 3 issuer, administrator and recovery component work is in progress; see [its integration report](docs/phase-3-integration-report.md).
 
 ## Delivery phases and gates
 | Phase | Scope | Required exit evidence |
@@ -24,9 +24,9 @@ Status: Phase 2 domain foundation and verification complete. Local Windows and i
 Basic version visibility and authenticated MVP artifacts must arrive before any claimed supported distribution, even if automatic updating remains Phase 13. Phase numbers do not authorize releasing unsigned interim clients.
 
 ## Current work and next phase
-The user authorized hosted CI, Linux execution and Phase 2. The controller domain is implemented and verified, with results in the [Phase 2 report](docs/phase-2-report.md). Q09 is resolved by [ADR-002](ADR-002-controller-storage.md). The development repository at lutralutraq77/Portico is now public, and private vulnerability reporting is enabled. No supported release or network deployment is implied.
+The user authorized hosted CI, Linux execution, Phase 2 and then starting Phase 3. The controller domain is implemented and verified, with results in the [Phase 2 report](docs/phase-2-report.md). Q09 is resolved by [ADR-002](ADR-002-controller-storage.md). The development repository at lutralutraq77/Portico is now public, and private vulnerability reporting is enabled. No supported release or network deployment is implied.
 
-Phase 3 is PKI and enrollment. Before its dependent implementation, resolve issuer constraints and administrator identity/hardware-key gates. Full resource policy and connector networking remain Phase 4 and Phase 5. The 90 remaining acceptance cases stay visible until their full scenarios can execute.
+Phase 3 now includes strict PKI validation, durable enrollment/renewal, a restricted real issuer service, TLS-bound administrator/WebAuthn components and encrypted quarantined recovery. [ADR-004](ADR-004-restricted-issuer-admin-recovery.md) extends [ADR-003](ADR-003-pki-enrollment-boundary.md). Q02/Q03 remain open for physical keys and the actual browser/native origin binding; Q06 remains open for owner authentication and a physical finalization/recovery drill. Q08 has restricted adapter and bypass-test implementation, with custody, deployment and administrator renewal still unqualified. Full resource policy and connector networking remain Phase 4 and Phase 5. The 90 remaining acceptance cases stay visible until their full scenarios can execute.
 
 ## Future documentation mapping
 | Required documentation area | Phase 0 source |
