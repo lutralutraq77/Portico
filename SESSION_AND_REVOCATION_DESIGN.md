@@ -1,6 +1,6 @@
 # Sessions, expiry and revocation
 
-Status: proposed semantics and test targets; no measured Portico guarantees.
+Status: end-to-end semantics and test targets; no measured socket-termination guarantees. Phase 4 implements controller authorization/activation/renewal, quotas, deadlines and durable cancellation targets. Connector delivery, acknowledgments and request-anchored timers remain unimplemented; see [ADR-005](ADR-005-resource-policy-boundary.md).
 
 ## Separate lifetimes
 | Lifetime | Proposed default / rule |

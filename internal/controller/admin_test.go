@@ -20,6 +20,7 @@ type adminFixture struct {
 	f        *enrollmentFixture
 	trust    *pki.Trust
 	conn     *tls.Conn
+	identity tls.Certificate
 	verifier *adminauth.Verifier
 	keys     []*testfixture.VirtualKey
 	factors  []string
@@ -47,7 +48,7 @@ func adminSeed(t *testing.T) *adminFixture {
 	}
 	v, e := adminauth.New(adminauth.Config{Origin: "https://admin.portico.test", Models: models, ValidUntil: time.Now().Add(time.Hour)})
 	must(t, e)
-	return &adminFixture{f: f, trust: trust, conn: conn, verifier: v, keys: keys}
+	return &adminFixture{f: f, trust: trust, conn: conn, identity: tls.Certificate{Certificate: [][]byte{leaf.Raw}, PrivateKey: key}, verifier: v, keys: keys}
 }
 func (a *adminFixture) register(t *testing.T, key *testfixture.VirtualKey, challenge AdminChallenge) string {
 	t.Helper()

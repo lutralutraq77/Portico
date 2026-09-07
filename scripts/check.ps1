@@ -56,6 +56,7 @@ try {
     Invoke-Check 'bounded destination fuzzing' 'go' @('test','./internal/controller','-run=^$','-fuzz=FuzzDestination','-fuzztime=5s','-parallel=2')
     Invoke-Check 'bounded PKI fuzzing' 'go' @('test','./internal/pki','-run=^$','-fuzz=FuzzPKIInputs','-fuzztime=5s','-parallel=2')
     Invoke-Check 'bounded WebAuthn fuzzing' 'go' @('test','./internal/adminauth','-run=^$','-fuzz=FuzzWebAuthnResponses','-fuzztime=5s','-parallel=2')
+    Invoke-Check 'bounded control JSON fuzzing' 'go' @('test','./internal/wire','-run=^$','-fuzz=FuzzControlJSON','-fuzztime=5s','-parallel=2')
     Push-Location (Join-Path $PorticoRoot 'issuer')
     try {
         Invoke-Check 'issuer module verification' 'go' @('mod','verify')

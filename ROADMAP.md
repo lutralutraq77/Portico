@@ -1,6 +1,6 @@
 # Roadmap and Phase 0 handoff
 
-Status: Phase 2 domain foundation and verification complete and merged. Phase 3 issuer, administrator and recovery component work is in progress; see [its integration report](docs/phase-3-integration-report.md).
+Status: phases 0–2 have foundation evidence. Phase 3 has verified issuer/admin/recovery software with physical and deployment gates open. Phase 4 policy software is implemented and under qualification. The active objective covers all fifteen phases; see the [delivery ledger](docs/delivery-status.md).
 
 ## Delivery phases and gates
 | Phase | Scope | Required exit evidence |
@@ -24,9 +24,9 @@ Status: Phase 2 domain foundation and verification complete and merged. Phase 3 
 Basic version visibility and authenticated MVP artifacts must arrive before any claimed supported distribution, even if automatic updating remains Phase 13. Phase numbers do not authorize releasing unsigned interim clients.
 
 ## Current work and next phase
-The user authorized hosted CI, Linux execution, Phase 2 and then starting Phase 3. The controller domain is implemented and verified, with results in the [Phase 2 report](docs/phase-2-report.md). Q09 is resolved by [ADR-002](ADR-002-controller-storage.md). The development repository at lutralutraq77/Portico is now public, and private vulnerability reporting is enabled. No supported release or network deployment is implied.
+The user authorized completion of all fifteen phases, including hosted CI and Linux execution. The controller domain is implemented and verified, with results in the [Phase 2 report](docs/phase-2-report.md). Q09 is resolved by [ADR-002](ADR-002-controller-storage.md). The development repository at lutralutraq77/Portico is public, and private vulnerability reporting is enabled. Release and deployment claims still require their full evidence.
 
-Phase 3 now includes strict PKI validation, durable enrollment/renewal, a restricted real issuer service, TLS-bound administrator/WebAuthn components and encrypted quarantined recovery. [ADR-004](ADR-004-restricted-issuer-admin-recovery.md) extends [ADR-003](ADR-003-pki-enrollment-boundary.md). Q02/Q03 remain open for physical keys and the actual browser/native origin binding; Q06 remains open for owner authentication and a physical finalization/recovery drill. Q08 has restricted adapter and bypass-test implementation, with custody, deployment and administrator renewal still unqualified. Full resource policy and connector networking remain Phase 4 and Phase 5. The 90 remaining acceptance cases stay visible until their full scenarios can execute.
+Phase 3 includes strict PKI validation, durable enrollment/renewal, a restricted real issuer service, TLS-bound administrator/WebAuthn components and encrypted quarantined recovery. [ADR-004](ADR-004-restricted-issuer-admin-recovery.md) extends [ADR-003](ADR-003-pki-enrollment-boundary.md). Q02/Q03 remain open for physical keys and the actual browser/native origin binding; Q06 remains open for owner authentication and a physical finalization/recovery drill. Q08 has restricted adapter and bypass-test implementation, with custody, deployment and administrator renewal still unqualified. [ADR-005](ADR-005-resource-policy-boundary.md) adds online resource policy, immutable hardware-approved previews, private TLS APIs and audited schema 4 migration. Connector networking follows with the mature transport comparison and real socket enforcement. The 90 remaining acceptance cases stay visible until their full scenarios can execute.
 
 ## Future documentation mapping
 | Required documentation area | Phase 0 source |
@@ -51,4 +51,4 @@ The MVP must include Android and Windows clients, Linux connector, self-hosted c
 Production additionally requires proven LAN/Docker/IPv6 isolation, Mullvad/DNS compatibility, authenticated releases, tested rollback/recovery, dependency review and no open critical/high findings. Functional completeness alone is insufficient.
 
 ## Historical Phase 0 boundary
-The user subsequently authorized Phase 1. Its foundation and results are recorded in docs/phase-1-report.md. The subsequent user request authorizes Phase 2 and hosted development CI; production networking and further application phases remain separate work.
+The user subsequently authorized Phase 1, then Phase 2, hosted development CI and Phase 3. The current objective extends development through all fifteen phases. These historical milestones do not narrow that objective or waive its platform, deployment, release and security evidence.

@@ -1,6 +1,6 @@
 # Resource and authorization model
 
-Status: normative domain contract. Phase 2 implements local schema and trusted domain transactions; authenticated policy enforcement and networking remain later phases. See docs/controller-domain.md.
+Status: normative domain contract. Phase 2 implements trusted domain transactions; Phase 4 adds online authorization and hardware-approved preview APIs. Connector networking, hostname policy and management-resource authority remain later work. See [domain implementation](docs/controller-domain.md) and [policy decision](ADR-005-resource-policy-boundary.md).
 
 ## Entities
 Security IDs are immutable, deployment-scoped random identifiers generated using an established UUID library and OS randomness. Display names are mutable and non-authoritative. Deleted IDs are never reused.

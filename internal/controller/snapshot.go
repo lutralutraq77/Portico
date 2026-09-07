@@ -77,6 +77,9 @@ func (s *Store) Snapshot(ctx context.Context, destination string) error {
 	if e = t.exec("DELETE FROM admin_ceremonies"); e != nil {
 		return e
 	}
+	if e = t.exec("DELETE FROM policy_previews"); e != nil {
+		return e
+	}
 	if e = t.event("snapshot.quarantine", t.actor); e != nil {
 		return e
 	}

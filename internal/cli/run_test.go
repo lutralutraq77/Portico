@@ -41,7 +41,7 @@ func TestVersionIsExplicitlyDevelopmentOnly(t *testing.T) {
 	if err := json.Unmarshal(out.Bytes(), &info); err != nil {
 		t.Fatal(err)
 	}
-	if !info.DevelopmentOnly || info.Phase != 3 || info.Version == "" || info.GoVersion == "" || info.OS == "" || info.Architecture == "" {
+	if !info.DevelopmentOnly || info.Phase != 4 || info.Version == "" || info.GoVersion == "" || info.OS == "" || info.Architecture == "" {
 		t.Fatalf("missing development provenance: %+v", info)
 	}
 }

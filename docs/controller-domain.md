@@ -4,9 +4,9 @@ Phase 2 implements users, devices, connectors, issuer/certificate metadata, immu
 
 ## Trust boundary
 
-Store.Update and its Tx methods are trusted in-process storage operations. They do not verify TLS identities, hardware approval, enrollment or administrator roles. An actor UUID or approval reference is metadata, never authentication evidence. No listener exposes these methods. Phase 3 and Phase 4 must introduce the authenticated command and authorization boundaries before any API can call them on behalf of an untrusted caller.
+Store.Update and its Tx methods are trusted in-process storage operations. They do not verify TLS identities, hardware approval, enrollment or administrator roles. An actor UUID or approval reference is metadata, never authentication evidence. No listener directly exposes these methods. Phase 3 adds verified certificate/admin entry points and Phase 4 adds [private policy APIs](policy-api.md) that authenticate before invoking domain transactions.
 
-The version-only executable now reports Phase 3; PKI/enrollment additions are described in [the progress report](phase-3-report.md). Application state is exercised through the domain tests; no CLI command can create a network permit.
+The version-only executable reports Phase 4; PKI/enrollment additions are described in [the integration report](phase-3-integration-report.md). Application state is exercised through domain, real TLS and policy API tests; no CLI command starts a controller or connector service.
 
 ## Rules enforced now
 
@@ -17,7 +17,7 @@ The version-only executable now reports Phase 3; PKI/enrollment additions are de
 - Literal IPs and one TCP port are supported; hostnames, ranges, zones, URLs, wildcard destinations and unsafe local address classes are rejected. Deployment-specific management-address exclusions are still required before real dialing.
 - Certificate profiles bind exactly one device or connector; issuer/serial and leaf fingerprint are unique. Registering replacement metadata does not revoke an old certificate.
 - Session recording checks exact identities/revisions, enabled states, independent host/dial permissions and bounded deadlines. Management resources cannot produce requested sessions until admin authority is implemented.
-- Requested records can only end denied, expired or closed. There is no authorized/active state or forwarding capability in this phase.
+- Domain requested records can only end denied, expired or closed. Schema 4 adds a separate authorized/active permission record with sequences, configuration binding and deadlines. It cannot forward traffic itself.
 - Disable operations conservatively close all requested records; restart also closes them. Later targeted cancellation may narrow the affected set while preserving required denial.
 - State and audit commit together. Storage errors and ignored mutation errors roll back. EmergencyDeny latches process-local denial independently of storage.
 

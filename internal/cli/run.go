@@ -1,4 +1,4 @@
-// Package cli implements only the Phase 3 development command surface.
+// Package cli implements only the Phase 4 development command surface.
 package cli
 
 import (
@@ -8,7 +8,7 @@ import (
 	"runtime"
 )
 
-const version = "0.3.0-dev"
+const version = "0.4.0-dev"
 
 // Info describes a development binary. Phase is not a protocol version.
 type Info struct {
@@ -20,7 +20,7 @@ type Info struct {
 	DevelopmentOnly bool   `json:"development_only"`
 }
 
-const usage = "Usage: portico version [--json]\n       portico help\nPhase 3 development foundation; no network service is available.\n"
+const usage = "Usage: portico version [--json]\n       portico help\nPhase 4 development foundation; no network service is available.\n"
 
 // Run handles a bounded command surface. Arguments are never echoed on errors,
 // because future invocations may accidentally contain enrollment material.
@@ -32,12 +32,12 @@ func Run(args []string, stdout, stderr io.Writer) int {
 		}
 		return 0
 	case len(args) == 1 && args[0] == "version":
-		if _, err := fmt.Fprintf(stdout, "Portico %s (Phase 3; development only)\n", version); err != nil {
+		if _, err := fmt.Fprintf(stdout, "Portico %s (Phase 4; development only)\n", version); err != nil {
 			return 1
 		}
 		return 0
 	case len(args) == 2 && args[0] == "version" && args[1] == "--json":
-		info := Info{version, 3, runtime.Version(), runtime.GOOS, runtime.GOARCH, true}
+		info := Info{version, 4, runtime.Version(), runtime.GOOS, runtime.GOARCH, true}
 		if err := json.NewEncoder(stdout).Encode(info); err != nil {
 			return 1
 		}

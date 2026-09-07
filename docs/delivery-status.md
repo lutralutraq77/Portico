@@ -1,0 +1,33 @@
+# Complete delivery status
+
+The active user objective is to complete all fifteen phases, numbered 0 through 14. This includes the integrated SSH CA phase in the requested total scope. Work continues across phases where independent software can be implemented without unresolved physical or deployment inputs. No phase number, successful build or component test implies production readiness.
+
+| Phase | Current authoritative state | Evidence still required for full completion |
+|---|---|---|
+| 0: research/design | Seventeen required design documents, source/control/question registers and preserved brief exist | Keep threat model and decisions synchronized with the final implementation |
+| 1: quality foundation | Pinned tools, reproducible builds, scanners with positive controls, hosted Windows/Linux checks | Keep final-source hosted checks, artifacts and provenance current |
+| 2: controller domain | Implemented and merged; transactional audit/crash, default-deny and persistence tests | Continue regression testing as service surfaces are added |
+| 3: PKI/enrollment/admin/recovery | Restricted real issuer, live certificate registry, virtual WebAuthn and encrypted quarantine implemented and tested | Real primary/backup keys and hostname, platform key stores, issuer custody/rotation, administrator renewal, owner bootstrap/finalization and physical recovery drill |
+| 4: resource policy | Exact grants/hosting/revisions, controller authorization and hardware-approved preview software implemented; qualification in progress | Final-source native/hosted/Linux evidence and the full AUTHZ socket scenarios through the connector |
+| 5: isolated connector | Design candidate documented | Resolve mature transport comparison, implement relay/inner TLS/proxy/cancellation/leases, actual destination socket counters and hostile network tests |
+| 6: Linux/Arch client | No supported application client yet | Local key and IPC isolation, resource access/application workflows, Arch packages/services, real user/suspend tests |
+| 7: dashboard | No dashboard or browser/native bridge yet | Material Design 3, bootstrap and complete management workflows, exact previews, accessibility/mobile/keyboard and malicious-origin/local-user tests |
+| 8: Windows | Core library tests/builds run on Windows; no supported Windows client/connector yet | CNG/ACL/service integration, resource flows, suspend and parity qualification for client then connector |
+| 9: Android | Required client remains unimplemented | Kotlin/native integration, real Keystore/device/lifecycle/Doze/app-flow qualification and honest VPN coexistence |
+| 10: network isolation | Design and lab constraints documented | Compose deployment, independent egress isolation, LAN/Docker/IPv6/NAT adversarial tests, dry run/timed rollback/console recovery |
+| 11: Mullvad/DNS | Default no-global-change design; no coexistence claim | Real isolated Mullvad tests and DNS invariance; pinned-answer hostname tests before enabling that mode |
+| 12: SSH CA | Separate restricted issuance planned | Local SSH key handling, scoped short-lived certificates, separate issuer/authentication review and real SSH integration tests |
+| 13: updates | Development build/SBOM provenance exists | Authenticated releases, TUF/signing custodians, metadata expiry/rollback protection, compatibility/staged install/recovery drills |
+| 14: audit/hardening | AUDIT-01 fully implemented; other component tests provide partial evidence | All 91 full acceptance scenarios, manual threat-model/custom-code review, independent review and resolution of all critical/high findings |
+
+## Evidence rules
+
+The [canonical acceptance plan](../ACCEPTANCE_TEST_PLAN.md) and [manifest](../tests/acceptance/manifest.json) contain 91 distinct runtime cases. AUDIT-01 is implemented; 90 remain planned. A policy denial response cannot replace observed destination socket counts. Virtual authenticators cannot establish physical hardware backing or independent custody. Cross-compilation cannot prove a platform's keystore, lifecycle or local-user boundary. A quarantined encrypted restore cannot prove a complete recovery ceremony. These requirements remain part of the objective.
+
+Current software checks are scripts/check.ps1 (both Go modules, unit/race/fuzz, static/dependency/secret/workflow/documentation checks, builds and SBOMs) and scripts/test-linux.ps1 (isolated Linux kernel, guest loopback only). Historical evidence is retained in the phase reports rather than relabeled as current-source proof. Phase 4 implementation details are in [ADR-005](../ADR-005-resource-policy-boundary.md).
+
+## External decisions and qualifications
+
+The owner is undecided on both hardware-key models and the private sign-in hostname. Test fixtures use isolated .test origins while software work proceeds. Q01–Q14 in [open questions](../OPEN_QUESTIONS.md) track transport, browser/native isolation, revocation semantics, owner recovery, platform support, network deployment, release custody and governance. No production values, custodians, legal license or physical test evidence are invented.
+
+The project, work directory, toolchains, generated reports and build outputs on this machine stay under E:\Portico. Development work does not by itself change production DNS, firewall rules, Mullvad configuration or release trust.
