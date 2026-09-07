@@ -81,9 +81,16 @@ try {
             $bomPath=Join-Path $reportRoot ('issuer-'+$target+'-sbom.cdx.json')
             Invoke-Check ('issuer '+$target+' binary SBOM') 'cyclonedx-gomod' @('bin','-std','-json','-output',$bomPath,$binary)
             $bom=Get-Content -LiteralPath $bomPath -Raw | ConvertFrom-Json
-            foreach ($required in @('portico.local/portico','github.com/smallstep/certificates','std')) {
+            foreach ($required in @('..','github.com/smallstep/certificates','std')) {
                 if ($required -notin $bom.components.name) { throw ('Issuer SBOM missing component: '+$required) }
             }
+            # CycloneDX names a local replacement by its path. Retain the Go
+            # build metadata to identify that component without inventing hashes.
+            $buildInfo=(& go version -m -json $binary) | ConvertFrom-Json
+            if ($LASTEXITCODE -ne 0) { throw 'Cannot read issuer build metadata' }
+            $localModule=@($buildInfo.Deps | Where-Object Path -eq 'portico.local/portico')
+            if ($localModule.Count -ne 1 -or $localModule[0].Replace.Path -ne '..') { throw 'Issuer local module binding missing' }
+            $buildInfo | ConvertTo-Json -Depth 20 | Set-Content -LiteralPath (Join-Path $reportRoot ('issuer-'+$target+'-buildinfo.json'))
             $recordedHash=@($bom.metadata.properties | Where-Object name -eq 'cdx:gomod:binary:hash:SHA-256')
             if ($recordedHash.Count -ne 1 -or $recordedHash[0].value -ine (Get-FileHash -LiteralPath $binary -Algorithm SHA256).Hash) {
                 throw 'Issuer SBOM does not identify the built binary'

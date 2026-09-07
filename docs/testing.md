@@ -13,7 +13,7 @@ Foundation and domain checks:
 - Govulncheck scans the application and the imported packages of every declared development tool. A separate known-vulnerable dependency fixture must report GO-2025-4020; the fixture is never used by production or development tools.
 - Windows/Linux cross-builds plus a native binary smoke test run. A second native build must be byte-identical with the same toolchain.
 - Staticcheck, govulncheck, actionlint and CycloneDX SBOM generation run from pinned tool versions.
-- Issuer SBOMs are generated separately from the Windows and Linux binaries, recording linked modules and verified binary SHA-256 hashes. Binary mode avoids recursively hashing the parent module's ignored caches through the local replacement; module verification and package vulnerability scans still cover the issuer dependency graph.
+- Issuer SBOMs are generated separately from the Windows and Linux binaries, recording linked modules and verified binary SHA-256 hashes. Binary mode avoids recursively hashing the parent module's ignored caches through the local replacement. CycloneDX represents the local Portico component as `..`; adjacent Go build-metadata JSON verifies and retains its original module identity. Module verification and package vulnerability scans still cover the issuer dependency graph.
 
 Reports are generated under work/reports. CI uploads only redacted JSON and coverage output, not keys, source caches or credentials. Tests use work/tmp and ephemeral loopback listeners for the real mutual-TLS issuer. Other runtime TLS tests use net.Pipe. External access is limited to dependency/tool/advisory downloads; runtime tests have no external service requirement.
 
