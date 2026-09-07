@@ -17,7 +17,7 @@ import (
 // a CA nor authorizes an administrator. A deployment and profile cannot be
 // changed by passing a different public trust configuration later.
 func (t *Tx) BindIssuer(trust *pki.Trust) error {
-	if e := t.guard(trust != nil); e != nil {
+	if e := t.guard(trust != nil && trust.Profile() != pki.Administrator); e != nil {
 		return e
 	}
 	var foreign int
@@ -25,6 +25,9 @@ func (t *Tx) BindIssuer(trust *pki.Trust) error {
 		return t.fail(ErrStorage)
 	}
 	if foreign != 0 {
+		return t.fail(ErrDenied)
+	}
+	if e := t.tx.QueryRowContext(t.ctx, "SELECT count(*) FROM admin_devices WHERE issuer_sha256=? OR deployment_id<>?", trust.IssuerFingerprint(), trust.DeploymentID()).Scan(&foreign); e != nil || foreign != 0 {
 		return t.fail(ErrDenied)
 	}
 	if e := t.AddIssuer(Issuer{trust.IssuerID(), true, trust.NotAfter()}); e != nil {
@@ -49,6 +52,19 @@ type InvitationSpec struct {
 func (s *Store) Invite(ctx context.Context, actor string, v InvitationSpec) (string, error) {
 	var secret string
 	e := s.Update(ctx, actor, func(t *Tx) error {
+		var e error
+		secret, e = t.invite(v)
+		return e
+	})
+	if e != nil {
+		return "", e
+	}
+	return secret, nil
+}
+
+func (t *Tx) invite(v InvitationSpec) (string, error) {
+	var secret string
+	e := func() error {
 		if e := t.guard(validID(v.ID) && validID(v.IssuerID) && validID(v.PrincipalID) && pki.ValidProfile(v.Profile) && interval(t.now, v.ExpiresAt) && v.ExpiresAt.Sub(t.now) <= time.Hour && interval(t.now, v.NotAfter) && v.NotAfter.Equal(v.NotAfter.Truncate(time.Second))); e != nil {
 			return e
 		}
@@ -70,7 +86,7 @@ func (s *Store) Invite(ctx context.Context, actor string, v InvitationSpec) (str
 			return e
 		}
 		return t.event("enrollment.invite", v.ID)
-	})
+	}()
 	if e != nil {
 		return "", e
 	}
@@ -232,12 +248,7 @@ func (s *Store) ReserveEnrollment(ctx context.Context, actor, id, secret, attemp
 // IssuanceRequest contains public material and server-approved constraints only.
 // The provider must be a reviewed, restricted registration-authority adapter.
 // No provider is installed by the executable; tests use an ephemeral real X.509 CA.
-type IssuanceRequest struct {
-	AttemptID, DeploymentID, IssuerID, PrincipalID string
-	Profile                                        pki.Profile
-	CSR                                            []byte
-	NotBefore, NotAfter                            time.Time
-}
+type IssuanceRequest = pki.IssuanceRequest
 
 type IssuanceProvider interface {
 	Issue(context.Context, IssuanceRequest) ([]byte, error)
@@ -286,7 +297,7 @@ func (s *Store) IssueEnrollment(ctx context.Context, actor, id string, trust *pk
 		if e := t.enrollmentAuthority(v.issuer, v.principal, v.profile, time.Unix(0, v.until)); e != nil {
 			return e
 		}
-		request = IssuanceRequest{v.attempt.String, trust.DeploymentID(), v.issuer, v.principal, v.profile, bytes.Clone(v.csr), time.Unix(0, v.created).UTC().Truncate(time.Second), time.Unix(0, v.until).UTC()}
+		request = IssuanceRequest{AttemptID: v.attempt.String, DeploymentID: trust.DeploymentID(), IssuerID: v.issuer, PrincipalID: v.principal, Profile: v.profile, CSR: bytes.Clone(v.csr), NotBefore: time.Unix(0, v.created).UTC().Truncate(time.Second), NotAfter: time.Unix(0, v.until).UTC()}
 		if e := t.exec("UPDATE enrollments SET state='issuing' WHERE id=?", id); e != nil {
 			return e
 		}

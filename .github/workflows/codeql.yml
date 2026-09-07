@@ -32,6 +32,8 @@ jobs:
         run: |
           go telemetry off
           go build -trimpath ./...
+          cd issuer
+          go build -trimpath ./...
         env:
           GOTOOLCHAIN: local
           GOTELEMETRY: 'off'

@@ -40,4 +40,5 @@ jobs:
           path: |
             work/reports/*.json
             work/reports/coverage.out
+            work/reports/issuer-coverage.out
           retention-days: 14

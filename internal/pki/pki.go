@@ -25,14 +25,23 @@ const MaxCSR = 4 * 1024
 
 type Profile string
 
+// IssuanceRequest contains only approved public inputs for an isolated issuer.
+type IssuanceRequest struct {
+	AttemptID, DeploymentID, IssuerID, PrincipalID string
+	Profile                                        Profile
+	CSR                                            []byte
+	NotBefore, NotAfter                            time.Time
+}
+
 const (
-	Device    Profile = "device"
-	Connector Profile = "connector"
+	Device        Profile = "device"
+	Connector     Profile = "connector"
+	Administrator Profile = "administrator"
 )
 
-// Admin certificates are deliberately unsupported until the independent device
-// binding, hardware attestation and constrained-issuer gates are qualified.
-func ValidProfile(p Profile) bool { return p == Device || p == Connector }
+// Administrator credentials use a separate pinned issuer and registry. They
+// cannot enter the ordinary enrollment or resource-authentication registry.
+func ValidProfile(p Profile) bool { return p == Device || p == Connector || p == Administrator }
 func ValidID(s string) bool {
 	u, e := uuid.Parse(s)
 	return e == nil && u != uuid.Nil && u.String() == s

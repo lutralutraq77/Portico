@@ -1,5 +1,7 @@
 # Phase 3 progress: PKI and enrollment foundation
 
+Historical foundation report for commit 2aedf7c. The subsequent [issuer, administrator and recovery increment](phase-3-integration-report.md) supersedes the current-work and remaining-implementation statements below; its verification is recorded separately.
+
 Phase 3 is in progress. The first component implementation is complete; the administrator, real issuer and recovery gates below remain open. Phase 2 was merged through [PR #1](https://github.com/lutralutraq77/Portico/pull/1) at commit 15114a423d4cf30d0da7cc9e8ade9d152eaa485f before this branch was created.
 
 ## Implemented

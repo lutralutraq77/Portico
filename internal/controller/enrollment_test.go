@@ -141,6 +141,9 @@ func tlsHandshake(t *testing.T, s *Store, trust *pki.Trust, client tls.Certifica
 	tmpl := &x509.Certificate{SerialNumber: big.NewInt(1), DNSNames: []string{"enrollment.test"}, NotBefore: now.Add(-time.Hour), NotAfter: now.Add(time.Hour), KeyUsage: x509.KeyUsageDigitalSignature, ExtKeyUsage: []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth}, BasicConstraintsValid: true}
 	der := cert(t, tmpl, tmpl, &k.PublicKey, k)
 	serverConfig, e := s.ClientTLSConfig(tls.Certificate{Certificate: [][]byte{der}, PrivateKey: k}, trust, pending)
+	if trust.Profile() == pki.Administrator {
+		serverConfig, e = s.AdminTLSConfig(tls.Certificate{Certificate: [][]byte{der}, PrivateKey: k}, trust)
+	}
 	must(t, e)
 	roots := x509.NewCertPool()
 	roots.AddCert(parseCert(t, der))
@@ -471,12 +474,12 @@ func TestSchemaOneMigrationAndQuarantine(t *testing.T) {
 			defer func() { _ = s.Close() }()
 			var version int
 			must(t, s.db.QueryRow("PRAGMA user_version").Scan(&version))
-			if version != 2 {
+			if version != schemaVersion {
 				t.Fatal("migration missing")
 			}
 			events, e := s.AuditBatch(ctx, Checkpoint{}, 10)
 			must(t, e)
-			if len(events) != 1 || events[0].Action != "schema.enrollment" {
+			if len(events) != 1 || events[0].Action != "schema.security" {
 				t.Fatal("migration not audited")
 			}
 		})

@@ -13,6 +13,11 @@ try {
         $output=Join-Path $buildRoot ('portico-'+$target+'-amd64'+$suffix)
         & go build -trimpath -buildvcs=false '-ldflags=-buildid=' -o $output ./cmd/portico
         if($LASTEXITCODE -ne 0){throw "Build failed: $target"}
+        Push-Location (Join-Path $PorticoRoot 'issuer')
+        try {
+            & go build -trimpath -buildvcs=false '-ldflags=-buildid=' -o (Join-Path $buildRoot ('portico-issuer-'+$target+'-amd64'+$suffix)) ./cmd/portico-issuer
+            if($LASTEXITCODE -ne 0){throw "Issuer build failed: $target"}
+        } finally { Pop-Location }
     }
     $env:GOOS=$priorOS; $env:GOARCH=$priorArch
     $native=Join-Path $buildRoot 'portico-linux-amd64'
@@ -25,7 +30,17 @@ try {
     & go build -trimpath -buildvcs=false '-ldflags=-buildid=' -o $second ./cmd/portico
     if($LASTEXITCODE -ne 0){throw 'Rebuild failed'}
     if((Get-FileHash -LiteralPath $second -Algorithm SHA256).Hash -ne $first){throw 'Same-toolchain native rebuild was not byte-identical'}
-    Get-FileHash -LiteralPath (Join-Path $buildRoot 'portico-windows-amd64.exe'),(Join-Path $buildRoot 'portico-linux-amd64') -Algorithm SHA256 |
+    $nativeIssuer=Join-Path $buildRoot 'portico-issuer-linux-amd64'
+    if($IsWindows){$nativeIssuer=Join-Path $buildRoot 'portico-issuer-windows-amd64.exe'}
+    & $nativeIssuer version
+    if($LASTEXITCODE -ne 0){throw 'Issuer binary smoke test failed'}
+    Push-Location (Join-Path $PorticoRoot 'issuer')
+    try {
+        & go build -trimpath -buildvcs=false '-ldflags=-buildid=' -o $second ./cmd/portico-issuer
+        if($LASTEXITCODE -ne 0){throw 'Issuer rebuild failed'}
+        if((Get-FileHash -LiteralPath $second -Algorithm SHA256).Hash -ne (Get-FileHash -LiteralPath $nativeIssuer -Algorithm SHA256).Hash){throw 'Issuer rebuild was not byte-identical'}
+    } finally { Pop-Location }
+    Get-FileHash -LiteralPath (Join-Path $buildRoot 'portico-windows-amd64.exe'),(Join-Path $buildRoot 'portico-linux-amd64'),(Join-Path $buildRoot 'portico-issuer-windows-amd64.exe'),(Join-Path $buildRoot 'portico-issuer-linux-amd64') -Algorithm SHA256 |
         Select-Object Path,Hash | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $PorticoWork 'reports/build-hashes.json')
 } finally {
     $env:GOOS=$priorOS; $env:GOARCH=$priorArch; $env:CGO_ENABLED=$priorCGO

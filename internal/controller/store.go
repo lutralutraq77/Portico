@@ -23,7 +23,16 @@ var schema string
 //go:embed enrollment.sql
 var enrollmentSchema string
 
+//go:embed admin.sql
+var adminSchema string
+
 const applicationID = 0x50525443
+const schemaVersion = 3
+
+func currentSchemaDigest() string {
+	h := sha256.Sum256([]byte(schema + enrollmentSchema + adminSchema))
+	return hex.EncodeToString(h[:])
+}
 
 type Store struct {
 	db        *sql.DB
@@ -85,23 +94,22 @@ func (s *Store) initialize(ctx context.Context) error {
 	if e = tx.QueryRowContext(ctx, "PRAGMA application_id").Scan(&app); e != nil {
 		return ErrStorage
 	}
-	h := sha256.Sum256([]byte(schema + enrollmentSchema))
-	want := hex.EncodeToString(h[:])
+	want := currentSchemaDigest()
 	if version == 0 && app == 0 {
 		var n int
 		if e = tx.QueryRowContext(ctx, "SELECT count(*) FROM sqlite_master WHERE name NOT LIKE 'sqlite_%'").Scan(&n); e != nil || n != 0 {
 			return ErrIntegrity
 		}
-		if _, e = tx.ExecContext(ctx, schema+enrollmentSchema); e != nil {
+		if _, e = tx.ExecContext(ctx, schema+enrollmentSchema+adminSchema); e != nil {
 			return classify(e)
 		}
 		if _, e = tx.ExecContext(ctx, "INSERT INTO meta(singleton,schema_digest) VALUES(1,?)", want); e != nil {
 			return ErrStorage
 		}
-		if _, e = tx.ExecContext(ctx, "PRAGMA user_version=2; PRAGMA application_id=1347572803"); e != nil {
+		if _, e = tx.ExecContext(ctx, "PRAGMA user_version=3; PRAGMA application_id=1347572803"); e != nil {
 			return ErrStorage
 		}
-	} else if (version != 1 && version != 2) || app != applicationID {
+	} else if (version < 1 || version > schemaVersion) || app != applicationID {
 		return ErrIntegrity
 	}
 	var got string
@@ -112,6 +120,11 @@ func (s *Store) initialize(ctx context.Context) error {
 	old := sha256.Sum256([]byte(schema))
 	if version == 1 {
 		if got != hex.EncodeToString(old[:]) {
+			return ErrIntegrity
+		}
+	} else if version == 2 {
+		previous := sha256.Sum256([]byte(schema + enrollmentSchema))
+		if got != hex.EncodeToString(previous[:]) {
 			return ErrIntegrity
 		}
 	} else if got != want {
@@ -137,18 +150,22 @@ func (s *Store) initialize(ctx context.Context) error {
 	if e = verifyAudit(ctx, tx); e != nil {
 		return e
 	}
-	if version == 1 {
-		if _, e = tx.ExecContext(ctx, enrollmentSchema); e != nil {
+	if version == 1 || version == 2 {
+		migration := adminSchema
+		if version == 1 {
+			migration = enrollmentSchema + adminSchema
+		}
+		if _, e = tx.ExecContext(ctx, migration); e != nil {
 			return ErrStorage
 		}
 		if _, e = tx.ExecContext(ctx, "UPDATE meta SET schema_digest=? WHERE singleton=1", want); e != nil {
 			return ErrStorage
 		}
-		if _, e = tx.ExecContext(ctx, "PRAGMA user_version=2"); e != nil {
+		if _, e = tx.ExecContext(ctx, "PRAGMA user_version=3"); e != nil {
 			return ErrStorage
 		}
 		t := &Tx{tx: tx, ctx: ctx, now: s.now().UTC(), actor: NewID(), correlation: NewID()}
-		if e = t.event("schema.enrollment", t.actor); e != nil {
+		if e = t.event("schema.security", t.actor); e != nil {
 			return e
 		}
 	}
