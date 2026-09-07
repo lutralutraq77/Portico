@@ -2,7 +2,7 @@
 
 Self-hosted, resource-oriented private access: identity → policy → resource → connector → destination.
 
-**Current state: Phase 3 issuer, administrator and recovery components, in progress.** Strict PKI, durable enrollment/renewal, a separate restricted step-ca service, TLS-bound WebAuthn approvals and encrypted quarantined recovery are implemented. The main CLI still exposes only help/version; the development issuer command permits loopback only. Physical security keys, the private sign-in origin and production recovery remain unqualified.
+**Current state: Phase 4 policy software implemented; full delivery remains in progress.** Exact resource authorization, separate private TLS APIs and hardware-approved immutable previews extend the real issuer, enrollment and recovery components. The main CLI still exposes only help/version; the development issuer command permits loopback only. Physical security keys, the private sign-in origin, connector/client applications and production recovery remain unqualified. The [delivery ledger](docs/delivery-status.md) tracks all fifteen phases.
 
 The project and all generated development storage on this machine are in **E:\Portico**.
 
@@ -30,7 +30,7 @@ See [development](docs/development.md), [testing](docs/testing.md) and [Phase 2 
 - [91 specified runtime acceptance cases](ACCEPTANCE_TEST_PLAN.md), [manifest](tests/acceptance/manifest.json), [historical Phase 0 review](PHASE_0_REVIEW.md)
 
 ## Scope and next work
-The [Phase 3 integration report](docs/phase-3-integration-report.md) records current implementation, tests and open hardware/browser/recovery gates. [ADR-004](ADR-004-restricted-issuer-admin-recovery.md) and the [issuer guide](docs/issuer.md) describe the new boundaries. The [earlier foundation report](docs/phase-3-report.md) preserves its original evidence. Component tests do not demonstrate resource isolation, physical recovery or Mullvad compatibility. AUDIT-01 has Windows/Linux process-crash evidence; the other 90 cases remain planned.
+The [policy API](docs/policy-api.md) and [ADR-005](ADR-005-resource-policy-boundary.md) describe Phase 4. The [Phase 3 integration report](docs/phase-3-integration-report.md) preserves its measured evidence and open hardware/browser/recovery gates. [ADR-004](ADR-004-restricted-issuer-admin-recovery.md) and the [issuer guide](docs/issuer.md) describe those boundaries. Component tests do not demonstrate resource isolation, physical recovery or Mullvad compatibility. AUDIT-01 has Windows/Linux process-crash evidence; the other 90 cases remain planned.
 
 Go is selected for the initial core foundation. Android integration, browser/device authentication, hardware-key policy and the mature transport adapter remain explicit design gates. See the [domain implementation](docs/controller-domain.md) and [storage decision](ADR-002-controller-storage.md).
 

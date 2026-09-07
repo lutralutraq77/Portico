@@ -26,11 +26,14 @@ var enrollmentSchema string
 //go:embed admin.sql
 var adminSchema string
 
+//go:embed policy.sql
+var policySchema string
+
 const applicationID = 0x50525443
-const schemaVersion = 3
+const schemaVersion = 4
 
 func currentSchemaDigest() string {
-	h := sha256.Sum256([]byte(schema + enrollmentSchema + adminSchema))
+	h := sha256.Sum256([]byte(schema + enrollmentSchema + adminSchema + policySchema))
 	return hex.EncodeToString(h[:])
 }
 
@@ -100,13 +103,13 @@ func (s *Store) initialize(ctx context.Context) error {
 		if e = tx.QueryRowContext(ctx, "SELECT count(*) FROM sqlite_master WHERE name NOT LIKE 'sqlite_%'").Scan(&n); e != nil || n != 0 {
 			return ErrIntegrity
 		}
-		if _, e = tx.ExecContext(ctx, schema+enrollmentSchema+adminSchema); e != nil {
+		if _, e = tx.ExecContext(ctx, schema+enrollmentSchema+adminSchema+policySchema); e != nil {
 			return classify(e)
 		}
 		if _, e = tx.ExecContext(ctx, "INSERT INTO meta(singleton,schema_digest) VALUES(1,?)", want); e != nil {
 			return ErrStorage
 		}
-		if _, e = tx.ExecContext(ctx, "PRAGMA user_version=3; PRAGMA application_id=1347572803"); e != nil {
+		if _, e = tx.ExecContext(ctx, "PRAGMA user_version=4; PRAGMA application_id=1347572803"); e != nil {
 			return ErrStorage
 		}
 	} else if (version < 1 || version > schemaVersion) || app != applicationID {
@@ -124,6 +127,11 @@ func (s *Store) initialize(ctx context.Context) error {
 		}
 	} else if version == 2 {
 		previous := sha256.Sum256([]byte(schema + enrollmentSchema))
+		if got != hex.EncodeToString(previous[:]) {
+			return ErrIntegrity
+		}
+	} else if version == 3 {
+		previous := sha256.Sum256([]byte(schema + enrollmentSchema + adminSchema))
 		if got != hex.EncodeToString(previous[:]) {
 			return ErrIntegrity
 		}
@@ -150,18 +158,26 @@ func (s *Store) initialize(ctx context.Context) error {
 	if e = verifyAudit(ctx, tx); e != nil {
 		return e
 	}
-	if version == 1 || version == 2 {
-		migration := adminSchema
+	if version >= 1 && version < schemaVersion {
+		migration := policySchema
+		if version <= 2 {
+			migration = adminSchema + migration
+		}
 		if version == 1 {
-			migration = enrollmentSchema + adminSchema
+			migration = enrollmentSchema + migration
 		}
 		if _, e = tx.ExecContext(ctx, migration); e != nil {
+			return ErrStorage
+		}
+		// Earlier ceremonies used audit generation as their binding revision.
+		// They must not survive the switch to a separate authority revision.
+		if _, e = tx.ExecContext(ctx, "DELETE FROM admin_ceremonies"); e != nil {
 			return ErrStorage
 		}
 		if _, e = tx.ExecContext(ctx, "UPDATE meta SET schema_digest=? WHERE singleton=1", want); e != nil {
 			return ErrStorage
 		}
-		if _, e = tx.ExecContext(ctx, "PRAGMA user_version=3"); e != nil {
+		if _, e = tx.ExecContext(ctx, "PRAGMA user_version=4"); e != nil {
 			return ErrStorage
 		}
 		t := &Tx{tx: tx, ctx: ctx, now: s.now().UTC(), actor: NewID(), correlation: NewID()}
@@ -194,7 +210,8 @@ func (s *Store) Stopped() bool  { return s.emergency.Load() }
 
 // Update is a trusted local transaction boundary, not an admin/API endpoint.
 // Every mutation appends its allowlisted audit intent in the same transaction.
-// No method implements hardware approval or certificate proof verification yet.
+// Authenticated entry points verify their transport and hardware proofs before
+// invoking mutations. This low-level API is restricted to trusted local code.
 func (s *Store) Update(ctx context.Context, actor string, change func(*Tx) error) error {
 	if !validID(actor) || change == nil {
 		return ErrInvalid

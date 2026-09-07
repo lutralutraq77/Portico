@@ -188,7 +188,7 @@ func validateRecovery(ctx context.Context, path string, checkpoint Checkpoint) e
 		return ErrIntegrity
 	}
 	var live int
-	if db.QueryRowContext(ctx, "SELECT (SELECT count(*) FROM sessions WHERE state='requested')+(SELECT count(*) FROM enrollments WHERE state<>'revoked')+(SELECT count(*) FROM certificates WHERE revoked=0)+(SELECT count(*) FROM admin_devices WHERE enabled=1)+(SELECT count(*) FROM admin_factors WHERE enabled=1)+(SELECT count(*) FROM admin_ceremonies)").Scan(&live) != nil || live != 0 {
+	if db.QueryRowContext(ctx, "SELECT (SELECT count(*) FROM sessions WHERE state='requested')+(SELECT count(*) FROM enrollments WHERE state<>'revoked')+(SELECT count(*) FROM certificates WHERE revoked=0)+(SELECT count(*) FROM admin_devices WHERE enabled=1)+(SELECT count(*) FROM admin_factors WHERE enabled=1)+(SELECT count(*) FROM admin_ceremonies)+(SELECT count(*) FROM authorized_sessions WHERE state<>'closed')+(SELECT count(*) FROM policy_previews)").Scan(&live) != nil || live != 0 {
 		return ErrQuarantine
 	}
 	return nil

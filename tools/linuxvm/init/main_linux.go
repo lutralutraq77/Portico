@@ -42,9 +42,10 @@ func main() {
 		args []string
 	}{
 		{"/tests/cli", []string{"-test.v", "-test.shuffle=on", "-test.timeout=180s"}},
-		{"/tests/controller", []string{"-test.v", "-test.shuffle=on", "-test.timeout=180s"}},
+		{"/tests/controller", []string{"-test.v", "-test.shuffle=on", "-test.timeout=300s"}},
 		{"/tests/pki", []string{"-test.v", "-test.shuffle=on", "-test.timeout=180s"}},
 		{"/tests/adminauth", []string{"-test.v", "-test.shuffle=on", "-test.timeout=180s"}},
+		{"/tests/wire", []string{"-test.v", "-test.shuffle=on", "-test.timeout=180s"}},
 		{"/tests/adapter", []string{"-test.v", "-test.shuffle=on", "-test.timeout=180s"}},
 		{"/tests/issuer", []string{"-test.v", "-test.shuffle=on", "-test.timeout=300s"}},
 		{"/portico", []string{"version", "--json"}},

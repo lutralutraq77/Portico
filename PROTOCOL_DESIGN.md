@@ -1,6 +1,6 @@
 # Protocol and API design
 
-Status: Phase 0 candidate contract. No wire implementation exists. Q01 gates the reverse-stream adapter and Q02 gates browser/device binding.
+Status: candidate end-to-end contract with implemented restricted issuer and Phase 4 private policy HTTP components. The [policy API](docs/policy-api.md) lists actual routes and limits. Q01 still gates the reverse-stream adapter and Q02 gates browser/device binding; no complete data plane exists yet.
 
 ## Established layers, Portico application messages
 Use standard TLS 1.3 through reviewed libraries. TLS is designed for a reliable ordered stream; Portico must not implement key exchange, record encryption, nonce schemes or custom secure handshakes. Current RFC Editor material identifies RFC 9846 as the updated TLS 1.3 specification. [TLS 1.3](https://www.rfc-editor.org/info/rfc9846/).
@@ -36,7 +36,7 @@ The dashboard/management API is private. A management resource does not remove i
 2. Relay pairs only an admitted connector stream. Pair handles have short lifetime and one use but are not authorizing bearer tokens.
 3. Inner mutual TLS proves expected connector and device identity. Client checks connector registry status through the restricted identity API before sending application bytes.
 4. Inside inner TLS, client submits OpenResource(resource_id, revision). No destination override is accepted.
-5. Connector sends AuthorizeSession to controller with verified client leaf identity, its own mTLS identity, resource revision and selected approved IP.
+5. Connector sends AuthorizeSession to controller with verified client leaf identity, its own mTLS identity and resource revision. The current literal-IP policy derives the destination entirely on the server; the connector cannot select or override it.
 6. Controller validates live policy, commits session/audit intent and returns a bounded authorization. Connector dials only the exact approved tuple, then obtains a current activation confirmation before forwarding any application bytes.
 7. Data uses a bounded ordered stream; every logical connection is separately authorized. Close/cancel propagates to the destination socket; it cannot leave an orphaned forwarding task.
 
@@ -50,7 +50,7 @@ Use generated protobuf or reviewed JSON decoders; unknown security-critical enum
 Treat HTTP/2 reset floods, slow reads, abandoned streams, malformed CSRs, duplicate messages and reconnect storms as adversarial. cancellation must unblock readers/writers and release sockets. No TCP half-close behavior is promised until end-to-end stream tests define it; preserve graceful completion where compatible with hard revocation.
 
 ## Versioned API sketch
-Names are proposed design, not implemented routes.
+The following table covers the full target surface. Only the subset explicitly listed in [the policy API](docs/policy-api.md) and [issuer guide](docs/issuer.md) is implemented; remaining routes are design work.
 
 | Surface | Examples | Authorization |
 |---|---|---|

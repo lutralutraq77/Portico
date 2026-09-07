@@ -94,6 +94,7 @@ type AdminOperation struct {
 	Kind       string
 	TargetID   string
 	Invitation *InvitationSpec `json:",omitempty"`
+	PolicyHash string          `json:",omitempty"`
 }
 type AdminChallenge struct {
 	ID           string
@@ -131,10 +132,13 @@ func (t *Tx) stageAdmin(p adminPeer, v *adminauth.Verifier, op AdminOperation, r
 	if v == nil || !validID(op.TargetID) {
 		return result, t.fail(ErrInvalid)
 	}
-	if op.Kind != "invite" && op.Kind != "register-factor" && op.Kind != "disable-factor" && op.Kind != "test-factor" && !(op.Kind == "bootstrap-factor" && registration) {
+	if op.Kind != "invite" && op.Kind != "apply-policy" && op.Kind != "register-factor" && op.Kind != "disable-factor" && op.Kind != "test-factor" && !(op.Kind == "bootstrap-factor" && registration) {
 		return result, t.fail(ErrInvalid)
 	}
 	if (op.Kind == "invite") != (op.Invitation != nil) {
+		return result, t.fail(ErrInvalid)
+	}
+	if (op.Kind == "apply-policy" && !digest(op.PolicyHash)) || (op.Kind != "apply-policy" && op.PolicyHash != "") {
 		return result, t.fail(ErrInvalid)
 	}
 	if op.Invitation != nil && (op.Invitation.ID != op.TargetID || op.Invitation.Profile == pki.Administrator) {
@@ -149,14 +153,14 @@ func (t *Tx) stageAdmin(p adminPeer, v *adminauth.Verifier, op AdminOperation, r
 		return result, e
 	}
 	var generation int64
-	if e = t.tx.QueryRowContext(t.ctx, "SELECT generation FROM meta WHERE singleton=1").Scan(&generation); e != nil {
+	if e = t.tx.QueryRowContext(t.ctx, "SELECT revision FROM policy_meta WHERE singleton=1").Scan(&generation); e != nil {
 		return result, t.fail(ErrStorage)
 	}
 	b, e := json.Marshal(op)
 	if e != nil {
 		return result, t.fail(ErrInvalid)
 	}
-	binding := adminauth.Binding{AdministratorID: p.user, DeviceCertificateHash: p.hash, OperationHash: pki.Hash(b), Revision: generation + 1}
+	binding := adminauth.Binding{AdministratorID: p.user, DeviceCertificateHash: p.hash, OperationHash: pki.Hash(b), Revision: generation}
 	var session adminauth.Session
 	result.ID = NewID()
 	if registration {
@@ -226,7 +230,7 @@ func (s *Store) BeginAdminOperation(ctx context.Context, conn *tls.Conn, trust *
 		if op.Kind != "test-factor" && tested < 1 {
 			return t.fail(ErrDenied)
 		}
-		if op.Kind == "invite" && tested < 2 {
+		if (op.Kind == "invite" || op.Kind == "apply-policy") && tested < 2 {
 			return t.fail(ErrDenied)
 		}
 		result, e = t.stageAdmin(p, v, op, false)
@@ -242,6 +246,10 @@ func (s *Store) BeginAdminOperation(ctx context.Context, conn *tls.Conn, trust *
 // exact operation in one transaction with its audit events. It rechecks TLS
 // identity and the global policy generation immediately before the mutation.
 func (s *Store) FinishAdminOperation(ctx context.Context, conn *tls.Conn, trust *pki.Trust, v *adminauth.Verifier, id string, response []byte) (AdminResult, error) {
+	return s.finishAdminOperation(ctx, conn, trust, v, id, response, nil)
+}
+
+func (s *Store) finishAdminOperation(ctx context.Context, conn *tls.Conn, trust *pki.Trust, v *adminauth.Verifier, id string, response []byte, applyPolicy func(*Tx, adminPeer, AdminOperation) error) (AdminResult, error) {
 	if v == nil || !validID(id) {
 		return AdminResult{}, ErrInvalid
 	}
@@ -265,8 +273,11 @@ func (s *Store) FinishAdminOperation(ctx context.Context, conn *tls.Conn, trust 
 		if json.Unmarshal(sessionBytes, &session) != nil || json.Unmarshal(operationBytes, &op) != nil {
 			return t.fail(ErrIntegrity)
 		}
+		if (applyPolicy != nil && op.Kind != "apply-policy") || (applyPolicy == nil && op.Kind == "apply-policy") {
+			return t.fail(ErrDenied)
+		}
 		var generation int64
-		if e = t.tx.QueryRowContext(ctx, "SELECT generation FROM meta WHERE singleton=1").Scan(&generation); e != nil {
+		if e = t.tx.QueryRowContext(ctx, "SELECT revision FROM policy_meta WHERE singleton=1").Scan(&generation); e != nil {
 			return t.fail(ErrStorage)
 		}
 		binding := adminauth.Binding{AdministratorID: p.user, DeviceCertificateHash: p.hash, OperationHash: pki.Hash(operationBytes), Revision: generation}
@@ -312,6 +323,11 @@ func (s *Store) FinishAdminOperation(ctx context.Context, conn *tls.Conn, trust 
 			return e
 		}
 		switch op.Kind {
+		case "apply-policy":
+			if applyPolicy == nil {
+				return t.fail(ErrDenied)
+			}
+			return applyPolicy(t, p, op)
 		case "invite":
 			result.InvitationSecret, e = t.invite(*op.Invitation)
 			return e

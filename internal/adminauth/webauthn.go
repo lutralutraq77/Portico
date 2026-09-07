@@ -56,6 +56,9 @@ type Verifier struct {
 	validUntil time.Time
 	policyHash string
 }
+
+func (v *Verifier) Origin() string { return v.origin }
+
 type User struct {
 	ID          string
 	Credentials []webauthn.Credential
