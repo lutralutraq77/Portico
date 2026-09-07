@@ -1,8 +1,8 @@
-# Phase 2 implementation and local verification
+# Phase 2 implementation and verification
 
-Status: **controller domain foundation implemented and local verification passed on 2026-09-07.** Phase 3 has not started. Hosted CI was triggered but GitHub blocked the jobs before execution because of account billing/limits; see [the execution record](hosted-ci.md).
+Status: **Phase 2 controller domain foundation and verification complete on 2026-09-07.** Local Windows, isolated Linux, hosted Windows/Ubuntu, CodeQL and dependency review all passed. Phase 3 has not started. Exact hosted commits, jobs and retained artifacts are in [the execution record](hosted-ci.md).
 
-Follow-up on 2026-09-07: all three hosted workflows were retried after repository cleanup. Attempt 2 still failed before execution with the same account restriction. Current implementation and security documentation now consistently describe Phase 2; the Phase 1 report is retained as a historical snapshot. Documentation validation and its adversarial checks passed after this documentation-only cleanup.
+The hosted retry exposed Windows extraction portability and development-tool vulnerability-scan gaps. These were corrected, affected dependencies were patched, and the complete checks passed again. Current documentation describes Phase 2; the Phase 1 report remains a historical snapshot.
 
 ## Delivered
 
@@ -18,11 +18,11 @@ The full ./scripts/check.ps1 command ran with no skip flags and passed. ./script
 |---|---|
 | Windows unit tests | Passed; CLI statement coverage 84.6%, controller 76.4% |
 | Windows race detector | Passed |
-| CLI fuzzing | Passed: 168,944 executions in a five-second budget |
-| Destination fuzzing | Passed: 42,716 executions in a five-second budget |
+| CLI fuzzing | Passed: 204,152 executions in a five-second budget |
+| Destination fuzzing | Passed: 47,192 executions in a five-second budget |
 | Go formatting, vet and Staticcheck | Passed |
 | Module checksums | Verified |
-| Application and development-module govulncheck | No vulnerabilities found |
+| Application and development-tool package govulncheck | No affected vulnerabilities; known-advisory detection control passed |
 | Gitleaks source scan | No secrets found; separate synthetic positive control detected and redacted |
 | Workflow syntax | Actionlint passed |
 | Required documentation and acceptance manifest | Passed: 17 required design documents, 91 case IDs |
@@ -31,8 +31,13 @@ The full ./scripts/check.ps1 command ran with no skip flags and passed. ./script
 | Linux execution | Passed: 17 top-level tests, 27 subtests, 11 fuzz seeds and CLI smoke test |
 | Linux environment | Kernel 6.18.35-0-virt from Alpine 3.24.1; QEMU 11.1.0 TCG; amd64; guest tmpfs |
 | Development storage | Project, tools, caches, temporary files and reports under E:/Portico; process-local Go telemetry disabled |
+| Hosted Windows/Ubuntu quality | Both passed the complete suite, including runtime and race tests |
+| CodeQL and dependency review | Passed for PR head d89bc40cac5b1b477bb9073ff82b9a7899d7e0b1 |
+| Fresh Windows bootstrap | Passed under an E: path containing spaces; extracted compiler passed a race test |
 
-Linux execution uses cross-compiled test binaries on the Linux kernel; it is more than a cross-build. The VM has no network adapter or host filesystem share. Linux race testing and full Ubuntu qualification are separate hosted checks. The command entrypoint has no direct unit coverage and is exercised by native binary smoke tests.
+The isolated Linux execution uses cross-compiled test binaries on a real kernel. The VM has no network adapter or host filesystem share. Separate hosted Ubuntu runtime and race checks also passed. The command entrypoint has no direct unit coverage and is exercised by native binary smoke tests.
+
+Development-tool scanning now checks every declared tool's imported packages. Earlier module-only scan output did not establish that coverage. The current scanner still identifies an unimported legacy OpenPGP package at module level; see the hosted record for the verified import boundary. No advisory was suppressed.
 
 ## Security acceptance progress
 
@@ -44,7 +49,7 @@ Additional adversarial checks cover mismatched identities/references, disabled e
 
 ## Evidence and reproduction
 
-The machine-readable [local evidence snapshot](phase-2-evidence.json) records the result and hashes. Full logs, coverage, SBOM and build hashes are under work/reports on E:.
+The machine-readable [evidence snapshot](phase-2-evidence.json) records local and hosted results and hashes. Full logs, coverage, SBOM and build hashes are under work/reports on E:. The latest local full-check log is phase2-ci-fixes-check.log; downloaded hosted artifacts and job logs are retained under work/reports/hosted-d89bc40.
 
 ~~~powershell
 ./scripts/bootstrap.ps1
@@ -60,4 +65,4 @@ The database and snapshot primitive contain plaintext metadata and require appro
 
 No production ports, routes, DNS, firewall or Mullvad settings were changed. No private device keys, real users, production policy or live resources were created. The private GitHub repository is for development CI; licensing, production deployment, signing custody and further application phases remain separate decisions.
 
-This report is a local test snapshot. Use the repository's Actions results for hosted run status and exact commit attribution.
+This report records the verified implementation snapshot. Use the repository's Actions results for checks on subsequent documentation commits and exact commit attribution.

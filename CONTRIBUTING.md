@@ -1,6 +1,6 @@
 # Contributing
 
-Current scope: Phase 2 controller domain foundation. Local Windows and Linux tests pass; hosted checks must execute successfully before this phase receives hosted CI sign-off.
+Current scope: Phase 2 controller domain foundation, with local and hosted verification passed. Changes must retain the full Windows/Ubuntu quality, CodeQL and dependency-review checks; see docs/hosted-ci.md for the tested implementation snapshot.
 
 Use [development instructions](docs/development.md) and [testing instructions](docs/testing.md). On this development machine keep source, downloads, caches and test output on E:. The supplied scripts configure only their process, not global machine settings.
 
@@ -15,4 +15,4 @@ Keep changes small and explain what changed, why and how it was verified. Do not
 
 The private development repository is lutralutraq77/Portico. Project licensing, disclosure arrangements and external contribution terms remain Q13. No license has been selected on the owner's behalf.
 
-Before accepting external contributions or approving production use, establish private reporting, required checks/branch protection and maintainer review ownership. The current private draft PR is development work; local workflow files alone do not establish those server-side controls.
+Before accepting external contributions or approving production use, establish private reporting, required checks/branch protection and maintainer review ownership. The current private PR is development work; local workflow files alone do not establish those server-side controls.

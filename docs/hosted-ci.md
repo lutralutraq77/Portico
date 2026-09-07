@@ -1,19 +1,48 @@
-# Hosted CI execution record
+# Hosted CI verification
 
-Date: 2026-09-07. Repository: [private lutralutraq77/Portico](https://github.com/lutralutraq77/Portico). Review: [draft PR #1](https://github.com/lutralutraq77/Portico/pull/1).
+Date: 2026-09-07. Repository: [lutralutraq77/Portico](https://github.com/lutralutraq77/Portico). Review: [PR #1](https://github.com/lutralutraq77/Portico/pull/1).
 
-The implementation was uploaded and hosted workflows were initially triggered for commit `22538d86118263f91c7aa0adf552321502174a46`. After repository cleanup, all three PR workflows for commit `f1957e89ba9c982f3ff74febf7969e5e6737609a` were retried on 2026-09-07 at approximately 15:09 UTC (16:09 Europe/London). The latest observed attempts are recorded below.
+**All hosted checks passed for PR head d89bc40cac5b1b477bb9073ff82b9a7899d7e0b1.** These jobs executed GitHub's pull-request merge checkout. Phase 2 verification is complete.
 
-| Workflow | Run | Observed outcome |
+| Check | Run | Result |
 |---|---|---|
-| Repository quality (Ubuntu/Windows matrix) | [34136182366, attempt 2](https://github.com/lutralutraq77/Portico/actions/runs/34136182366) | Failed before either job started |
-| Dependency review | [34136182290, attempt 2](https://github.com/lutralutraq77/Portico/actions/runs/34136182290) | Failed; no executed steps returned |
-| CodeQL | [34136182355, attempt 2](https://github.com/lutralutraq77/Portico/actions/runs/34136182355) | Failed; no executed steps returned |
+| Windows Server 2022 quality | [34139608641](https://github.com/lutralutraq77/Portico/actions/runs/34139608641) | Passed; job 101798380807 |
+| Ubuntu 24.04 quality | [34139608641](https://github.com/lutralutraq77/Portico/actions/runs/34139608641) | Passed; job 101798381111 |
+| CodeQL | [34139608643](https://github.com/lutralutraq77/Portico/actions/runs/34139608643) | Passed; results uploaded |
+| Dependency review | [34139608595](https://github.com/lutralutraq77/Portico/actions/runs/34139608595) | Passed with the moderate-severity failure threshold |
 
-The fresh quality run annotations still explicitly report an account billing problem: recent payments failed or the spending limit needs increasing. Windows job `101789738817` and Ubuntu job `101789739127` both returned no executed steps. This is a GitHub account prerequisite, not a test assertion failure. No hosted test, CodeQL analysis or dependency review can be reported as passed. Repository cleanup has not cleared the observed restriction.
+Both quality jobs ran the full bootstrap/check commands: unit tests, race detection, CLI and destination fuzzing, formatting, vet, Staticcheck, dependency verification, application and development-tool vulnerability scans, scanner positive controls, workflow validation, builds and SBOM generation.
 
-The account owner needs to resolve GitHub billing/limits and then rerun the latest PR checks. No payment, spending-limit change, public visibility change or security-setting reduction was made. Further platform or private-repository feature restrictions may become visible only after runners can start.
+| Runtime measurement | Windows hosted | Ubuntu hosted |
+|---|---|---|
+| CLI statement coverage | 84.6% | 84.6% |
+| Controller statement coverage | 76.4% | 76.2% |
+| Five-second CLI fuzz executions | 195,989 | 185,424 |
+| Five-second destination fuzz executions | 73,654 | 60,744 |
+| Race detector | Passed | Passed |
 
-Local verification already passed on Windows and on a real Linux kernel in an isolated QEMU VM; see [Phase 2 report](phase-2-report.md). The local Linux run does not replace the pending Ubuntu-hosted race and quality checks.
+Windows and Linux executable hashes match across the local Windows build and both hosted operating systems, using the same pinned SDK and build settings.
 
-The PR remains a draft and has not been merged. No supported release or deployment was published.
+## Corrections verified by these runs
+
+The account restriction that prevented earlier jobs from starting was cleared before the 15:29 UTC retry. The first real execution exposed these issues, which are now resolved:
+
+- Windows Server 2022 tar lacked LZMA support. Bootstrap uses .NET ZIP extraction for Go and the checksum-verified compiler self-extractor. Quoting the compiler command also supports WorkRoot paths containing spaces; a fresh E: setup and race test verified this.
+- The repository dependency graph was disabled. It is now enabled, allowing dependency review to execute.
+- Development-tool archive and SSH dependencies required security updates: rardecode/v2 v2.2.5, ulikunitz/xz v0.5.15, klauspost/compress v1.18.7 and x/crypto v0.56.0 are pinned in tools/go.mod.
+- Module-only vulnerability scanning did not inspect the tool-only module's declared programs. Bootstrap and vulnerability checks now enumerate the same five tools from go.mod. Package scanning covers their imported dependencies, and an isolated known-vulnerable fixture must detect GO-2025-4020.
+
+Related advisories: [RAR dictionary limits](https://github.com/advisories/GHSA-rwvp-r38j-9rgg), [LZMA allocation](https://github.com/advisories/GHSA-jc7w-c686-c4v9), [compression bounds](https://pkg.go.dev/vuln/GO-2026-5841), [SSH established channels](https://pkg.go.dev/vuln/GO-2026-6355), [SSH undecided channels](https://pkg.go.dev/vuln/GO-2026-6354).
+
+Govulncheck still lists GO-2026-5932 at module level for the unmaintained golang.org/x/crypto/openpgp package. No declared tool imports that package or its subpackages (verified against all 938 tool imports); the imported-package scan reports zero affected vulnerabilities. No advisory suppression was added.
+
+## Retained evidence
+
+Quality artifacts contain coverage, documentation results, redacted secret-scan evidence, the vulnerability positive control, SBOM and build hashes. Their downloaded ZIPs were verified against GitHub's artifact SHA-256 digests and saved with job logs under E:/Portico/work/reports/hosted-d89bc40.
+
+| Artifact | ID | ZIP SHA-256 |
+|---|---|---|
+| quality-evidence-windows-2022 | 10025474417 | 1220c5aa700d6a095c310afbc9787edeed494a71754dded8efcf6f659016eba8 |
+| quality-evidence-ubuntu-24.04 | 10025461513 | 4fac776970c55e61b3e0db07c6d0a57c1458e9a349c62d6d85d4b1521a4da009 |
+
+The repository remains private. No release, merge, deployment or production network change is part of this verification. AUDIT-01 has executable Windows/Linux evidence; the other 90 acceptance scenarios remain scheduled for later phases. See the [Phase 2 report](phase-2-report.md) for scope and limitations.

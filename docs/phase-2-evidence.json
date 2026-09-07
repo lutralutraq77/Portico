@@ -9,8 +9,8 @@
     "race": "passed",
     "cli_coverage_percent": 84.6,
     "controller_coverage_percent": 76.4,
-    "cli_fuzz_executions": 168944,
-    "destination_fuzz_executions": 42716
+    "cli_fuzz_executions": 204152,
+    "destination_fuzz_executions": 47192
   },
   "linux": {
     "result": "passed",
@@ -36,15 +36,24 @@
   },
   "security_scanners": {
     "application_govulncheck": "No vulnerabilities found",
-    "devtools_govulncheck": "No vulnerabilities found",
+    "devtools_govulncheck": "Passed: imported packages of all 5 declared tools, spanning 109 modules; 0 affected package vulnerabilities",
     "gitleaks_source_findings": 0,
     "gitleaks_positive_control_findings": 1,
     "staticcheck": "passed",
-    "actionlint": "passed"
+    "actionlint": "passed",
+    "vulnerability_positive_control": "GO-2025-4020 detected with exit 3",
+    "unimported_module_advisory": {
+      "imported": false,
+      "suppression_added": false,
+      "id": "GO-2026-5932",
+      "package": "golang.org/x/crypto/openpgp"
+    }
   },
   "logs": {
-    "windows_sha256": "99E29E8C774950E1B1703CE747B257AB5AB955A3F194513661B03C74D522F812",
-    "linux_sha256": "D0F1BE2773F2C6FDFB6F2EBB7CB4F157CA063ABD6C7CDA654CE01ABB09446241"
+    "windows_sha256": "15CC26D959C630328651911AC12347B247C5E9D1C46DE3549ADA61E561BF7241",
+    "linux_sha256": "D0F1BE2773F2C6FDFB6F2EBB7CB4F157CA063ABD6C7CDA654CE01ABB09446241",
+    "windows_file": "work/reports/phase2-ci-fixes-check.log",
+    "linux_file": "work/reports/linux-runtime.log"
   },
   "build_hashes": [
     {
@@ -56,6 +65,42 @@
       "Hash": "5CBAFBDBA41A53C9299F2AF11AB1E4B8485C59927F6E6119B81E7F3C6001749E"
     }
   ],
-  "hosted_results": "Retried on 2026-09-07 after repository cleanup; attempt 2 still blocked before job execution by GitHub account billing/limits. See docs/hosted-ci.md.",
-  "phase3_started": false
+  "hosted_results": "Passed: Windows/Ubuntu quality, CodeQL and dependency review. See docs/hosted-ci.md.",
+  "phase3_started": false,
+  "hosted": {
+    "head_sha": "d89bc40cac5b1b477bb9073ff82b9a7899d7e0b1",
+    "quality_run": 34139608641,
+    "codeql_run": 34139608643,
+    "dependency_review_run": 34139608595,
+    "all_passed": true,
+    "windows": {
+      "unit": "passed",
+      "controller_coverage_percent": 76.4,
+      "destination_fuzz_executions": 73654,
+      "cli_coverage_percent": 84.6,
+      "cli_fuzz_executions": 195989,
+      "job": 101798380807,
+      "race": "passed"
+    },
+    "ubuntu": {
+      "unit": "passed",
+      "controller_coverage_percent": 76.2,
+      "destination_fuzz_executions": 60744,
+      "cli_coverage_percent": 84.6,
+      "cli_fuzz_executions": 185424,
+      "job": 101798381111,
+      "race": "passed"
+    },
+    "artifacts_directory": "work/reports/hosted-d89bc40",
+    "artifact_sha256": {
+      "ubuntu": "4fac776970c55e61b3e0db07c6d0a57c1458e9a349c62d6d85d4b1521a4da009",
+      "windows": "1220c5aa700d6a095c310afbc9787edeed494a71754dded8efcf6f659016eba8"
+    },
+    "build_hashes_match_local": true
+  },
+  "fresh_bootstrap_path_with_spaces": {
+    "result": "passed",
+    "compiler_race_test": "passed",
+    "storage": "E:/Portico/work/bootstrap validation"
+  }
 }
