@@ -1,0 +1,119 @@
+{
+  "schema": 1,
+  "phase": 5,
+  "status": "carrier component verified locally; full phase and fifteen-phase delivery remain incomplete",
+  "date": "2026-09-07",
+  "source_commit": "c77fc375d25b3a6d30a4df2d72440c873e20614d",
+  "local_check": "passed",
+  "skip_flags": [],
+  "windows": {
+    "root_unit": "passed",
+    "root_race": "passed",
+    "issuer_unit": "passed",
+    "issuer_race": "passed",
+    "carrier_test_groups": 14,
+    "carrier_subtests": 44,
+    "carrier_integration_coverage_percent": 93.5,
+    "carrier_fuzz_executions": 14453,
+    "carrier_package_vulnerability_scan": "passed"
+  },
+  "linux": {
+    "result": "passed",
+    "passed_top_level_tests": 80,
+    "passed_subtests": 265,
+    "fuzz_targets": 6,
+    "fuzz_seeds": 34,
+    "skipped_helper_tests": 1,
+    "carrier_test_groups": 14,
+    "kernel": "6.18.35-0-virt",
+    "qemu": "11.1.0",
+    "accelerator": "TCG",
+    "network_devices": 0,
+    "loopback": "guest only",
+    "filesystem": "guest tmpfs",
+    "race_run": false
+  },
+  "hosted": {
+    "source_commit": "c77fc375d25b3a6d30a4df2d72440c873e20614d",
+    "status": "quality pending; CodeQL and dependency review passed",
+    "pull_request": "https://github.com/lutralutraq77/Portico/pull/4",
+    "quality": "https://github.com/lutralutraq77/Portico/actions/runs/34160979103",
+    "codeql": "https://github.com/lutralutraq77/Portico/actions/runs/34160979093",
+    "dependency_review": "https://github.com/lutralutraq77/Portico/actions/runs/34160979204"
+  },
+  "builds": [
+    {
+      "file": "portico-windows-amd64.exe",
+      "sha256": "85DDC3E27FFCEBFFF21101606BB1A098788E1E796DF5C558B69DFA539FA65F6E"
+    },
+    {
+      "file": "portico-linux-amd64",
+      "sha256": "97248D8F96C4863B95A3D0E3C34343CA555B9D4C8DD554AFC2CAA19CF785E2FB"
+    },
+    {
+      "file": "portico-issuer-windows-amd64.exe",
+      "sha256": "535E2E49853C28AEF7BE0D62711B0D340CFFFAE13E4966F4490044936E8E13FF"
+    },
+    {
+      "file": "portico-issuer-linux-amd64",
+      "sha256": "C43D15BEC2725286C142050CF96BBDF51D7BFE1D6641C1BC479F85F602028049"
+    }
+  ],
+  "evidence_artifacts": [
+    {
+      "name": "phase-5-check.log",
+      "sha256": "CD287D183821F1B32C19A665D62282000E54996E8FCE7CD7FFCFBBD10378EFF7"
+    },
+    {
+      "name": "phase-5-linux-runtime.log",
+      "sha256": "33048F435826674A99B70E01CCCA98120B7C3BDB7DACF5A27290F1E311DE04DE"
+    },
+    {
+      "name": "phase-5-carrier-coverage.out",
+      "sha256": "2CAD4434B4D9E027536EC53DFA48693A5027DA4D670C2B9FD19794AFD61F2E87"
+    },
+    {
+      "name": "phase-5-carrier-vulnerabilities.log",
+      "sha256": "0353520B9540385330271A83670EB660B057D25BB4DB4982EF7C8337156C9F21"
+    },
+    {
+      "name": "coverage.out",
+      "sha256": "0197A971CB5FCAE0248E8E16A9F5A07B2095F6AB009A1AA1E18E095CE61EDB1B"
+    },
+    {
+      "name": "issuer-coverage.out",
+      "sha256": "3248B68F9B3ADF93F1C21B52147B8587DD542E7758DA59492E184A68C32DB14C"
+    },
+    {
+      "name": "build-hashes.json",
+      "sha256": "C0588B2E32C0209B96D7B1DAB54D0B368F7FCB4C2BB8191B31612AC2674BA069"
+    },
+    {
+      "name": "sbom.cdx.json",
+      "sha256": "CD3A30A32A8EE9F499C61A4BB17EA136D560795F60B2B175268A0B0906F8DDE3"
+    },
+    {
+      "name": "issuer-windows-sbom.cdx.json",
+      "sha256": "62F8A49E65C0222C8CD340B71D7BFE39D93D8B7D466D1CD7E70910F7125992CA"
+    },
+    {
+      "name": "issuer-linux-sbom.cdx.json",
+      "sha256": "D5DF043D4D19CF44E76878E304AD5559E6B7AF5F0EF11D2417FED2FAD2F8E318"
+    },
+    {
+      "name": "issuer-windows-buildinfo.json",
+      "sha256": "8EED62C7D981F3991F03F06D76B8134066D7B70CE6BB90A8004B606B0EE9D5A5"
+    },
+    {
+      "name": "issuer-linux-buildinfo.json",
+      "sha256": "3B3DD38D2ECB83ED8F538E9E374EAF2637B52F59F2B6CBFC0C79F708142E762C"
+    }
+  ],
+  "acceptance": {
+    "total": 91,
+    "implemented": 1,
+    "planned": 90,
+    "implemented_case": "AUDIT-01",
+    "scope": "Component tests do not prove complete runtime scenarios."
+  }
+}

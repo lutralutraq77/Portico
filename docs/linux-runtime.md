@@ -1,6 +1,6 @@
 # Linux runtime test harness
 
-The Windows-hosted harness boots a real Linux amd64 kernel under QEMU TCG, with no network devices or host filesystem shares. Its disposable initramfs contains CLI/domain/PKI/WebAuthn/issuer test binaries and a tiny Go PID 1. Guest loopback and a fixture localhost hosts file support actual issuer TLS/process tests; neither affects the host. SQLite, issuer databases and temporary encrypted fixture keys live in guest tmpfs. This verifies Linux execution and process-crash behavior; it is not an Ubuntu installation, Linux race run or hardware power-loss test.
+The Windows-hosted harness boots a real Linux amd64 kernel under QEMU TCG, with no network devices or host filesystem shares. Its disposable initramfs contains CLI/domain/PKI/WebAuthn/control-JSON/carrier/issuer test binaries and a tiny Go PID 1. Guest loopback and a fixture localhost hosts file support actual issuer TLS/process and carrier TLS/gRPC tests; neither affects the host. SQLite, issuer databases and temporary encrypted fixture keys live in guest tmpfs. This verifies Linux execution and process-crash behavior; it is not an Ubuntu installation, Linux race run or hardware power-loss test.
 
 Run ./scripts/test-linux.ps1 after preparing the local assets. Results are recorded in work/reports/linux-runtime.log. The harness requires a final PORTICO_LINUX_ALL_PASS marker and rejects test failures.
 
