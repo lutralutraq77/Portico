@@ -1,0 +1,22 @@
+{
+  "schema": 1,
+  "go": {
+    "version": "1.27.1",
+    "windows_amd64": {
+      "url": "https://go.dev/dl/go1.27.1.windows-amd64.zip",
+      "sha256": "a3911b5e0e1b1053f25ed0675f4c1c6aad1e2bfcf253df2b9be4caabd2edd95d"
+    }
+  },
+  "windows_compiler": {
+    "name": "w64devkit",
+    "version": "2.9.1",
+    "url": "https://github.com/skeeto/w64devkit/releases/download/v2.9.1/w64devkit-x64-2.9.1.7z.exe",
+    "sha256": "9208c19755cd4964b7915b9afcf02c66d493a4c870c4b3e83f6c538d9c1237a5"
+  },
+  "sources": [
+    "https://go.dev/dl/?mode=json",
+    "https://api.github.com/repos/skeeto/w64devkit/releases/tags/v2.9.1"
+  ],
+  "verified_on": "2026-09-07"
+}
+

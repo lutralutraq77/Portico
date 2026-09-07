@@ -1,0 +1,14 @@
+{
+  "qemu_version": "11.1.0",
+  "qemu_url": "https://qemu.weilnetz.de/w64/qemu-w64-setup-20260811.exe",
+  "qemu_sha512": "5bcf9eed634e8575a37b74f445af41a2fe4106da512d0c30c368301d4c105037fdfab40a5287367a28a957624cddebbc8c07e16c88ab6634f554cdf3d16bf543",
+  "alpine_version": "3.24.1",
+  "alpine_url": "https://dl-cdn.alpinelinux.org/alpine/v3.24/releases/x86_64/alpine-virt-3.24.1-x86_64.iso",
+  "alpine_sha256": "e73a6241bd5f3c5c2d4d38c02cc52c378c0415a7c888bd292066bf36e0f41a39",
+  "kernel_sha256": "1E6BF9027720C75C3ED0D79171F21B5791EE40CA9795D07C7C6E04DC5EA2AE90",
+  "extractor": {
+    "name": "7z2603-x64.msi",
+    "digest": "sha256:c0680064d698a62dd4a5a47f403db356a6531a5473e4c4b1d090ea2590513926",
+    "browser_download_url": "https://github.com/ip7z/7zip/releases/download/26.03/7z2603-x64.msi"
+  }
+}

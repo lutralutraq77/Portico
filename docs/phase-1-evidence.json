@@ -1,0 +1,101 @@
+{
+  "schema_version": 1,
+  "phase": 1,
+  "verified_on": "2026-09-07",
+  "scope": "Local repository and quality foundation; no runtime security service",
+  "command": "./scripts/check.ps1",
+  "exit_code": 0,
+  "skipped_checks": [],
+  "platform": "windows/amd64",
+  "toolchain": {
+    "go": "1.27.1",
+    "powershell": "7.6.5",
+    "gcc": "16.2.0",
+    "w64devkit": "2.9.1"
+  },
+  "project_root": "E:\\Portico",
+  "runtime_acceptance": {
+    "planned": 91,
+    "implemented": 0,
+    "executed": 0
+  },
+  "checks": {
+    "documentation": {
+      "result": "passed",
+      "required_documents": 17,
+      "markdown_documents": 57,
+      "invalid_fixtures_rejected": 4
+    },
+    "formatting": "passed",
+    "module_verification": "passed",
+    "vet": "passed",
+    "staticcheck": "passed",
+    "unit_tests": {
+      "result": "passed",
+      "cli_statement_coverage_percent": 84.6,
+      "command_entrypoint_unit_coverage_percent": 0
+    },
+    "race_detector": "passed on Windows",
+    "fuzz": {
+      "result": "passed",
+      "target": "FuzzCommandSurface",
+      "executions": 75546,
+      "baseline_seeds": 6,
+      "duration_budget_seconds": 5,
+      "parallelism": 2
+    },
+    "builds": {
+      "windows_amd64": "passed",
+      "linux_amd64": "cross-build passed",
+      "native_windows_smoke": "passed",
+      "windows_repeat_build": "byte-identical"
+    },
+    "application_govulncheck": "No vulnerabilities found",
+    "tool_module_govulncheck": "No vulnerabilities found",
+    "actionlint": "passed",
+    "secret_scan": {
+      "source_findings": 0,
+      "synthetic_positive_control_findings": 1,
+      "control_redacted": true
+    },
+    "sbom": {
+      "result": "generated",
+      "format": "CycloneDX JSON",
+      "standard_library": "go1.27.1",
+      "main_module_version": "unavailable: no Git commit"
+    },
+    "storage_guard": "passed"
+  },
+  "environment": {
+    "GOCACHE": "E:\\Portico\\work\\gocache",
+    "GOENV": "",
+    "GOMODCACHE": "E:\\Portico\\work\\gomodcache",
+    "GOPATH": "E:\\Portico\\work\\gopath",
+    "GOROOT": "E:\\Portico\\work\\toolchains\\go",
+    "GOTELEMETRY": "off",
+    "GOTELEMETRYDIR": "E:\\Portico\\work\\appdata\\go\\telemetry",
+    "GOTMPDIR": "E:\\Portico\\work\\tmp",
+    "GOTOOLCHAIN": "local"
+  },
+  "build_hashes": [
+    {
+      "Path": "E:\\Portico\\build\\portico-windows-amd64.exe",
+      "Hash": "144653080DD44D54C067D1F46EA91BB17085A58B36DE7BD3426CB88C88EC94B6"
+    },
+    {
+      "Path": "E:\\Portico\\build\\portico-linux-amd64",
+      "Hash": "10E84FA4B9046DE99C93D3242878170579465EAF7BA6D992643B557ED998E399"
+    }
+  ],
+  "source_brief_sha256": "653B502484F8932C9B2A4FAA40B02248C0215407996882E74FBFB3ADEEF6B37F",
+  "integrated_log_sha256": "9D8FE71B6F0E3A1C35266028F8A8958FDE4E71A7D76B71DA11B726A718A3A87E",
+  "not_executed": [
+    "hosted CI",
+    "CodeQL analysis",
+    "hosted dependency review",
+    "Dependabot runs",
+    "Linux native tests",
+    "runtime acceptance cases"
+  ],
+  "next_phase_started": false
+}
