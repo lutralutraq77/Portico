@@ -44,8 +44,12 @@
     "log_sha256": "F843CE1CF92F265F88ADDC0A74B6F25904B47C38CA334D870A10E7C7F1CBCE35"
   },
   "hosted": {
-    "status": "pending",
-    "pull_request": "https://github.com/lutralutraq77/Portico/pull/3"
+    "status": "passed",
+    "source_commit": "1a4332095eb4b9c4975bbe6e712301a8468738f6",
+    "pull_request": "https://github.com/lutralutraq77/Portico/pull/3",
+    "quality": "https://github.com/lutralutraq77/Portico/actions/runs/34158651389",
+    "codeql": "https://github.com/lutralutraq77/Portico/actions/runs/34158651399",
+    "dependency_review": "https://github.com/lutralutraq77/Portico/actions/runs/34158651507"
   },
   "builds": [
     {

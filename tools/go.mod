@@ -7,6 +7,8 @@ tool (
 	github.com/rhysd/actionlint/cmd/actionlint
 	github.com/zricethezav/gitleaks/v8
 	golang.org/x/vuln/cmd/govulncheck
+	google.golang.org/grpc/cmd/protoc-gen-go-grpc
+	google.golang.org/protobuf/cmd/protoc-gen-go
 	honnef.co/go/tools/cmd/staticcheck
 )
 
@@ -121,6 +123,8 @@ require (
 	golang.org/x/tools v0.49.0 // indirect
 	golang.org/x/vuln v1.7.0 // indirect
 	gonum.org/v1/gonum v0.8.2 // indirect
+	google.golang.org/grpc/cmd/protoc-gen-go-grpc v1.6.2 // indirect
+	google.golang.org/protobuf v1.36.12 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/neurosnap/sentences.v1 v1.0.7 // indirect
 	gopkg.in/warnings.v0 v0.1.2 // indirect
