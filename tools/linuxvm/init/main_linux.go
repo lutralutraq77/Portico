@@ -47,6 +47,7 @@ func main() {
 		{"/tests/adminauth", []string{"-test.v", "-test.shuffle=on", "-test.timeout=180s"}},
 		{"/tests/wire", []string{"-test.v", "-test.shuffle=on", "-test.timeout=180s"}},
 		{"/tests/carrier", []string{"-test.v", "-test.shuffle=on", "-test.timeout=180s"}},
+		{"/tests/control", []string{"-test.v", "-test.shuffle=on", "-test.timeout=180s"}},
 		{"/tests/adapter", []string{"-test.v", "-test.shuffle=on", "-test.timeout=180s"}},
 		{"/tests/issuer", []string{"-test.v", "-test.shuffle=on", "-test.timeout=300s"}},
 		{"/portico", []string{"version", "--json"}},

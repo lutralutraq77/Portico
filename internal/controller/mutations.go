@@ -157,8 +157,9 @@ func (t *Tx) AddHostBinding(v HostBinding) error {
 	return t.event("host_binding.create", v.ID)
 }
 
-// Disable retains tombstones. Conservatively closes all requested sessions in
-// this early model; later cancellation dispatch must preserve at least this denial.
+// Disable retains tombstones and atomically cancels every dependent session.
+// Original certificate/grant/binding IDs identify dependencies, including old
+// resource revisions. Unrelated sessions do not lose their authority.
 func (t *Tx) Disable(kind, id string) error {
 	if e := t.guard(validID(id)); e != nil {
 		return e
@@ -183,7 +184,21 @@ func (t *Tx) Disable(kind, id string) error {
 	if n == 0 {
 		return t.fail(ErrInvalid)
 	}
-	if e = t.exec("UPDATE sessions SET state='closed' WHERE state='requested'"); e != nil {
+	dependencies := map[string]string{
+		"user":         "device_id IN (SELECT id FROM devices WHERE user_id=?)",
+		"device":       "device_id=?",
+		"connector":    "connector_certificate_id IN (SELECT id FROM certificates WHERE connector_id=?)",
+		"issuer":       "(certificate_id IN (SELECT id FROM certificates WHERE issuer_id=?) OR connector_certificate_id IN (SELECT id FROM certificates WHERE issuer_id=?))",
+		"resource":     "resource_id=?",
+		"grant":        "grant_id=?",
+		"host_binding": "host_binding_id=?",
+		"certificate":  "(certificate_id=? OR connector_certificate_id=?)",
+	}
+	args := []any{id}
+	if kind == "issuer" || kind == "certificate" {
+		args = append(args, id)
+	}
+	if e = t.exec("UPDATE sessions SET state='closed' WHERE state='requested' AND "+dependencies[kind], args...); e != nil {
 		return e
 	}
 	return t.event(kind+".disable", id)

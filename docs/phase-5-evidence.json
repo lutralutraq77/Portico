@@ -34,12 +34,12 @@
     "race_run": false
   },
   "hosted": {
-    "source_commit": "c77fc375d25b3a6d30a4df2d72440c873e20614d",
-    "status": "quality pending; CodeQL and dependency review passed",
+    "source_commit": "f1f190b8d0604db3eb24fa8c81ebe2de8ebd0755",
+    "status": "Windows and Ubuntu quality, CodeQL and dependency review passed",
     "pull_request": "https://github.com/lutralutraq77/Portico/pull/4",
-    "quality": "https://github.com/lutralutraq77/Portico/actions/runs/34160979103",
-    "codeql": "https://github.com/lutralutraq77/Portico/actions/runs/34160979093",
-    "dependency_review": "https://github.com/lutralutraq77/Portico/actions/runs/34160979204"
+    "quality": "https://github.com/lutralutraq77/Portico/actions/runs/34161443886",
+    "codeql": "https://github.com/lutralutraq77/Portico/actions/runs/34161443883",
+    "dependency_review": "https://github.com/lutralutraq77/Portico/actions/runs/34161443896"
   },
   "builds": [
     {

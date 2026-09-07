@@ -29,11 +29,14 @@ var adminSchema string
 //go:embed policy.sql
 var policySchema string
 
+//go:embed closure.sql
+var closureSchema string
+
 const applicationID = 0x50525443
-const schemaVersion = 4
+const schemaVersion = 5
 
 func currentSchemaDigest() string {
-	h := sha256.Sum256([]byte(schema + enrollmentSchema + adminSchema + policySchema))
+	h := sha256.Sum256([]byte(schema + enrollmentSchema + adminSchema + policySchema + closureSchema))
 	return hex.EncodeToString(h[:])
 }
 
@@ -42,6 +45,8 @@ type Store struct {
 	mu        sync.Mutex
 	emergency atomic.Bool
 	now       func() time.Time
+	signalMu  sync.Mutex
+	changed   chan struct{}
 }
 
 // Open opens one controller's local directory, never a URI or network database.
@@ -103,13 +108,13 @@ func (s *Store) initialize(ctx context.Context) error {
 		if e = tx.QueryRowContext(ctx, "SELECT count(*) FROM sqlite_master WHERE name NOT LIKE 'sqlite_%'").Scan(&n); e != nil || n != 0 {
 			return ErrIntegrity
 		}
-		if _, e = tx.ExecContext(ctx, schema+enrollmentSchema+adminSchema+policySchema); e != nil {
+		if _, e = tx.ExecContext(ctx, schema+enrollmentSchema+adminSchema+policySchema+closureSchema); e != nil {
 			return classify(e)
 		}
 		if _, e = tx.ExecContext(ctx, "INSERT INTO meta(singleton,schema_digest) VALUES(1,?)", want); e != nil {
 			return ErrStorage
 		}
-		if _, e = tx.ExecContext(ctx, "PRAGMA user_version=4; PRAGMA application_id=1347572803"); e != nil {
+		if _, e = tx.ExecContext(ctx, "PRAGMA user_version=5; PRAGMA application_id=1347572803"); e != nil {
 			return ErrStorage
 		}
 	} else if (version < 1 || version > schemaVersion) || app != applicationID {
@@ -132,6 +137,11 @@ func (s *Store) initialize(ctx context.Context) error {
 		}
 	} else if version == 3 {
 		previous := sha256.Sum256([]byte(schema + enrollmentSchema + adminSchema))
+		if got != hex.EncodeToString(previous[:]) {
+			return ErrIntegrity
+		}
+	} else if version == 4 {
+		previous := sha256.Sum256([]byte(schema + enrollmentSchema + adminSchema + policySchema))
 		if got != hex.EncodeToString(previous[:]) {
 			return ErrIntegrity
 		}
@@ -159,7 +169,10 @@ func (s *Store) initialize(ctx context.Context) error {
 		return e
 	}
 	if version >= 1 && version < schemaVersion {
-		migration := policySchema
+		migration := closureSchema
+		if version <= 3 {
+			migration = policySchema + migration
+		}
 		if version <= 2 {
 			migration = adminSchema + migration
 		}
@@ -169,15 +182,18 @@ func (s *Store) initialize(ctx context.Context) error {
 		if _, e = tx.ExecContext(ctx, migration); e != nil {
 			return ErrStorage
 		}
-		// Earlier ceremonies used audit generation as their binding revision.
-		// They must not survive the switch to a separate authority revision.
+		// Pending approvals must be recreated against the upgraded security
+		// boundary. Earlier versions also used a different binding revision.
 		if _, e = tx.ExecContext(ctx, "DELETE FROM admin_ceremonies"); e != nil {
+			return ErrStorage
+		}
+		if _, e = tx.ExecContext(ctx, "DELETE FROM policy_previews"); e != nil {
 			return ErrStorage
 		}
 		if _, e = tx.ExecContext(ctx, "UPDATE meta SET schema_digest=? WHERE singleton=1", want); e != nil {
 			return ErrStorage
 		}
-		if _, e = tx.ExecContext(ctx, "PRAGMA user_version=4"); e != nil {
+		if _, e = tx.ExecContext(ctx, "PRAGMA user_version=5"); e != nil {
 			return ErrStorage
 		}
 		t := &Tx{tx: tx, ctx: ctx, now: s.now().UTC(), actor: NewID(), correlation: NewID()}
@@ -201,11 +217,37 @@ func (s *Store) initialize(ctx context.Context) error {
 	}
 	return classify(tx.Commit())
 }
-func (s *Store) Close() error { s.mu.Lock(); defer s.mu.Unlock(); return classify(s.db.Close()) }
+func (s *Store) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	e := classify(s.db.Close())
+	s.signalChange()
+	return e
+}
+
+// The notification lock is independent of the database lock: emergency deny
+// must wake long polls even while a storage operation is stalled. The durable
+// cancellation table remains the source of truth; this is only a wakeup hint.
+func (s *Store) changes() <-chan struct{} {
+	s.signalMu.Lock()
+	defer s.signalMu.Unlock()
+	if s.changed == nil {
+		s.changed = make(chan struct{})
+	}
+	return s.changed
+}
+func (s *Store) signalChange() {
+	s.signalMu.Lock()
+	defer s.signalMu.Unlock()
+	if s.changed != nil {
+		close(s.changed)
+	}
+	s.changed = make(chan struct{})
+}
 
 // EmergencyDeny latches an immediate, process-local stop, including when storage
 // fails. It cannot claim durable revocation or remote socket closure.
-func (s *Store) EmergencyDeny() { s.emergency.Store(true) }
+func (s *Store) EmergencyDeny() { s.emergency.Store(true); s.signalChange() }
 func (s *Store) Stopped() bool  { return s.emergency.Load() }
 
 // Update is a trusted local transaction boundary, not an admin/API endpoint.
@@ -247,7 +289,11 @@ func (s *Store) Update(ctx context.Context, actor string, change func(*Tx) error
 	if s.emergency.Load() {
 		return ErrDenied
 	}
-	return classify(tx.Commit())
+	e = classify(tx.Commit())
+	if e == nil && t.audited {
+		s.signalChange()
+	}
+	return e
 }
 
 type Tx struct {
@@ -257,6 +303,7 @@ type Tx struct {
 	actor, correlation string
 	err                error
 	closed             bool
+	audited            bool
 }
 
 func (t *Tx) fail(e error) error {
