@@ -10,6 +10,7 @@ Foundation and domain checks:
 - Documentation checker validates required files, local links, references, the preserved brief and all 91 specified runtime case IDs and executable references for implemented cases.
 - Adversarial checker fixtures deliberately break a link, reference, fence and runtime status; each must be rejected.
 - Gitleaks scans source with redacted results; a separate generated synthetic token must trigger detection.
+- Govulncheck scans the application and the imported packages of every declared development tool. A separate known-vulnerable dependency fixture must report GO-2025-4020; the fixture is never used by production or development tools.
 - Windows/Linux cross-builds plus a native binary smoke test run. A second native build must be byte-identical with the same toolchain.
 - Staticcheck, govulncheck, actionlint and CycloneDX SBOM generation run from pinned tool versions.
 

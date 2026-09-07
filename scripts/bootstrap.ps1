@@ -43,8 +43,9 @@ try {
     & go mod verify
     if ($LASTEXITCODE -ne 0) { throw 'Tool checksum verification failed' }
     if (-not $SkipToolBuild) {
-        # Module and checksum files already pin the full dependency graph.
-        $packages = @('golang.org/x/vuln/cmd/govulncheck','honnef.co/go/tools/cmd/staticcheck','github.com/rhysd/actionlint/cmd/actionlint','github.com/zricethezav/gitleaks/v8','github.com/CycloneDX/cyclonedx-gomod/cmd/cyclonedx-gomod')
+        # Build exactly the tools declared in go.mod; checks scan the same list.
+        $packages = @(& go list -f '{{.ImportPath}}' tool)
+        if ($LASTEXITCODE -ne 0 -or $packages.Count -eq 0) { throw 'Cannot enumerate development tool packages' }
         foreach ($package in $packages) {
             & go install $package
             if ($LASTEXITCODE -ne 0) { throw "Tool build failed: $package" }

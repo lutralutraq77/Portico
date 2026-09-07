@@ -33,7 +33,8 @@ foreach ($directory in @($env:GOBIN, $gccBin, $goBin)) {
     }
 }
 if ($IsWindows -and (Test-Path -LiteralPath (Join-Path $gccBin 'gcc.exe'))) {
-    $env:CC = Join-Path $gccBin 'gcc.exe'
+    # Go parses CC as a command line, so preserve spaces in the executable path.
+    $env:CC = '"' + (Join-Path $gccBin 'gcc.exe') + '"'
 }
 
 

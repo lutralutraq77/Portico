@@ -60,8 +60,15 @@ try {
         Invoke-Check 'application vulnerabilities' 'govulncheck' @('./...')
 
         Push-Location (Join-Path $PorticoRoot 'tools')
-        try { Invoke-Check 'development dependency module vulnerabilities' 'govulncheck' @('-scan=module') }
+        try {
+            # A tool-only module has no root packages; module-only scanning can
+            # therefore report success without inspecting the tool imports.
+            $toolPackages = @(& go list -f '{{.ImportPath}}' tool)
+            if ($LASTEXITCODE -ne 0 -or $toolPackages.Count -eq 0) { throw 'Cannot enumerate development tool packages' }
+            Invoke-Check 'development tool package vulnerabilities' 'govulncheck' (@('-scan=package') + $toolPackages)
+        }
         finally { Pop-Location }
+        & (Join-Path $PSScriptRoot 'test-vulnerability-scanner.ps1') -WorkRoot $PorticoWork
 
         Invoke-Check 'workflow syntax' 'actionlint' @('-shellcheck=','-pyflakes=')
         Invoke-Check 'source secrets' 'gitleaks' @('dir','.', '--redact','--no-banner','--config=.gitleaks.toml','--report-format=json',('--report-path=' + (Join-Path $reportRoot 'gitleaks.json')))
