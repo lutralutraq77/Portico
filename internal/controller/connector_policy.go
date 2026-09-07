@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/tls"
 	"database/sql"
+	"strings"
 	"time"
 
 	"portico.local/portico/internal/control"
@@ -188,13 +189,13 @@ func (p *PolicyEngine) expireOwned(t *Tx, connector peer) error {
 // Cancellations repeats unacknowledged immutable targets for the exact original
 // connector certificate. Missing, retried and reordered polls cannot skip work.
 func (p *PolicyEngine) Cancellations(ctx context.Context, c *tls.Conn, r CancellationRequest) (CancellationBatch, error) {
-	if r.Version != PolicyProtocol || r.Limit < 1 || r.Limit > MaxCancellationBatch || r.WaitMillis < 0 || r.WaitMillis > 1000 {
+	if !r.Valid() {
 		return CancellationBatch{}, ErrDenied
 	}
 	// Subscribe before reading, so a commit between the read and wait cannot
 	// be lost. A wakeup prompts another authenticated, authoritative read.
 	changed := p.store.changes()
-	batch, e := p.cancellations(ctx, c, r.Limit)
+	batch, e := p.cancellations(ctx, c, r)
 	if e != nil || len(batch.Items) > 0 || r.WaitMillis == 0 {
 		return batch, e
 	}
@@ -210,10 +211,10 @@ func (p *PolicyEngine) Cancellations(ctx context.Context, c *tls.Conn, r Cancell
 	case <-ctx.Done():
 		return CancellationBatch{}, ErrDenied
 	}
-	return p.cancellations(ctx, c, r.Limit)
+	return p.cancellations(ctx, c, r)
 }
 
-func (p *PolicyEngine) cancellations(ctx context.Context, c *tls.Conn, limit int) (CancellationBatch, error) {
+func (p *PolicyEngine) cancellations(ctx context.Context, c *tls.Conn, r CancellationRequest) (CancellationBatch, error) {
 	der, e := adminDER(ctx, c)
 	if e != nil {
 		return CancellationBatch{}, ErrDenied
@@ -233,8 +234,17 @@ func (p *PolicyEngine) cancellations(ctx context.Context, c *tls.Conn, limit int
 			return e
 		}
 		result = CancellationBatch{Version: PolicyProtocol, ConnectorCertificateID: connector.certificateID, PolicyRevision: gen, ObservedAt: t.now, Items: []Cancellation{}}
-		rows, e := t.tx.QueryContext(ctx, `SELECT c.session_id,c.reason FROM session_cancellations c JOIN authorized_sessions a ON a.id=c.session_id JOIN sessions s ON s.id=a.id
- LEFT JOIN session_closure_receipts r ON r.session_id=c.session_id WHERE a.connector_id=? AND s.connector_certificate_id=? AND r.session_id IS NULL ORDER BY c.rowid LIMIT ?`, t.actor, connector.certificateID, limit)
+		query := `SELECT c.session_id,c.reason FROM session_cancellations c JOIN authorized_sessions a ON a.id=c.session_id JOIN sessions s ON s.id=a.id
+ LEFT JOIN session_closure_receipts r ON r.session_id=c.session_id WHERE a.connector_id=? AND s.connector_certificate_id=? AND r.session_id IS NULL`
+		args := []any{t.actor, connector.certificateID}
+		if len(r.SessionIDs) > 0 {
+			query += " AND c.session_id IN (" + strings.TrimSuffix(strings.Repeat("?,", len(r.SessionIDs)), ",") + ")"
+			for _, id := range r.SessionIDs {
+				args = append(args, id)
+			}
+		}
+		args = append(args, r.Limit)
+		rows, e := t.tx.QueryContext(ctx, query+" ORDER BY c.rowid LIMIT ?", args...)
 		if e != nil {
 			return t.fail(ErrStorage)
 		}

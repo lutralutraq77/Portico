@@ -58,7 +58,13 @@ type HostingSnapshot struct {
 	CheckedAt, Until                    time.Time
 	Resources                           []HostingResource
 }
-type CancellationRequest struct{ Version, Limit, WaitMillis int }
+type CancellationRequest struct {
+	Version, Limit, WaitMillis int
+	// SessionIDs optionally selects the caller's tracked handles. A bounded
+	// complete selection prevents older unknown receipts from starving them.
+	// Selection never bypasses the server's original-certificate ownership check.
+	SessionIDs []string `json:",omitempty"`
+}
 type Cancellation struct{ SessionID, Reason string }
 type CancellationBatch struct {
 	Version                int

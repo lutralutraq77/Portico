@@ -30,13 +30,31 @@ func validHosting(v HostingSnapshot) bool {
 	}
 	return true
 }
-func validCancellations(v CancellationBatch, limit int) bool {
-	if v.Version != Version || !pki.ValidID(v.ConnectorCertificateID) || v.PolicyRevision < 1 || v.ObservedAt.IsZero() || v.Items == nil || limit < 1 || limit > MaxCancellationBatch || len(v.Items) > limit {
+func (r CancellationRequest) Valid() bool {
+	if r.Version != Version || r.Limit < 1 || r.Limit > MaxCancellationBatch || r.WaitMillis < 0 || r.WaitMillis > 1000 || len(r.SessionIDs) > r.Limit {
 		return false
 	}
 	seen := map[string]bool{}
+	for _, id := range r.SessionIDs {
+		if !pki.ValidID(id) || seen[id] {
+			return false
+		}
+		seen[id] = true
+	}
+	return true
+}
+
+func validCancellations(v CancellationBatch, r CancellationRequest) bool {
+	if !r.Valid() || v.Version != Version || !pki.ValidID(v.ConnectorCertificateID) || v.PolicyRevision < 1 || v.ObservedAt.IsZero() || v.Items == nil || len(v.Items) > r.Limit {
+		return false
+	}
+	wanted := map[string]bool{}
+	for _, id := range r.SessionIDs {
+		wanted[id] = true
+	}
+	seen := map[string]bool{}
 	for _, c := range v.Items {
-		if !pki.ValidID(c.SessionID) || seen[c.SessionID] || (c.Reason != "closed" && c.Reason != "denied" && c.Reason != "expired") {
+		if !pki.ValidID(c.SessionID) || seen[c.SessionID] || (len(wanted) > 0 && !wanted[c.SessionID]) || (c.Reason != "closed" && c.Reason != "denied" && c.Reason != "expired") {
 			return false
 		}
 		seen[c.SessionID] = true

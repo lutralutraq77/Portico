@@ -153,12 +153,12 @@ func (c *Client) CloseSession(ctx context.Context, r SessionRequest) error {
 	return c.post(ctx, pki.Connector, "/api/v1/connector/close", r, &struct{}{})
 }
 func (c *Client) Cancellations(ctx context.Context, r CancellationRequest) (CancellationBatch, error) {
-	if r.Version != Version || r.Limit < 1 || r.Limit > MaxCancellationBatch || r.WaitMillis < 0 || r.WaitMillis > 1000 {
+	if !r.Valid() {
 		return CancellationBatch{}, ErrRejected
 	}
 	var v CancellationBatch
 	e := c.post(ctx, pki.Connector, "/api/v1/connector/cancellations", r, &v)
-	if e != nil || !validCancellations(v, r.Limit) {
+	if e != nil || !validCancellations(v, r) {
 		return CancellationBatch{}, ErrRejected
 	}
 	return v, nil
