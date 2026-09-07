@@ -2,6 +2,8 @@
 
 Status: **controller domain foundation implemented and local verification passed on 2026-09-07.** Phase 3 has not started. Hosted CI was triggered but GitHub blocked the jobs before execution because of account billing/limits; see [the execution record](hosted-ci.md).
 
+Follow-up on 2026-09-07: all three hosted workflows were retried after repository cleanup. Attempt 2 still failed before execution with the same account restriction. Current implementation and security documentation now consistently describe Phase 2; the Phase 1 report is retained as a historical snapshot. Documentation validation and its adversarial checks passed after this documentation-only cleanup.
+
 ## Delivered
 
 SQLite-backed users, devices, connectors, issuer/certificate metadata, resource revisions, explicit device grants, independent HostBindings, requested session records and an immutable audit outbox now exist in internal/controller. Mutations and their audit events commit together; revision checks prevent stale edits. Resource revisions invalidate previous permissions. Sessions cannot enter an authorized or active state in Phase 2.
@@ -59,4 +61,3 @@ The database and snapshot primitive contain plaintext metadata and require appro
 No production ports, routes, DNS, firewall or Mullvad settings were changed. No private device keys, real users, production policy or live resources were created. The private GitHub repository is for development CI; licensing, production deployment, signing custody and further application phases remain separate decisions.
 
 This report is a local test snapshot. Use the repository's Actions results for hosted run status and exact commit attribution.
-

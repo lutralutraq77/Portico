@@ -2,4 +2,4 @@
 
 The canonical design is [PKI_DESIGN.md](../PKI_DESIGN.md).
 
-Phase 1 provides repository/tooling foundations only. This document is an entry point to the design, not a claim that its runtime mechanisms are implemented. See [current test evidence](phase-1-report.md).
+This document links to the canonical design. Phase 2 implements trusted controller domain storage and tests; authenticated APIs and networking remain later work. See [current implementation and evidence](phase-2-report.md).

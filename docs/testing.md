@@ -4,10 +4,10 @@ Run scripts/check.ps1 for the complete repository check suite. The tests verify 
 
 Foundation and domain checks:
 - Unit tests reject unsupported commands and avoid reflecting secret-like arguments.
-- JSON output explicitly identifies a Phase 1 development binary; output errors return failure.
+- JSON output explicitly identifies a Phase 2 development binary; output errors return failure.
 - Bounded CLI fuzzing checks arbitrary command input.
 - Race detector and go vet run against actual Go packages.
-- Documentation checker validates required files, local links, references, the preserved brief and all 91 planned runtime case IDs.
+- Documentation checker validates required files, local links, references, the preserved brief and all 91 specified runtime case IDs and executable references for implemented cases.
 - Adversarial checker fixtures deliberately break a link, reference, fence and runtime status; each must be rejected.
 - Gitleaks scans source with redacted results; a separate generated synthetic token must trigger detection.
 - Windows/Linux cross-builds plus a native binary smoke test run. A second native build must be byte-identical with the same toolchain.

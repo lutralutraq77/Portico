@@ -1,5 +1,7 @@
 # Phase 1 verification report
 
+Historical snapshot: this report describes the Phase 1 run. See [Phase 2 evidence](phase-2-report.md) for current implementation and verification status.
+
 Status: **Phase 1 repository and quality foundation complete; all applicable local checks passed on 2026-09-07.** Hosted CI execution remains pending. Phase 2 has not started.
 
 ## Delivered scope
