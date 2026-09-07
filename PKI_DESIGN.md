@@ -1,6 +1,6 @@
 # PKI and enrollment design
 
-Status: Phase 3 component foundation implemented in internal/pki and internal/controller; see [ADR-003](ADR-003-pki-enrollment-boundary.md) and [progress](docs/phase-3-report.md). Only isolated tests generate ephemeral CA/leaf keys. No deployed issuer, OS key provider or administrator enrollment exists.
+Status: restricted issuer, enrollment and administrator components are implemented; see [ADR-004](ADR-004-restricted-issuer-admin-recovery.md) and [integration evidence](docs/phase-3-integration-report.md). [ADR-006](ADR-006-connector-transport.md) extends the connector profile for standard inner TLS hostname checks. Physical administrator keys, OS providers and production deployment/custody remain unqualified.
 
 ## Architecture
 Use an offline root and restricted online issuing service. Smallstep documents offline root custody and controlled intermediate operation; current documentation also describes limited CRL support. Live Portico authorization checks remain necessary regardless of CA revocation features. [Production guidance](https://smallstep.com/docs/step-ca/certificate-authority-server-production/) · [Revocation](https://smallstep.com/docs/step-ca/revocation/).
@@ -16,7 +16,7 @@ Use reviewed X.509/CSR libraries. Recommend ECDSA P-256/SHA-256 leaf keys for in
 |---|---|
 | Device | Typed URI SAN containing deployment UUID and immutable device UUID; clientAuth; CA false; digitalSignature |
 | Administrator device | Distinct typed profile and issuer allowlist; clientAuth; live AdminAuthority separately required |
-| Connector | Typed immutable connector ID; serverAuth/clientAuth for its endpoint roles; live registry and HostBindings |
+| Connector | Exact typed URI plus one server-derived connector/deployment DNS name per ADR-006; serverAuth/clientAuth; live registry and HostBindings |
 | Infrastructure service | Exact expected service ID; narrowly appropriate EKUs and peer/method allowlists |
 | Intermediate | CA true, path length zero, keyCertSign/cRLSign as needed; finite lifetime and explicit active issuer record |
 | Root | Offline trust anchor; never mounted into a running controller |

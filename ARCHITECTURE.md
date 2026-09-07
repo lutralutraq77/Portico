@@ -1,9 +1,9 @@
 # Portico architecture
 
-Status: Phase 0 proposal. Logical boundaries are selected; transport and platform integrations have explicit validation gates.
+Status: target architecture with implemented controller/issuer/policy components. [ADR-006](ADR-006-connector-transport.md) selects the isolated connector prototype transport; platform and deployment integrations retain explicit validation gates.
 
 ## Chosen architecture
-Use a resource-oriented TCP proxy with centralized, online authorization and independently enforced connector hosting permissions. Connectors establish outbound infrastructure connections. Clients never receive layer-3 access to the connector network. The proposed baseline uses standard TLS 1.3 for endpoint authentication and confidentiality, with a relay carrying opaque streams. The exact reverse-stream adapter is provisional (Q01).
+Use a resource-oriented TCP proxy with centralized, online authorization and independently enforced connector hosting permissions. Connectors establish outbound infrastructure connections. Clients never receive layer-3 access to the connector network. The prototype uses standard TLS 1.3 for endpoint authentication and confidentiality, with generated gRPC streams carrying opaque inner TLS. Carrier lifecycle and platform behavior still need qualification.
 
 ```mermaid
 flowchart LR
@@ -46,7 +46,7 @@ Separate processes, OS identities, sockets, and mounts are required for issuer, 
 1. The enrolled client authenticates to the restricted identity API using its device certificate and receives only its currently allowed catalog. Inventory is advisory; it is never authorization.
 2. A resource request supplies immutable resource ID and expected revision. Relay selection gives no destination freedom. The relay pairs a bounded stream with an authenticated connector that has hosting permission.
 3. Across the stream the client and connector perform **inner mutual TLS**. The connector derives the principal from the verified leaf and registered certificate record. The client validates the expected connector ID, certificate role, issuer and current status through the identity API.
-4. Inside that authenticated stream, the client requests the resource ID. The connector submits the observed certificate identity, its own authenticated connector identity, resource revision and proposed resolved IP to the controller.
+4. Inside that authenticated stream, the client requests the resource ID. The connector submits the observed certificate identity, its own authenticated connector identity and resource revision. The controller derives the concrete literal IP and port; there is no caller destination override.
 5. The controller checks all live states and creates a short-lived session authorization record. The connector validates the reply against its local immutable resource snapshot, opens only that IP/port, and records activation. No application bytes flow before activation succeeds.
 6. The connector enforces expiry, lease refresh and cancellation. Revocation closes both stream and destination socket. Each new local connection requires a fresh authorization, even over reused infrastructure channels.
 
@@ -70,4 +70,4 @@ No new data session when the controller, certificate status, audit commit, desti
 One configured external **TCP** port is the target baseline. Using the same numeric TCP and UDP port later would mean two protocol exposures. Double NAT needs reachable forwarding through both boundaries; CGNAT may require a later externally reachable relay. No UPnP, DMZ, auto-forwarding or router vendor assumptions.
 
 ## Validation
-Every security claim above is a design requirement. [Control matrix](SECURITY_CONTROL_MATRIX.md) records threat, mechanism, trust, failure, recovery and proof for each. Q01, Q02 and Q03 must be resolved before exposing even an isolated connector prototype to hostile test clients.
+Every security claim above is a design requirement. [Control matrix](SECURITY_CONTROL_MATRIX.md) records threat, mechanism, trust, failure, recovery and proof for each. ADR-006 resolves Q01's prototype design gate. Q02/Q03 remain required for production administration; independent connector software tests use the owner's authorized isolated fixtures and do not establish browser or physical-key qualification.
