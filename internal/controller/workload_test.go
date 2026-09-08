@@ -49,7 +49,41 @@ type workloadFixture struct {
 
 func newWorkloadFixture(t *testing.T, changes ...func(*workload.ServerConfig, *workload.ClientConfig)) *workloadFixture {
 	t.Helper()
+	return newWorkloadFixtureWithDestination(t, echoWorkloadDestination, changes...)
+}
+
+type workloadObservedDestination struct {
+	net.Conn
+	received *atomic.Int64
+}
+
+func (c *workloadObservedDestination) Read(p []byte) (int, error) {
+	n, e := c.Conn.Read(p)
+	c.received.Add(int64(n))
+	return n, e
+}
+
+func echoWorkloadDestination(c net.Conn) {
+	buffer := make([]byte, 32768)
+	for {
+		n, e := c.Read(buffer)
+		if n > 0 {
+			if _, we := c.Write(buffer[:n]); we != nil {
+				return
+			}
+		}
+		if e != nil {
+			return
+		}
+	}
+}
+
+func newWorkloadFixtureWithDestination(t *testing.T, destination func(net.Conn), changes ...func(*workload.ServerConfig, *workload.ClientConfig)) *workloadFixture {
+	t.Helper()
 	requireWorkloadGuest(t)
+	if destination == nil {
+		t.Fatal("missing destination fixture handler")
+	}
 	v := &workloadFixture{carrier: newCarrierFixture(t, nil)}
 	p := v.carrier.policy
 	f := p.device.f
@@ -106,21 +140,11 @@ func newWorkloadFixture(t *testing.T, changes ...func(*workload.ServerConfig, *w
 			v.workers.Add(1)
 			go func() {
 				defer v.workers.Done()
-				defer c.Close()
-				defer v.closed.Add(1)
-				buffer := make([]byte, 32768)
-				for {
-					n, e := c.Read(buffer)
-					if n > 0 {
-						v.received.Add(int64(n))
-						if _, we := c.Write(buffer[:n]); we != nil {
-							return
-						}
-					}
-					if e != nil {
-						return
-					}
-				}
+				defer func() {
+					_ = c.Close()
+					v.closed.Add(1)
+				}()
+				destination(&workloadObservedDestination{Conn: c, received: &v.received})
 			}()
 		}
 	}()

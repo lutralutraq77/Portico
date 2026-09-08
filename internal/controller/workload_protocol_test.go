@@ -5,6 +5,8 @@ import (
 	"context"
 	"encoding/binary"
 	"io"
+	"net"
+	"sync/atomic"
 	"testing"
 	"time"
 
@@ -16,7 +18,56 @@ import (
 // PROTO-03: three complete inner-TLS/control/TCP streams share one connector
 // runtime. Each has distinct position-tagged data and an independent ending.
 func TestWorkloadGuestIndependentStreamLifecycles(t *testing.T) {
-	v := newWorkloadFixture(t)
+	var payloads [3][]byte
+	for i := range payloads {
+		// Exceed three DATA frames and include a non-aligned tail. Position
+		// tags detect reordering as well as mixing data between streams.
+		payload := make([]byte, 3*32768+17+i)
+		for offset := 0; offset+8 <= len(payload); offset += 8 {
+			binary.BigEndian.PutUint64(payload[offset:offset+8], uint64(i+1)<<48|uint64(offset))
+		}
+		payload[len(payload)-1] = byte(0x71 + i)
+		payloads[i] = payload
+	}
+	tail := bytes.Repeat([]byte("A final ordered tail\x00"), 4099)
+	tailReply := append(bytes.Clone(tail), []byte("A response created after request EOF\n")...)
+	var requestFIN, postFINReply atomic.Bool
+	v := newWorkloadFixtureWithDestination(t, func(c net.Conn) {
+		var header [8]byte
+		if _, e := io.ReadFull(c, header[:]); e != nil {
+			return
+		}
+		id := binary.BigEndian.Uint64(header[:]) >> 48
+		if id < 1 || id > uint64(len(payloads)) {
+			t.Error("destination received an unknown stream's data")
+			return
+		}
+		payload := payloads[id-1]
+		got := make([]byte, len(payload))
+		copy(got, header[:])
+		if _, e := io.ReadFull(c, got[len(header):]); e != nil || !bytes.Equal(got, payload) {
+			t.Error("destination received incomplete or reordered initial data")
+			return
+		}
+		if _, e := c.Write(got); e != nil {
+			return
+		}
+		if id != 1 {
+			echoWorkloadDestination(c)
+			return
+		}
+		// A's final response is withheld until the destination sees EOF.
+		// A full close instead of a half-close cannot receive this response.
+		got, e := io.ReadAll(io.LimitReader(c, int64(len(tail)+1)))
+		if e != nil || !bytes.Equal(got, tail) {
+			t.Error("destination did not receive the complete A request before EOF")
+			return
+		}
+		requestFIN.Store(true)
+		if n, e := c.Write(tailReply); e == nil && n == len(tailReply) {
+			postFINReply.Store(true)
+		}
+	})
 	stopRuntime, runtimeDone := startConnectorRuntime(t, v, 3)
 	type stream struct {
 		index  int
@@ -61,17 +112,9 @@ func TestWorkloadGuestIndependentStreamLifecycles(t *testing.T) {
 		n     int
 		err   error
 	}
-	var payloads [3][]byte
 	writes, reads := make(chan transfer, 3), make(chan transfer, 3)
 	for i, s := range streams {
-		// Exceed three DATA frames and include a non-aligned tail. Position
-		// tags detect reordering as well as mixing data between streams.
-		payload := make([]byte, 3*32768+17+i)
-		for offset := 0; offset+8 <= len(payload); offset += 8 {
-			binary.BigEndian.PutUint64(payload[offset:offset+8], uint64(i+1)<<48|uint64(offset))
-		}
-		payload[len(payload)-1] = byte(0x71 + i)
-		payloads[i] = payload
+		payload := payloads[i]
 		expectedBytes += int64(len(payload))
 		must(t, s.conn.SetDeadline(time.Now().Add(8*time.Second)))
 		go func(index int, c *workload.Conn, payload []byte) {
@@ -125,8 +168,7 @@ func TestWorkloadGuestIndependentStreamLifecycles(t *testing.T) {
 	expectedBytes += int64(len("runtime"))
 
 	// A finishes its write side after a further multi-frame payload. Its
-	// receive side must deliver that exact tail before the peer's FIN/EOF.
-	tail := bytes.Repeat([]byte("A final ordered tail\x00"), 4099)
+	// receive side must deliver the response created after request EOF.
 	expectedBytes += int64(len(tail))
 	a := streams[0].conn
 	must(t, a.SetDeadline(time.Now().Add(8*time.Second)))
@@ -138,7 +180,7 @@ func TestWorkloadGuestIndependentStreamLifecycles(t *testing.T) {
 		}
 		halfClosed <- transfer{n: n, err: e}
 	}()
-	got, readErr := io.ReadAll(a)
+	got, readErr := io.ReadAll(io.LimitReader(a, int64(len(tailReply)+1)))
 	select {
 	case r := <-halfClosed:
 		must(t, r.err)
@@ -149,8 +191,8 @@ func TestWorkloadGuestIndependentStreamLifecycles(t *testing.T) {
 		t.Fatal("half-close writer did not join")
 	}
 	must(t, readErr)
-	if !bytes.Equal(got, tail) {
-		t.Fatal("half-close lost or reordered the final response")
+	if !bytes.Equal(got, tailReply) || !requestFIN.Load() || !postFINReply.Load() {
+		t.Fatal("half-close did not preserve the complete response after request EOF")
 	}
 	waitClosed(a, 2)
 	runtimeEcho(t, streams[2].conn)
