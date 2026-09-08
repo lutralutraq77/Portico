@@ -2,7 +2,7 @@
 
 Self-hosted, resource-oriented private access: identity → policy → resource → connector → destination.
 
-**Current state: Phase 4 policy software implemented; full delivery remains in progress.** Exact resource authorization, separate private TLS APIs and hardware-approved immutable previews extend the real issuer, enrollment and recovery components. The main CLI still exposes only help/version; the development issuer command permits loopback only. Physical security keys, the private sign-in origin, connector/client applications and production recovery remain unqualified. The [delivery ledger](docs/delivery-status.md) tracks all fifteen phases.
+**Current state: Phase 5 development forwarding is under qualification; full delivery remains in progress.** Exact policy, real issuer, enrollment and recovery components now support an authenticated workload library with request-start leases and joined-worker closure receipts. [Workload evidence](docs/phase-5-workload-report.md) records hosted and isolated Linux results. The main CLI still exposes only help/version; the development issuer command permits loopback only. Physical security keys, the private sign-in origin, supported connector/client applications and production recovery remain unqualified. The [delivery ledger](docs/delivery-status.md) tracks all fifteen phases.
 
 The project and all generated development storage on this machine are in **E:\Portico**.
 

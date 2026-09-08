@@ -1,6 +1,6 @@
 # Portico architecture
 
-Status: target architecture with implemented controller/issuer/policy components. [ADR-006](ADR-006-connector-transport.md) selects the isolated connector prototype transport; platform and deployment integrations retain explicit validation gates.
+Status: target architecture with implemented controller/issuer/policy and development carrier/workload components. [ADR-006](ADR-006-connector-transport.md) selects the isolated connector prototype transport; [workload evidence](docs/phase-5-workload-report.md) records real guest TCP tests. Supported service, platform and deployment integrations retain explicit validation gates.
 
 ## Chosen architecture
 Use a resource-oriented TCP proxy with centralized, online authorization and independently enforced connector hosting permissions. Connectors establish outbound infrastructure connections. Clients never receive layer-3 access to the connector network. The prototype uses standard TLS 1.3 for endpoint authentication and confidentiality, with generated gRPC streams carrying opaque inner TLS. Carrier lifecycle and platform behavior still need qualification.
