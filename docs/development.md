@@ -1,6 +1,6 @@
 # Development environment
 
-Phase 5 adds authenticated forwarding and a [development Linux connector command](connector-configuration.md) to the earlier PKI/enrollment/controller components. It uses explicit protected local files and loopback control/carrier endpoints. Actual destination tests run only in the guarded NIC-less Linux guest. See [the delivery ledger](delivery-status.md) for remaining integration and deployment gates.
+The authenticated forwarding runtime now has a [development Linux connector command](connector-configuration.md) and [Phase 6 client command](client-configuration.md) for fresh catalog selection and application pipes. Both use explicit protected local files and loopback control/carrier endpoints. Actual destination tests run only in the guarded NIC-less Linux guest. See [the delivery ledger](delivery-status.md) for remaining integration and deployment gates.
 
 On this machine the project is E:\Portico. Portable Go, compiler, module/build caches, temporary files and reports live under its ignored work/ directory. Existing Git/PowerShell may be read from their installed locations; setup writes no global PATH, Go configuration or machine settings.
 

@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"portico.local/portico/internal/adminauth"
+	"portico.local/portico/internal/control"
 	"portico.local/portico/internal/pki"
 	"portico.local/portico/internal/wire"
 )
@@ -92,7 +93,9 @@ func (p *PolicyEngine) NewHTTPServer(c PolicyHTTPConfig) (*PolicyHTTPServer, err
 				deny()
 				return
 			}
-			result, e = p.Catalog(r.Context(), conn)
+			var resources []ResourceAccess
+			resources, e = p.Catalog(r.Context(), conn)
+			result = control.CatalogSnapshot{Version: control.Version, Resources: resources}
 		case c.Profile == pki.Device && r.URL.Path == "/api/v1/device/check-connector":
 			var request ConnectorCheck
 			if wire.Decode(body, &request) != nil {

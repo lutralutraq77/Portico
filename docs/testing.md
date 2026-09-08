@@ -4,7 +4,7 @@ Run scripts/check.ps1 for the complete repository check suite across the applica
 
 Foundation and domain checks:
 - Unit tests reject unsupported commands and avoid reflecting secret-like arguments.
-- JSON output explicitly identifies a Phase 5 development binary; output errors return failure.
+- JSON output explicitly identifies a Phase 6 development binary; output errors return failure.
 - Bounded CLI fuzzing checks arbitrary command input.
 - Race detector and go vet run against actual Go packages.
 - Documentation checker validates required files, local links, references, the preserved brief and all 91 specified runtime case IDs and executable references for implemented cases.

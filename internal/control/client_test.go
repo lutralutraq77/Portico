@@ -38,6 +38,67 @@ func hostingFixture() HostingSnapshot {
 	return HostingSnapshot{Version: 1, ConnectorID: uuid.NewString(), ConnectorCertificateID: uuid.NewString(), PolicyRevision: 1, CheckedAt: now, Until: now.Add(time.Second), Resources: []HostingResource{}}
 }
 
+func TestDeviceCatalogRejectsAmbiguousInventory(t *testing.T) {
+	r := ResourceAccess{ID: uuid.NewString(), Revision: 1, ConnectorID: uuid.NewString(), Name: "service", ConnectorName: "connector", Address: "192.0.2.10", Port: 443, Protocol: "tcp", Until: time.Now().Add(time.Hour)}
+	for _, name := range []string{"valid", "empty", "null", "duplicate_resource", "duplicate_field", "case_alias", "unknown_field", "mapped_address", "wrong_protocol", "oversize", "connector_role", "future_version", "bare_array"} {
+		t.Run(name, func(t *testing.T) {
+			resources := []ResourceAccess{r}
+			switch name {
+			case "empty":
+				resources = []ResourceAccess{}
+			case "null":
+				resources = nil
+			case "duplicate_resource":
+				resources = append(resources, r)
+			case "mapped_address":
+				resources[0].Address = "::ffff:192.0.2.10"
+			case "wrong_protocol":
+				resources[0].Protocol = "socks"
+			}
+			b, e := json.Marshal(CatalogSnapshot{Version: 1, Resources: resources})
+			testfixture.Must(t, e)
+			body := string(b)
+			switch name {
+			case "future_version":
+				body = strings.Replace(body, `"Version":1`, `"Version":2`, 1)
+			case "bare_array":
+				b, e = json.Marshal(resources)
+				testfixture.Must(t, e)
+				body = string(b)
+			case "duplicate_field":
+				body = strings.Replace(body, `"Revision":1`, `"Revision":1,"Revision":1`, 1)
+			case "case_alias":
+				body = strings.Replace(body, `"Revision":1`, `"Revision":1,"revision":1`, 1)
+			case "unknown_field":
+				body = strings.Replace(body, `"Revision":1`, `"Revision":1,"Allowed":true`, 1)
+			case "oversize":
+				body = strings.Repeat(" ", wire.MaxBody) + body
+			}
+			_, config := testClient(t, http.HandlerFunc(func(w http.ResponseWriter, request *http.Request) {
+				if request.URL.Path != "/api/v1/device/catalog" {
+					t.Error("wrong catalog route")
+				}
+				w.Header().Set("Content-Type", "application/json")
+				_, _ = io.WriteString(w, body)
+			}), time.Second)
+			if name != "connector_role" {
+				config.Profile = pki.Device
+			}
+			client, e := NewClient(config)
+			testfixture.Must(t, e)
+			defer client.Close()
+			got, e := client.Catalog(context.Background())
+			if name == "valid" || name == "empty" {
+				if e != nil || len(got) != len(resources) {
+					t.Fatal("valid catalog rejected")
+				}
+			} else if e != ErrRejected || got != nil {
+				t.Fatal("ambiguous catalog returned usable inventory")
+			}
+		})
+	}
+}
+
 func TestClientRejectsHostileResponsesAndRedirects(t *testing.T) {
 	for _, name := range []string{"valid", "redirect", "denied", "unknown_field", "duplicate_field", "case_alias", "trailing", "oversize", "null", "wrong_content_type", "compressed", "future_version", "nil_resources", "long_validity"} {
 		t.Run(name, func(t *testing.T) {

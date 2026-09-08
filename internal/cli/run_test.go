@@ -16,6 +16,9 @@ func TestUnsupportedOperationsFailWithoutReflectingInput(t *testing.T) {
 		{"serve"}, {"controller", "start"}, {"connect", "192.168.50.10:8096"},
 		{"enroll", "synthetic-sensitive-input"}, {"version", "--token=synthetic-sensitive-input"},
 		{"version", "--json", "extra"}, {"--listen=0.0.0.0:443"}, {"\x00\n\r"},
+		{"client", "connect", "--config", "synthetic-sensitive-input", "--resource", "192.0.2.10:443", "--revision", "1"},
+		{"client", "connect", "--config", "synthetic-sensitive-input", "--resource", "59d73719-4dc0-4d8c-898e-aa2f9466a89e", "--revision", "01"},
+		{"client", "connect", "--config", "synthetic-sensitive-input", "--resource", "59d73719-4dc0-4d8c-898e-aa2f9466a89e", "--revision", "9223372036854775808"},
 	} {
 		t.Run(args[0], func(t *testing.T) {
 			var out, errout bytes.Buffer
@@ -41,12 +44,24 @@ func TestVersionIsExplicitlyDevelopmentOnly(t *testing.T) {
 	if err := json.Unmarshal(out.Bytes(), &info); err != nil {
 		t.Fatal(err)
 	}
-	if !info.DevelopmentOnly || info.Phase != 5 || info.Version == "" || info.GoVersion == "" || info.OS == "" || info.Architecture == "" {
+	if !info.DevelopmentOnly || info.Phase != 6 || info.Version == "" || info.GoVersion == "" || info.OS == "" || info.Architecture == "" {
 		t.Fatalf("missing development provenance: %+v", info)
 	}
 }
 
 type brokenWriter struct{}
+
+func TestClientConfigurationErrorsDoNotReflectPaths(t *testing.T) {
+	for _, args := range [][]string{
+		{"client", "catalog", "--config", "synthetic-sensitive-input"},
+		{"client", "connect", "--config", "synthetic-sensitive-input", "--resource", "59d73719-4dc0-4d8c-898e-aa2f9466a89e", "--revision", "1"},
+	} {
+		var out, errout bytes.Buffer
+		if code := cli.Run(args, &out, &errout); code != 1 || out.Len() != 0 || errout.String() != "Client configuration rejected.\n" {
+			t.Fatal("client configuration failure must return a generic error without output")
+		}
+	}
+}
 
 func TestConnectorConfigurationErrorsDoNotReflectPaths(t *testing.T) {
 	var out, errout bytes.Buffer

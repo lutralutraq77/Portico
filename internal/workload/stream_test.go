@@ -29,6 +29,60 @@ func payloadPair(t *testing.T) (*payloadConn, *payloadConn) {
 	return left, right
 }
 
+// A local application may still be delivering the last already-read chunk
+// when the peer completes FIN/ACK and closes its carrier. A subsequent Read
+// must preserve the validated EOF without exposing any bytes after closure.
+func TestClientPreservesConsumedFINAfterCarrierCloses(t *testing.T) {
+	for _, fin := range []bool{false, true} {
+		t.Run(map[bool]string{false: "abandon", true: "consumed_fin"}[fin], func(t *testing.T) {
+			left, right := payloadPair(t)
+			if fin {
+				sent := make(chan error, 1)
+				go func() {
+					_, e := right.Write([]byte("tail"))
+					if e == nil {
+						e = right.CloseWrite()
+					}
+					sent <- e
+				}()
+				var tail [4]byte
+				if _, e := io.ReadFull(left, tail[:]); e != nil || string(tail[:]) != "tail" {
+					t.Fatal("missing final data")
+				}
+				var empty [1]byte
+				if n, e := left.Read(empty[:]); n != 0 || e != io.EOF {
+					t.Fatal("FIN did not complete framed input")
+				}
+				if e := <-sent; e != nil {
+					t.Fatal(e)
+				}
+			}
+			_ = right.Close()
+			select {
+			case <-left.Done():
+			case <-time.After(time.Second):
+				t.Fatal("carrier did not terminate")
+			}
+			clock := &clock{health: func() (time.Duration, error) { return time.Millisecond, nil }, readBoot: func() (time.Duration, error) { return time.Hour, nil }, readWall: time.Now}
+			root, cancel := context.WithCancel(context.Background())
+			defer cancel()
+			c := &Conn{owner: &Client{clock: clock}, ctx: root, cancel: cancel, raw: left.raw, payload: left, closed: true}
+			var b [1]byte
+			n, e := c.Read(b[:])
+			want := ErrDenied
+			if fin {
+				want = io.EOF
+			}
+			if n != 0 || e != want {
+				t.Fatalf("closed read: bytes=%d err=%v want=%v", n, e, want)
+			}
+			if n, e := c.Write([]byte("after closure")); n != 0 || e != ErrDenied {
+				t.Fatal("closed connection revived output authority")
+			}
+		})
+	}
+}
+
 func TestPayloadHalfCloseWaitsForRemoteConsumption(t *testing.T) {
 	left, right := payloadPair(t)
 	data := bytes.Repeat([]byte("bounded payload"), 8192)

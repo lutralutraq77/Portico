@@ -6,7 +6,7 @@ All routes below require POST, Content-Type application/json, exact configured H
 
 | Profile | Route | Request and behavior |
 |---|---|---|
-| Device | /api/v1/device/catalog | Empty object; returns only usable application resources for the authenticated device, current revisions and deadlines |
+| Device | /api/v1/device/catalog | Empty object; returns Version=1 and Resources containing only usable application resources for the authenticated device, current revisions and deadlines |
 | Device | /api/v1/device/check-connector | Version, ResourceID, Revision, ConnectorLeafDER (base64); checks the actual inner TLS connector leaf against live authority and the device's exact resource permission; allocates no session |
 | Connector | /api/v1/connector/hosting | Empty object; returns a complete bounded snapshot of current application hosting bindings for the authenticated connector certificate; grants no dialing permission |
 | Connector | /api/v1/connector/authorize | Version, ClientLeafDER (base64), ResourceID, Revision; derives the exact endpoint and allocates a session after online checks |
@@ -28,6 +28,8 @@ Every rejection uses HTTP 403 with a fixed request-rejected JSON object and no r
 See [ADR-005](../ADR-005-resource-policy-boundary.md) for preview freshness, quotas, schema migration and remaining security gates. The administrator server is tested with isolated virtual keys and an explicit test origin; this is not evidence of browser/native or hardware qualification.
 
 ## Connector control transport
+
+The device catalog response is a versioned CatalogSnapshot object, with a non-null Resources array and unique resource IDs. The development client rejects the earlier bare-array shape, future versions, malformed tuples and responses exceeding the shared wire bounds (including 64 KiB and 2048 JSON nodes). The logical catalog cap is 512; complete-response bounds can reject a smaller oversized inventory. There is no partial or cached fallback. The domain Catalog method still returns a slice; the private HTTP handler supplies the envelope.
 
 The internal/control package shares the wire types and supplies a production HTTP client without importing the controller database, issuer implementation or WebAuthn verifier. It requires an explicit private HTTPS endpoint and port, private root, server SPKI pin, local certificate and profile. Standard TLS 1.3 chain/name verification remains enabled. Each request has a configured maximum duration of five seconds, a 64 KiB response bound and strict JSON validation. Redirects, proxy environment settings, response compression, unknown or duplicate fields and wrong profiles reject. Closing the client cancels its outstanding operations. The client does not automatically retry mutations.
 

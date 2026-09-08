@@ -6,6 +6,7 @@ import "time"
 
 const Version = 1
 const MaxHostingResources = 64
+const MaxCatalogResources = 512
 const MaxCancellationBatch = 64
 
 type AuthorizeRequest struct {
@@ -25,6 +26,12 @@ type ResourceAccess struct {
 	Name, ConnectorID, ConnectorName, Address, Protocol string
 	Port                                                int
 	Until                                               time.Time
+}
+
+// CatalogSnapshot is advisory inventory, not a permit or reusable lease.
+type CatalogSnapshot struct {
+	Version   int
+	Resources []ResourceAccess
 }
 type Authorization struct {
 	Version                                                                 int

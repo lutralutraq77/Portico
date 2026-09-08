@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"crypto/tls"
+	"io"
 	"net"
 	"sync"
 	"time"
@@ -237,6 +238,12 @@ func (x *Conn) activity() bool {
 	return ok
 }
 func (x *Conn) Read(p []byte) (int, error) {
+	// Receiving FIN follows synchronous consumption of all prior framed DATA.
+	// Preserve that zero-byte EOF even if carrier shutdown completed while the
+	// caller was processing the last chunk. It grants no further read/write.
+	if x.ReadFinished() {
+		return 0, io.EOF
+	}
 	if !x.allowed() {
 		return 0, ErrDenied
 	}
@@ -249,6 +256,10 @@ func (x *Conn) Read(p []byte) (int, error) {
 	}
 	return n, e
 }
+
+// ReadFinished reports a validated peer FIN after all preceding DATA was read.
+// It does not imply a live lease, successful writes or renewed authority.
+func (x *Conn) ReadFinished() bool { return x.payload != nil && x.payload.readFinished() }
 func (x *Conn) Write(p []byte) (int, error) {
 	total := 0
 	for len(p) > 0 {
@@ -279,6 +290,15 @@ func (x *Conn) CloseWrite() error {
 		return ErrDenied
 	}
 	return x.payload.CloseWrite()
+}
+
+// WaitWriteAcknowledged waits for the peer to consume all frames preceding our
+// FIN. It grants no authority and must use a bounded caller context.
+func (x *Conn) WaitWriteAcknowledged(ctx context.Context) error {
+	if ctx == nil || x.payload == nil {
+		return ErrDenied
+	}
+	return x.payload.waitAcknowledged(ctx)
 }
 func (x *Conn) supervise() {
 	defer x.work.Done()

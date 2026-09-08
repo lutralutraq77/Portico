@@ -77,6 +77,12 @@ func (c *payloadConn) Close() error {
 func (c *payloadConn) Done() <-chan struct{}      { return c.done }
 func (c *payloadConn) Read(p []byte) (int, error) { return c.reader.Read(p) }
 
+func (c *payloadConn) readFinished() bool {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	return c.readClosed
+}
+
 // frame requires writeMu, including for ACKs sent by the receive worker.
 func (c *payloadConn) frame(kind byte, data []byte) error {
 	var header [5]byte
@@ -137,13 +143,24 @@ func (c *payloadConn) CloseWrite() error {
 	return nil
 }
 func (c *payloadConn) waitAcknowledged(ctx context.Context) error {
+	// A valid ACK remains evidence of consumption after the carrier closes.
+	select {
+	case <-c.ack:
+		return nil
+	default:
+	}
 	select {
 	case <-c.ack:
 		return nil
 	case <-ctx.Done():
 		return ErrDenied
 	case <-c.ctx.Done():
-		return ErrDenied
+		select {
+		case <-c.ack:
+			return nil
+		default:
+			return ErrDenied
+		}
 	}
 }
 func (c *payloadConn) receive() {

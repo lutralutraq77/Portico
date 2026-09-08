@@ -1,5 +1,5 @@
-// Command portico provides development build information and the isolated Linux
-// connector runtime. Deployment and service installation remain separate gates.
+// Command portico provides development client/connector commands and build
+// information. Deployment and service installation remain separate gates.
 package main
 
 import (
@@ -13,7 +13,7 @@ import (
 
 func main() {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
-	code := cli.RunContext(ctx, os.Args[1:], os.Stdout, os.Stderr)
+	code := cli.RunInputContext(ctx, os.Args[1:], os.Stdin, os.Stdout, os.Stderr)
 	stop()
 	os.Exit(code)
 }

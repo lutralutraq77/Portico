@@ -111,6 +111,24 @@ func (c *Client) post(ctx context.Context, profile pki.Profile, path string, req
 	return nil
 }
 
+// Catalog is advisory inventory for the authenticated device. Selecting an
+// entry still requires fresh connector/inner-TLS checks and authorization.
+func (c *Client) Catalog(ctx context.Context) ([]ResourceAccess, error) {
+	var snapshot CatalogSnapshot
+	if c.post(ctx, pki.Device, "/api/v1/device/catalog", struct{}{}, &snapshot) != nil || snapshot.Version != Version || snapshot.Resources == nil || len(snapshot.Resources) > MaxCatalogResources {
+		return nil, ErrRejected
+	}
+	resources := snapshot.Resources
+	seen := make(map[string]bool, len(resources))
+	for _, r := range resources {
+		if !validResource(r) || seen[r.ID] {
+			return nil, ErrRejected
+		}
+		seen[r.ID] = true
+	}
+	return resources, nil
+}
+
 func (c *Client) CheckConnector(ctx context.Context, r ConnectorCheck) (ConnectorStatus, error) {
 	var v ConnectorStatus
 	e := c.post(ctx, pki.Device, "/api/v1/device/check-connector", r, &v)
