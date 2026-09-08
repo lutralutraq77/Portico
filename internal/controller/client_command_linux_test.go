@@ -64,6 +64,9 @@ func guestStartApplication(t *testing.T, args ...string) *guestApplication {
 		_ = output.Close()
 		select {
 		case <-v.done:
+			if t.Failed() {
+				t.Logf("fixture process exit=%v stderr=%q", v.err, v.logs.String())
+			}
 		case <-time.After(5 * time.Second):
 			t.Error("application fixture did not join")
 		}
@@ -195,7 +198,7 @@ func TestWorkloadGuestConfiguredClientCommand(t *testing.T) {
 		t.Helper()
 		var sessions int
 		must(t, v.carrier.policy.device.f.s.db.QueryRow("SELECT count(*) FROM authorized_sessions").Scan(&sessions))
-		if sessions != 0 || v.connections.Load() != 0 || v.carrier.relay.Stats().Waiting != 1 {
+		if sessions != 0 || v.connections.Load() != 0 {
 			t.Fatal("rejected client changed authority or destination count")
 		}
 	}
@@ -232,11 +235,38 @@ func TestWorkloadGuestConfiguredClientCommand(t *testing.T) {
 		})
 	}
 	var sessions int64
+	startClient := func(t *testing.T) *guestApplication {
+		t.Helper()
+		// Bindings deliberately expire while idle. Wait for a newly admitted
+		// binding, rather than racing a snapshot near its pairing deadline.
+		before := v.carrier.admitted.Load()
+		deadline := time.NewTimer(8 * time.Second)
+		defer deadline.Stop()
+		tick := time.NewTicker(5 * time.Millisecond)
+		defer tick.Stop()
+		for {
+			select {
+			case <-connectorProcess.done:
+				t.Fatalf("connector exited before application open: %v %q", connectorProcess.err, connectorProcess.logs.String())
+			case <-deadline.C:
+				t.Fatal("connector did not establish a fresh fixture binding")
+			case <-tick.C:
+				if v.carrier.admitted.Load() > before && v.carrier.relay.Stats().Waiting == 1 {
+					return guestStartApplication(t, args(v.resource.ID, v.resource.Revision)...)
+				}
+			}
+		}
+	}
 	closed := func(t *testing.T) {
 		t.Helper()
 		carrierEventually(t, func() bool {
+			select {
+			case <-connectorProcess.done:
+				t.Fatalf("connector exited before closure receipt: %v %q", connectorProcess.err, connectorProcess.logs.String())
+			default:
+			}
 			var receipts int64
-			return v.carrier.policy.device.f.s.db.QueryRow("SELECT count(*) FROM session_closure_receipts").Scan(&receipts) == nil && receipts == sessions && v.closed.Load() == sessions && v.carrier.relay.Stats().Waiting == 1
+			return v.carrier.policy.device.f.s.db.QueryRow("SELECT count(*) FROM session_closure_receipts").Scan(&receipts) == nil && receipts == sessions && v.closed.Load() == sessions
 		})
 	}
 	for _, consume := range []bool{true, false} {
@@ -245,7 +275,7 @@ func TestWorkloadGuestConfiguredClientCommand(t *testing.T) {
 			name = "final_response_drain_deadline"
 		}
 		t.Run(name, func(t *testing.T) {
-			p := guestStartApplication(t, args(v.resource.ID, v.resource.Revision)...)
+			p := startClient(t)
 			var pipeSize int
 			raw, e := p.output.SyscallConn()
 			must(t, e)
@@ -287,7 +317,7 @@ func TestWorkloadGuestConfiguredClientCommand(t *testing.T) {
 	}
 	for _, signal := range []syscall.Signal{syscall.SIGTERM, syscall.SIGKILL} {
 		t.Run(signal.String()+"_idle_input", func(t *testing.T) {
-			p := guestStartApplication(t, args(v.resource.ID, v.resource.Revision)...)
+			p := startClient(t)
 			must(t, p.input.SetWriteDeadline(time.Now().Add(10*time.Second)))
 			_, e := p.input.Write([]byte{'R', 0, 0, 0, 0, 'o', 'k'})
 			must(t, e)
@@ -309,7 +339,7 @@ func TestWorkloadGuestConfiguredClientCommand(t *testing.T) {
 		})
 	}
 	t.Run("revocation_with_blocked_output", func(t *testing.T) {
-		p := guestStartApplication(t, args(v.resource.ID, v.resource.Revision)...)
+		p := startClient(t)
 		must(t, p.input.SetWriteDeadline(time.Now().Add(10*time.Second)))
 		_, e := p.input.Write([]byte{'W', 0, 0, 0, 0})
 		must(t, e)
