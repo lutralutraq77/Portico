@@ -201,3 +201,16 @@ func TestUnhealthyStartupClosesWithoutBinding(t *testing.T) {
 		t.Fatalf("startup error=%v closes=%d", err, closes)
 	}
 }
+
+func TestCanceledStartupClosesOwnershipWithoutCheckingHealth(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+	closes := 0
+	d := dependencies{
+		health:       func() error { t.Fatal("canceled startup read health"); return nil },
+		closeCarrier: func() { closes++ }, closeServer: func() { closes++ },
+	}
+	if err := run(ctx, Options{1, 250 * time.Millisecond, time.Second}, d); err != nil || closes != 2 {
+		t.Fatalf("canceled startup: error=%v closes=%d", err, closes)
+	}
+}

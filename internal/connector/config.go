@@ -172,6 +172,9 @@ func (c *Configuration) Run(ctx context.Context) error {
 	if c == nil || ctx == nil {
 		return ErrConfiguration
 	}
+	if ctx.Err() != nil {
+		return nil
+	}
 	if _, err := clockhealth.Uncertainty(); err != nil {
 		return err
 	}

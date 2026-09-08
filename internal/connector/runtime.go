@@ -65,11 +65,14 @@ func run(parent context.Context, o Options, d dependencies) error {
 		d.closeServer()
 		workers.Wait()
 	}()
-	if err := d.health(); err != nil {
-		return err
-	}
 	if parent.Err() != nil {
 		return nil
+	}
+	if err := d.health(); err != nil {
+		if parent.Err() != nil {
+			return nil
+		}
+		return err
 	}
 	workers.Add(o.Workers)
 	for i := 0; i < o.Workers; i++ {
@@ -114,6 +117,9 @@ func run(parent context.Context, o Options, d dependencies) error {
 			return nil
 		case <-tick.C:
 			if err := d.health(); err != nil {
+				if parent.Err() != nil {
+					return nil
+				}
 				return err
 			}
 		}
