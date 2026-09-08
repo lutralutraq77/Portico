@@ -6,6 +6,8 @@ Self-hosted, resource-oriented private access: identity → policy → resource 
 
 The project and all generated development storage on this machine are in **E:\Portico**.
 
+[Client verification](docs/phase-6-client-report.md) records the protected identity/catalog/pipe implementation, complete Windows and isolated Linux runs, five real application-process sessions and retained diagnostic failures. Supported application and platform delivery remains open.
+
 [Overload verification](docs/phase-5-overload-report.md) adds PROTO-05 and fixes carrier termination while application delivery or destination writes are backpressured. [Hostile protocol verification](docs/phase-5-protocol-report.md) adds PROTO-04: malformed CSR, HTTPS, gRPC and inner-TLS inputs plus actual HTTP/2 resets with an independent live workload. The canonical manifest now links seven complete executable scenarios; 84 remain planned.
 
 ## Build and verify

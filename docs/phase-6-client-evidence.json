@@ -1,0 +1,250 @@
+{
+  "schema": 1,
+  "phase": 6,
+  "date": "2026-09-08",
+  "production_source": "febe97dcb900292626058ba9b5cdf0e59294662d",
+  "windows_verification_source": "ad4fec8fea152953d0e81e54bcbceb1eefd3c469",
+  "linux_verification_source": "13faa55016918dd1538620f910b2659d64a5a80e",
+  "application_version": "0.6.0-dev",
+  "runtime_unchanged_since_production_source": true,
+  "source_file_hashes": [
+    {
+      "file": "README.md",
+      "sha256": "097595BF69EA051E9C7AE455224821D79717FFF2B7BE10272298BA6ED1409B51"
+    },
+    {
+      "file": "cmd/portico/main.go",
+      "sha256": "2AC50662FE8E57AFB9C15DCF2E9CED75BF243A94427BA911EB860F7ECBB9587D"
+    },
+    {
+      "file": "docs/client-configuration.md",
+      "sha256": "4501FE8B12ED38CBABDE2C8F23D9290344D7C5F6218FBD507D69109436471461"
+    },
+    {
+      "file": "docs/delivery-status.md",
+      "sha256": "B57E1D0919C8D49531404B126FE722FC0FC479CBC65E76F3DB60439B866FD890"
+    },
+    {
+      "file": "docs/development.md",
+      "sha256": "53A9816C7955DF78FC88AA7C07EA6C5B03E22AA64EB95104E4B4369C74766FB8"
+    },
+    {
+      "file": "docs/install/linux-client.md",
+      "sha256": "2CBF4CEFFACAD29CA050F7F6076024CFAB80E6C04535D89F3D7DEA694937989D"
+    },
+    {
+      "file": "docs/policy-api.md",
+      "sha256": "117580D0F5BC3ED2192FD15518E1CB0674167C7C0C21274C68AF367D6EB6F7FC"
+    },
+    {
+      "file": "docs/testing.md",
+      "sha256": "FAB628FD57364899A12DB3711CBAB1C6112BCBFF74C43B29E44654D9ECA10F62"
+    },
+    {
+      "file": "internal/cli/run.go",
+      "sha256": "F971348E982BB1CF75978B43AE2DD39ABED9EB54D229A3CEA622C01C4552C2F1"
+    },
+    {
+      "file": "internal/cli/run_test.go",
+      "sha256": "E674EDD1E73EBB4B254CA9CD95F1E65118772324CF77D805B6C5CC77F5D641ED"
+    },
+    {
+      "file": "internal/client/config.go",
+      "sha256": "484A4A2D147FE96A2B1A69E3ED80AF65FD036FBCFB502CBB48DF95C6E3E2C048"
+    },
+    {
+      "file": "internal/client/config_test.go",
+      "sha256": "9023E174CBF3572CE135729E2C6A6EB3AD37CAE7789B771E0E914865B4C41E04"
+    },
+    {
+      "file": "internal/client/pipes_linux.go",
+      "sha256": "056F7B6EADA9DB06C7ABFC0D95F3026AA32473DD423CB9F06CBA3489B08E0750"
+    },
+    {
+      "file": "internal/client/pipes_linux_test.go",
+      "sha256": "7BCC3FCBB242B98CF70450BEB9020283D1EBA67E115AF0070B686CDC190152C5"
+    },
+    {
+      "file": "internal/client/pipes_other.go",
+      "sha256": "7D876898537E3AE88B962B9B79228679EBAFCBFCDF2517EC62C70BC32F0CB060"
+    },
+    {
+      "file": "internal/client/pipes_other_test.go",
+      "sha256": "3B0FAD82EE88C62130203B59183BF41648B95D595F9DB1D8BB4B0617B821DE2E"
+    },
+    {
+      "file": "internal/client/stream.go",
+      "sha256": "B46E1A8AD435796589755097485F0B7C9AB42E0EAAE4DA50700AA64167AB8BF8"
+    },
+    {
+      "file": "internal/connector/config.go",
+      "sha256": "C11FE6FCBC3020B68F201AD0A87DEE3180E111BB227816DBECAFFB0EAA30C3D7"
+    },
+    {
+      "file": "internal/connector/config_test.go",
+      "sha256": "BD2B3BFAA5D1D7FD254CAB921F71E35B9E1B3C9CF086A6084A4BAB1F228E654C"
+    },
+    {
+      "file": "internal/control/client.go",
+      "sha256": "7065E87CD57F582CDC576AE610E04D3830A83CDDDB3A284E2D03A68D0FD804EF"
+    },
+    {
+      "file": "internal/control/client_test.go",
+      "sha256": "42E7F9858D6C2B47C12CDA089BC6D05F3AE21337D0DA6BEB288DA2D0A6B9425C"
+    },
+    {
+      "file": "internal/control/protocol.go",
+      "sha256": "1D4A1F3889EB95A86D4FCC8ED8F03BF7FA487E2911DE5D9642DFDF885C399F77"
+    },
+    {
+      "file": "internal/controller/client_command_linux_test.go",
+      "sha256": "7EFCA0324403AEB137012674AB073503ABCA79F03817796D589E0D2453B4AEA0"
+    },
+    {
+      "file": "internal/controller/policy_http.go",
+      "sha256": "304348574C30F517323780E75967F430622153DD098DF0C8C54BABA4CBF9B44D"
+    },
+    {
+      "file": "internal/controller/policy_http_test.go",
+      "sha256": "FA83C3F83CB24F823EC42E805CBBBD5AE6B09317397234F970EC53B7D219D54C"
+    },
+    {
+      "file": "internal/identityfile/identity.go",
+      "sha256": "6887AF2626F515E7FAA064F5FC2CEE467C6A113CC11F358E350D8488F41215CD"
+    },
+    {
+      "file": "internal/workload/client.go",
+      "sha256": "2B0EFC739D444383569E87AE71DD909CB5EF07EBE946094FFFCC0E160FC3A048"
+    },
+    {
+      "file": "internal/workload/stream.go",
+      "sha256": "ADDE576A065646FAD7AC086CBAF67B6EA9088BCA811BAE8613EBD843F6AC43A6"
+    },
+    {
+      "file": "internal/workload/stream_test.go",
+      "sha256": "27C99D334CE67B307742B602A1D8417E1A93F12DDF2F7E974E8D02B70A1189B9"
+    },
+    {
+      "file": "scripts/test-linux.ps1",
+      "sha256": "40766C7B85BCE75ACAD06D87B9EE1354FB4EF218D4A9E94C88A0A7B34C9ABC37"
+    },
+    {
+      "file": "tools/linuxvm/archive/main.go",
+      "sha256": "ACC17E49A4BA394581D7A99C59785858F74FB951CF91247840BC7D33E23580DF"
+    },
+    {
+      "file": "tools/linuxvm/init/main_linux.go",
+      "sha256": "7C31CD86FE09236D8275F4FF6A8D4E2279B7D666A123DB9DE1E642A76D726EFD"
+    }
+  ],
+  "canonical_acceptance": {
+    "total": 91,
+    "implemented": 7,
+    "cases_added": [],
+    "planned": 84
+  },
+  "windows_full_check": {
+    "scanners_and_positive_controls": "passed",
+    "fuzz_targets": 7,
+    "skip_flags": [],
+    "archive": "work/reports/phase-6-client-ad4fec8",
+    "advisories_outside_affected_imports": 1,
+    "workload_fuzz_inputs": 52463,
+    "status": "passed",
+    "sha256": "0E12F45C32248BCA76E8667177D36E6E53263FB9643F380D23380795404B0C21",
+    "affected_code": 0,
+    "source_commit": "ad4fec8fea152953d0e81e54bcbceb1eefd3c469",
+    "GOMAXPROCS": 2,
+    "unit_and_race_modules": 2
+  },
+  "linux_full_check": {
+    "top_level_pass": 155,
+    "subtest_pass": 757,
+    "fuzz_targets": 7,
+    "fuzz_seeds": 36,
+    "skips": 1,
+    "failures": 0,
+    "sha256": "F3EB6284270E50A3C06BD123690C22CCEB145425E71FC72283E16041E0269C08",
+    "source_commit": "13faa55016918dd1538620f910b2659d64a5a80e",
+    "pass_marker": true
+  },
+  "client_process": {
+    "selection_and_config_denials": 6,
+    "sessions": 5,
+    "unexpected_destinations": 0,
+    "subtests": 11,
+    "pipe_queued_before_revocation": 65536,
+    "drain_deadline_ms": 5000,
+    "output_pipe_bytes": 65536,
+    "response_bytes": 81920,
+    "prestartup_denials": 2,
+    "request_bytes": 122880,
+    "closure_receipts": 5,
+    "clock_fixture": "Synthetic guest NTP metadata; no UTC change; restored; not time-source evidence"
+  },
+  "retained_failures": [
+    {
+      "sha256": "BC6E959DFEF44C9A17522FC38CC956CEB2A8F2A38C21428D764E8A69BF3AB284",
+      "name": "pre_fix_consumed_fin_regression",
+      "meaning": "Failed as required before preserving zero-byte EOF after consumed FIN"
+    },
+    {
+      "sha256": "D65360DEEC7E72A8BE260F2DE91CAAD70BC0C73CDAB860A3E7ADA416611CC918",
+      "name": "incomplete_regression_fixture",
+      "meaning": "Test fixture missing lifecycle fields; not a runtime finding"
+    },
+    {
+      "sha256": "8B0E5445B0CFD5F19A70709F21A14E2C21964B5C09339369298C614248BE6B9D",
+      "name": "unkeyed_shared_type_fixtures",
+      "meaning": "First Windows check stopped at vet; named fixture fields corrected"
+    },
+    {
+      "sha256": "680B43FC8E5DA8518DCDEEBEFA89B3A84D904CC4A46A2B0C25A2FE5C80ED27D3",
+      "name": "first_full_linux",
+      "meaning": "Client fixture failed; binding timing corrected; early security-stop diagnostic retained; no clock availability qualification"
+    },
+    {
+      "sha256": "83DA02DBABAB6ABD0E4B6EBF704D1F0F350012046D4F6E1AC9D14D28F74738A5",
+      "name": "process_diagnostic",
+      "meaning": "Observed idle binding expiry assumptions and early generic connector security stop"
+    },
+    {
+      "sha256": "9B2825F13F1FFEA5E942DEC66D74B70422F8D54E32CD7ECDA81893898A8A2B5F",
+      "name": "clock_overlay_diagnostic",
+      "meaning": "Test-only compiler overlay; did not reproduce connector clock stop; not production source proof"
+    }
+  ],
+  "client_only_diagnostic": {
+    "sha256": "CDEBCF3CE3FC17D7D46BE501E1656A943C1B71C8265A26380FB2A4598FD76EBD",
+    "scope": "Custom restricted init; not the full or standard focused suite",
+    "status": "passed"
+  },
+  "builds": [
+    {
+      "Path": "E:\\Portico\\build\\portico-windows-amd64.exe",
+      "Hash": "CB1E1314B02D8C29A2525538541CB5EBDB68ADEA6F870639CB00AEBBD9A8E3DF"
+    },
+    {
+      "Path": "E:\\Portico\\build\\portico-linux-amd64",
+      "Hash": "6543866760F06DC73DF237FA1EC4BDC488E66623355B0C94394A4349A6D71993"
+    },
+    {
+      "Path": "E:\\Portico\\build\\portico-issuer-windows-amd64.exe",
+      "Hash": "535E2E49853C28AEF7BE0D62711B0D340CFFFAE13E4966F4490044936E8E13FF"
+    },
+    {
+      "Path": "E:\\Portico\\build\\portico-issuer-linux-amd64",
+      "Hash": "C43D15BEC2725286C142050CF96BBDF51D7BFE1D6641C1BC479F85F602028049"
+    }
+  ],
+  "final_head_hosted_evidence": "Recorded separately in draft PR 4 after final documentation commit",
+  "limits": [
+    "Development Linux application pipes only; no supported desktop/browser workflow, installer or service",
+    "Software key files; no platform keystore or physical hardware-key custody qualification",
+    "Production runtime unchanged after febe97d; later verification commits change test fixtures only",
+    "Q05, actual time-source availability, physical suspend and hostile host scheduling remain unqualified",
+    "No production deployment, global DNS/firewall/Mullvad/trust/clock changes, merge or release",
+    "84 canonical acceptance scenarios remain planned"
+  ],
+  "original_brief_sha256": "653B502484F8932C9B2A4FAA40B02248C0215407996882E74FBFB3ADEEF6B37F"
+}
