@@ -6,6 +6,8 @@ Self-hosted, resource-oriented private access: identity → policy → resource 
 
 The project and all generated development storage on this machine are in **E:\Portico**.
 
+[Overload verification](docs/phase-5-overload-report.md) adds PROTO-05 and fixes carrier termination while application delivery or destination writes are backpressured. The canonical manifest now links six complete executable scenarios; 85 remain planned.
+
 ## Build and verify
 From PowerShell 7 in the repository:
 

@@ -423,7 +423,9 @@
     {
       "id": "PROTO-05",
       "earliest_phase": 5,
-      "status": "planned"
+      "status": "implemented",
+      "test_file": "internal/controller/workload_overload_linux_test.go",
+      "test_name": "TestWorkloadGuestBackpressureQuotasAndReconnectFlood"
     },
     {
       "id": "AUDIT-01",
