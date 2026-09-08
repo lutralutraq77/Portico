@@ -46,7 +46,7 @@ func configFixture(t *testing.T) (FileConfig, map[string][]byte) {
 	testfixture.Must(t, e)
 	rootPath := write("root.pem", "CERTIFICATE", root.Raw)
 	endpoint := EndpointFiles{URL: "https://localhost:8443", RootCertificateFile: rootPath, SPKI: pki.Hash(root.RawSubjectPublicKeyInfo)}
-	file := FileConfig{Version: 1, DeploymentID: deployment, Devices: TrustFiles{"2846c6fd-bcef-453a-8b8e-13e681bf6004", rootPath, write("device.pem", "CERTIFICATE", device.Raw)}, Connectors: TrustFiles{"3aa6fcd1-e757-453d-8509-bc4c6d46761c", rootPath, write("connector.pem", "CERTIFICATE", connector.Raw)}, IdentityCertificateFile: write("identity.pem", "CERTIFICATE", leaf.Raw), IdentityKeyFile: write("key.pem", "PRIVATE KEY", der), Control: endpoint, Carrier: endpoint, OperationTimeoutMillis: 5000, IdleTimeoutSeconds: 60}
+	file := FileConfig{Version: 1, DeploymentID: deployment, Devices: TrustFiles{IssuerID: "2846c6fd-bcef-453a-8b8e-13e681bf6004", RootCertificateFile: rootPath, IssuerCertificateFile: write("device.pem", "CERTIFICATE", device.Raw)}, Connectors: TrustFiles{IssuerID: "3aa6fcd1-e757-453d-8509-bc4c6d46761c", RootCertificateFile: rootPath, IssuerCertificateFile: write("connector.pem", "CERTIFICATE", connector.Raw)}, IdentityCertificateFile: write("identity.pem", "CERTIFICATE", leaf.Raw), IdentityKeyFile: write("key.pem", "PRIVATE KEY", der), Control: endpoint, Carrier: endpoint, OperationTimeoutMillis: 5000, IdleTimeoutSeconds: 60}
 	return file, files
 }
 
