@@ -418,7 +418,9 @@
     {
       "id": "PROTO-04",
       "earliest_phase": 5,
-      "status": "planned"
+      "status": "implemented",
+      "test_file": "internal/controller/workload_hostile_test.go",
+      "test_name": "TestWorkloadGuestHostileProtocolInputs"
     },
     {
       "id": "PROTO-05",
