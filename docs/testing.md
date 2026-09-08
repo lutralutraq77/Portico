@@ -4,7 +4,7 @@ Run scripts/check.ps1 for the complete repository check suite across the applica
 
 Foundation and domain checks:
 - Unit tests reject unsupported commands and avoid reflecting secret-like arguments.
-- JSON output explicitly identifies a Phase 4 development binary; output errors return failure.
+- JSON output explicitly identifies a Phase 5 development binary; output errors return failure.
 - Bounded CLI fuzzing checks arbitrary command input.
 - Race detector and go vet run against actual Go packages.
 - Documentation checker validates required files, local links, references, the preserved brief and all 91 specified runtime case IDs and executable references for implemented cases.
@@ -19,7 +19,7 @@ Reports are generated under work/reports. CI uploads only redacted JSON and cove
 
 SkipScanners or SkipRace are explicit convenience options and do not constitute a complete repository validation. Report skipped checks honestly.
 
-AUDIT-01 among the [91 runtime acceptance cases](../ACCEPTANCE_TEST_PLAN.md) has a real process-crash test. The remaining 90 stay planned. The manifest links implemented tests and is never a permanent passing report. Phase 3 adds X.509/TLS, durable enrollment/renewal, real step-ca/process/bypass tests, signed virtual WebAuthn assertions, atomic administrative mutation and anchored encrypted recovery tests; see [its integration report](phase-3-integration-report.md). Full browser/platform/physical issuer and administrator custody, policy, Docker, Mullvad and hardware-key scenarios remain pending.
+Three of the [91 runtime acceptance cases](../ACCEPTANCE_TEST_PLAN.md) have complete executable scenarios: AUDIT-01 process crashes, CONN-01 two-connector hosting/socket isolation and CONN-03 cross-connector control scope. The remaining 88 stay planned. The [isolation report](phase-5-isolation-report.md) records exact runs; guest-only CONN-01 skips on ordinary Windows/Linux hosts require separate VM evidence. The manifest links implemented tests and is never a permanent passing report. Phase 3 adds X.509/TLS, durable enrollment/renewal, real step-ca/process/bypass tests, signed virtual WebAuthn assertions, atomic administrative mutation and anchored encrypted recovery tests; see [its integration report](phase-3-integration-report.md). Full browser/platform/physical issuer and administrator custody, policy, Docker, Mullvad and hardware-key scenarios remain pending.
 
 The [Phase 2 report](phase-2-report.md) records what actually ran locally versus CI that is merely configured.
 

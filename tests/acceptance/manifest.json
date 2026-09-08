@@ -1,6 +1,6 @@
 {
   "schema": 2,
-  "phase": 4,
+  "phase": 5,
   "cases": [
     {
       "id": "AUTH-01",
@@ -115,7 +115,9 @@
     {
       "id": "CONN-01",
       "earliest_phase": 5,
-      "status": "planned"
+      "status": "implemented",
+      "test_file": "internal/controller/connector_isolation_test.go",
+      "test_name": "TestWorkloadGuestTwoConnectorHostingIsolation"
     },
     {
       "id": "CONN-02",
@@ -125,7 +127,9 @@
     {
       "id": "CONN-03",
       "earliest_phase": 5,
-      "status": "planned"
+      "status": "implemented",
+      "test_file": "internal/controller/connector_isolation_test.go",
+      "test_name": "TestConnectorControlCrossScopeIsolation"
     },
     {
       "id": "CONN-04",
