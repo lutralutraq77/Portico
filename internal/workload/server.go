@@ -50,6 +50,19 @@ type Server struct {
 }
 type Stats struct{ Connections, PendingReceipts int }
 
+// ConnectorID is taken from the validated local connector certificate.
+func (s *Server) ConnectorID() string { return s.identity.PrincipalID }
+
+// CheckHealth also checks idle servers. A failure latches the clock closed so
+// later recovery cannot resume this runtime's old authority.
+func (s *Server) CheckHealth() error {
+	if s.ctx.Err() != nil {
+		return ErrDenied
+	}
+	_, err := s.clock.now()
+	return err
+}
+
 func NewServer(ctx context.Context, c ServerConfig) (*Server, error) {
 	if ctx == nil || c.Control == nil || !pki.ValidID(c.CertificateID) || c.Devices == nil || c.Connectors == nil || c.ClockHealth == nil || len(c.Approved) == 0 || len(c.Approved) > 64 || len(c.ProtectedNetworks) == 0 || len(c.ProtectedNetworks) > 256 || c.MaxSessions < 1 || c.MaxSessions > 64 || c.MaxDeviceSessions < 1 || c.MaxDeviceSessions > c.MaxSessions || c.OperationTimeout <= 0 || c.OperationTimeout > 5*time.Second || c.IdleTimeout <= 0 || c.IdleTimeout > 15*time.Minute {
 		return nil, ErrDenied

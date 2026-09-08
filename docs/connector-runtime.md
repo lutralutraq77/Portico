@@ -1,0 +1,13 @@
+# Connector runtime
+
+internal/connector.Run composes the outbound carrier client and exact-resource workload server. This is an internal development service core. Packaged configuration/key-file handling and a supported daemon command remain pending. The [workload protocol](workload-runtime.md) still provides all authorization and forwarding checks; the pool introduces no alternate destination path.
+
+The connector ID comes from the workload server's validated connector certificate. A configured pool of one to sixty-four workers bounds pending bindings and active streams together. Each worker binds through authenticated carrier TLS, serves one inner workload connection, closes it and waits for the carrier workers to join before reusing its slot. Shared workload limits also count pending closure receipts. No queue, authorization cache or restored session exists.
+
+Unpaired bindings expire under the existing carrier deadlines. Binding failures trigger exponential retry delays from at least 250 milliseconds to at most five seconds. A completed workload also waits the minimum delay before another bind. Retries create a new authenticated stream and fresh workload authorization; they never replay application bytes or extend an old permit. Cancellation interrupts the retry delay.
+
+The pool checks clock health at startup and every 25 milliseconds, including while idle. An unhealthy reading ends the runtime and retains the workload clock's failure latch. Returning to healthy time does not restart that runtime. A native read-only Linux provider is described in [connector clocks](connector-clock.md); the caller must explicitly select a trusted provider when constructing the workload server. Tests with constant bounds are isolated fixtures.
+
+After valid arguments transfer ownership, Run closes the carrier client and workload server and joins every pool worker before returning. This includes rejected streams whose carrier workers are still exiting. Cancellation is an ordinary stop; loss of clock health returns an error. The caller owns the controller client and must keep it available until Run returns. Run opens no listener and does not modify routes, DNS, firewall rules or time services.
+
+Unit tests cover concurrency limits, cancellation during pending binds/backoff, exponential retry, rejected-stream join barriers, startup denial and idle health loss. NIC-less Linux integration tests use real carrier TLS/gRPC, inner TLS, control HTTPS and a guarded TEST-NET destination to exercise idle rebind, repeated application access, two active streams, health failure and joined shutdown. These are component evidence, not completion of the full acceptance matrix or physical/deployment qualification.

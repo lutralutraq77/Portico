@@ -16,7 +16,7 @@ Each connection uses bounded 32 KiB forwarding buffers, a configurable idle ceil
 
 Returned lifetime is anchored to the local request-start CLOCK_BOOTTIME/Windows interrupt-time sample. Transport delay and clock uncertainty shorten it. UTC bounds independently cap certificate, hosting and session expiry. Subsequent authorizations pin the original session, actual principals, certificate identifiers, resource revision/address/port/protocol and absolute end; sequence must advance exactly once and policy revision cannot decrease. Fresh replies cannot revive a stopped or expired session. The client also rechecks the actual connector and rejects a regressed policy revision.
 
-ClockHealth is a required trusted, current, nonblocking local health estimate. Missing/stale/error estimates, native-clock failures, backward time, unexpected elapsed/UTC disagreement and excessive sampling delay latch the runtime closed. Tests provide explicit fixture uncertainty. No production OS clock-health provider or physical suspend/hibernate qualification is claimed by these tests. The conservative fail-closed behavior can end a session early under adverse scheduling or clock conditions.
+ClockHealth is a required trusted, current, nonblocking local health estimate. Missing/stale/error estimates, native-clock failures, backward time, unexpected elapsed/UTC disagreement and excessive sampling delay latch the runtime closed. A [read-only Linux kernel health provider](connector-clock.md) is implemented; workload tests still provide explicit fixture uncertainty. Deployment time-service and physical suspend/hibernate qualification remain pending. The conservative fail-closed behavior can end a session early under adverse scheduling or clock conditions.
 
 ## Closing and receipts
 

@@ -9,8 +9,9 @@ import (
 )
 
 // ClockHealth must read a trusted, current, nonblocking local health estimate.
-// A missing/stale estimate returns an error. Production OS health providers
-// remain a deployment gate; isolated tests explicitly supply fixture bounds.
+// A missing/stale estimate returns an error. Linux callers may supply
+// clockhealth.Uncertainty; their time service still requires qualification.
+// Isolated tests explicitly supply fixture bounds.
 type ClockHealth func() (uncertainty time.Duration, err error)
 
 type sample struct {
