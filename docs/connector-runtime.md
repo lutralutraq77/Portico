@@ -1,6 +1,6 @@
 # Connector runtime
 
-internal/connector.Run composes the outbound carrier client and exact-resource workload server. This is an internal development service core. Packaged configuration/key-file handling and a supported daemon command remain pending. The [workload protocol](workload-runtime.md) still provides all authorization and forwarding checks; the pool introduces no alternate destination path.
+internal/connector.Run composes the outbound carrier client and exact-resource workload server. The [development Linux command](connector-configuration.md) adds protected configuration/key-file loading and native clock health. Installed-service packaging and deployment qualification remain pending. The [workload protocol](workload-runtime.md) still provides all authorization and forwarding checks; the pool introduces no alternate destination path.
 
 The connector ID comes from the workload server's validated connector certificate. A configured pool of one to sixty-four workers bounds pending bindings and active streams together. Each worker binds through authenticated carrier TLS, serves one inner workload connection, closes it and waits for the carrier workers to join before reusing its slot. Shared workload limits also count pending closure receipts. No queue, authorization cache or restored session exists.
 

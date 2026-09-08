@@ -81,6 +81,7 @@ func main() {
 		{"/tests/boottime", []string{"-test.v", "-test.shuffle=on", "-test.timeout=30s"}},
 		{"/tests/clockhealth", []string{"-test.v", "-test.shuffle=on", "-test.timeout=30s"}},
 		{"/tests/connector", []string{"-test.v", "-test.shuffle=on", "-test.timeout=30s"}},
+		{"/tests/localfile", []string{"-test.v", "-test.shuffle=on", "-test.timeout=30s"}},
 		{"/tests/workload", []string{"-test.v", "-test.shuffle=on", "-test.timeout=180s"}},
 		{"/tests/controller", []string{"-test.v", "-test.shuffle=on", "-test.timeout=600s"}},
 		{"/tests/pki", []string{"-test.v", "-test.shuffle=on", "-test.timeout=180s"}},
@@ -95,7 +96,7 @@ func main() {
 	for _, test := range tests {
 		if workloadOnly {
 			switch test.name {
-			case "/tests/boottime", "/tests/workload", "/tests/clockhealth", "/tests/connector":
+			case "/tests/boottime", "/tests/workload", "/tests/clockhealth", "/tests/connector", "/tests/localfile":
 			case "/tests/controller":
 				test.args = []string{"-test.v", "-test.shuffle=on", "-test.timeout=180s", "-test.run=^TestWorkloadGuest"}
 			default:

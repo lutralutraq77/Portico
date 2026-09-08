@@ -1,6 +1,6 @@
 # Connector workload runtime
 
-The internal/workload package composes the Phase 5 carrier, inner TLS and online policy client. It is a development library; the main CLI still exposes help/version only. Service configuration, operating-system clock-health providers, independent egress isolation and platform qualification remain required. The current verification checkpoint is recorded separately in the [workload progress report](phase-5-workload-report.md).
+The internal/workload package composes the Phase 5 carrier, inner TLS and online policy client. The [development Linux connector command](connector-configuration.md) composes this library with protected configuration and native clock health. Installed-service packaging, independent egress isolation and platform qualification remain required. The earlier library verification checkpoint is recorded separately in the [workload progress report](phase-5-workload-report.md).
 
 ## Opening one resource
 

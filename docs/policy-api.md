@@ -1,6 +1,6 @@
 # Policy API implementation
 
-Phase 4 implements a private controller HTTP component. A deployable controller/client/connector system is still being built. The main portico executable remains help/version only; no listener is started by constructing a PolicyEngine.
+Phase 4 implements a private controller HTTP component. A deployable controller/client/connector system is still being built; the [development Linux connector command](connector-configuration.md) is available for isolated integration. No listener is started by constructing a PolicyEngine.
 
 All routes below require POST, Content-Type application/json, exact configured Host, bounded JSON and a live TLS 1.3 client certificate of the corresponding profile. No route accepts proxy identity headers. Administrator routes additionally require the configured exact HTTPS Origin and registered administrator authority. Server responses use exported DTO field names shown below; the v1 path selects the API contract, and connector messages additionally require Version=1.
 

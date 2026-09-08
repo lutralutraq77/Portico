@@ -41,12 +41,22 @@ func TestVersionIsExplicitlyDevelopmentOnly(t *testing.T) {
 	if err := json.Unmarshal(out.Bytes(), &info); err != nil {
 		t.Fatal(err)
 	}
-	if !info.DevelopmentOnly || info.Phase != 4 || info.Version == "" || info.GoVersion == "" || info.OS == "" || info.Architecture == "" {
+	if !info.DevelopmentOnly || info.Phase != 5 || info.Version == "" || info.GoVersion == "" || info.OS == "" || info.Architecture == "" {
 		t.Fatalf("missing development provenance: %+v", info)
 	}
 }
 
 type brokenWriter struct{}
+
+func TestConnectorConfigurationErrorsDoNotReflectPaths(t *testing.T) {
+	var out, errout bytes.Buffer
+	if code := cli.Run([]string{"connector", "run", "--config", "synthetic-sensitive-input"}, &out, &errout); code != 1 {
+		t.Fatalf("configuration exit=%d", code)
+	}
+	if out.Len() != 0 || errout.String() != "Connector configuration rejected.\n" {
+		t.Fatal("configuration error exposed input or unexpected details")
+	}
+}
 
 func (brokenWriter) Write([]byte) (int, error) { return 0, errors.New("synthetic output failure") }
 
