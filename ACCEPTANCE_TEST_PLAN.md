@@ -1,6 +1,6 @@
 # Security acceptance test plan
 
-Status: **91 specified cases; AUDIT-01, CONN-01 and CONN-03 implemented; 88 cases remain planned.** This document is the canonical specification; run-specific results are in the [Phase 2 report](docs/phase-2-report.md) and [connector isolation report](docs/phase-5-isolation-report.md). CONN-01 requires the isolated Linux guest; a skip on other hosts is not passing evidence. Optional-feature tests are deferred only while those features are absent; required MVP platform tests are not optional.
+Status: **91 specified cases; AUDIT-01, CONN-01, CONN-03, CONN-04 and PROTO-03 implemented; 86 cases remain planned.** This document is the canonical specification; run-specific results are in the [Phase 2 report](docs/phase-2-report.md), [connector isolation report](docs/phase-5-isolation-report.md) and [lifecycle report](docs/phase-5-lifecycle-report.md). The socket/process cases require the isolated Linux guest; exclusion or a skip on other hosts is not passing evidence. Optional-feature tests are deferred only while those features are absent; required MVP platform tests are not optional.
 
 ## Harness and evidence
 After Phase 1 authorization, establish deterministic domain tests, property/fuzz tests, integration tests with malicious peers and real OS/network labs. Mock cryptography never proves authentication. Use mature TLS implementations with separate keys/roots and actual handshake failures.

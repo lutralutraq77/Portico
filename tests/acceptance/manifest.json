@@ -134,7 +134,9 @@
     {
       "id": "CONN-04",
       "earliest_phase": 5,
-      "status": "planned"
+      "status": "implemented",
+      "test_file": "internal/controller/connector_revocation_linux_test.go",
+      "test_name": "TestWorkloadGuestConnectorRevocationRestartAndReplay"
     },
     {
       "id": "ADMIN-01",
@@ -409,7 +411,9 @@
     {
       "id": "PROTO-03",
       "earliest_phase": 5,
-      "status": "planned"
+      "status": "implemented",
+      "test_file": "internal/controller/workload_protocol_test.go",
+      "test_name": "TestWorkloadGuestIndependentStreamLifecycles"
     },
     {
       "id": "PROTO-04",
