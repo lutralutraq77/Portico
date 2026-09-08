@@ -30,6 +30,7 @@ type carrierFixture struct {
 	device, connector             *carrier.Client
 	deviceConfig, connectorConfig carrier.ClientConfig
 	admitted                      atomic.Int64
+	rejected                      atomic.Int64
 }
 
 func newCarrierFixture(t *testing.T, change func(*carrier.Config)) *carrierFixture {
@@ -58,6 +59,8 @@ func newCarrierFixture(t *testing.T, change func(*carrier.Config)) *carrierFixtu
 		})
 		if e == nil {
 			f.admitted.Add(1)
+		} else {
+			f.rejected.Add(1)
 		}
 		return e
 	}

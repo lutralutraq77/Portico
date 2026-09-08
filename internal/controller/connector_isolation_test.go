@@ -7,6 +7,7 @@ import (
 	"encoding/binary"
 	"encoding/json"
 	"io"
+	"net"
 	"net/netip"
 	"testing"
 	"time"
@@ -229,6 +230,12 @@ func pairConnector(t *testing.T, v *carrierFixture, client *carrier.Client, id s
 func hostileWorkloadOpenDenied(t *testing.T, v *workloadFixture, transport *carrier.Client, server *workload.Server, id string, leaf []byte, resource Resource) {
 	t.Helper()
 	device, connector := pairConnector(t, v.carrier, transport, id)
+	hostileInnerOpenDenied(t, v, device, connector, server, id, leaf, resource)
+	carrierStopped(t, device, connector)
+}
+
+func hostileInnerOpenDenied(t *testing.T, v *workloadFixture, device, connector net.Conn, server *workload.Server, id string, leaf []byte, resource Resource) {
+	t.Helper()
 	served := make(chan error, 1)
 	go func() { served <- server.Serve(ctx, connector) }()
 	config, e := v.carrier.policy.connector.trust.ConnectorClientTLS(v.carrier.deviceConfig.Identity, id)
@@ -268,7 +275,6 @@ func hostileWorkloadOpenDenied(t *testing.T, v *workloadFixture, transport *carr
 		t.Fatal("denied workload did not join")
 	}
 	_ = inner.Close()
-	carrierStopped(t, device, connector)
 	carrierEventually(t, func() bool { return server.Stats() == (workload.Stats{}) })
 }
 
