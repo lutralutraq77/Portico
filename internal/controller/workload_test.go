@@ -13,6 +13,7 @@ import (
 	"testing"
 	"time"
 
+	"portico.local/portico/internal/carrier"
 	"portico.local/portico/internal/control"
 	"portico.local/portico/internal/pki"
 	"portico.local/portico/internal/workload"
@@ -80,11 +81,16 @@ func echoWorkloadDestination(c net.Conn) {
 
 func newWorkloadFixtureWithDestination(t *testing.T, destination func(net.Conn), changes ...func(*workload.ServerConfig, *workload.ClientConfig)) *workloadFixture {
 	t.Helper()
+	return newWorkloadFixtureWithCarrier(t, destination, nil, changes...)
+}
+
+func newWorkloadFixtureWithCarrier(t *testing.T, destination func(net.Conn), carrierChange func(*carrier.Config), changes ...func(*workload.ServerConfig, *workload.ClientConfig)) *workloadFixture {
+	t.Helper()
 	requireWorkloadGuest(t)
 	if destination == nil {
 		t.Fatal("missing destination fixture handler")
 	}
-	v := &workloadFixture{carrier: newCarrierFixture(t, nil)}
+	v := &workloadFixture{carrier: newCarrierFixture(t, carrierChange)}
 	p := v.carrier.policy
 	f := p.device.f
 	f.s.now = time.Now

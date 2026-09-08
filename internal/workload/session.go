@@ -82,10 +82,19 @@ func (x *session) allowed() bool {
 }
 func (x *session) supervise() {
 	defer x.work.Done()
+	var carrierDone <-chan struct{}
+	if transport, ok := x.raw.(interface{ Done() <-chan struct{} }); ok {
+		carrierDone = transport.Done()
+	}
 	tick := time.NewTicker(25 * time.Millisecond)
 	defer tick.Stop()
 	for {
 		select {
+		case <-carrierDone:
+			// Framing delivery or destination writes may be backpressured.
+			// Transport termination must stop them independently of DATA I/O.
+			x.stop()
+			return
 		case <-x.ctx.Done():
 			x.stop()
 			return

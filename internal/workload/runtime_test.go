@@ -105,6 +105,105 @@ type blockedClose struct {
 	once             sync.Once
 }
 
+// A terminal carrier can close while the framing reader is blocked delivering
+// already-received DATA to an application that is not reading.
+type terminalCarrier struct {
+	net.Conn
+	done chan struct{}
+	once sync.Once
+}
+
+func (c *terminalCarrier) Done() <-chan struct{} { return c.done }
+func (c *terminalCarrier) Close() error {
+	c.once.Do(func() { _ = c.Conn.Close(); close(c.done) })
+	return nil
+}
+
+func TestCarrierTerminationStopsBackpressuredPayload(t *testing.T) {
+	for _, serverSide := range []bool{false, true} {
+		name := "client"
+		if serverSide {
+			name = "server"
+		}
+		t.Run(name, func(t *testing.T) {
+			root, cancel := context.WithCancel(context.Background())
+			a, b := net.Pipe()
+			raw := &terminalCarrier{Conn: a, done: make(chan struct{})}
+			receiver := newPayload(root, raw, raw)
+			producer := newPayload(context.Background(), b, b)
+			t.Cleanup(func() {
+				cancel()
+				_ = receiver.Close()
+				_ = producer.Close()
+				for _, done := range []<-chan struct{}{receiver.Done(), producer.Done()} {
+					select {
+					case <-done:
+					case <-time.After(time.Second):
+						t.Error("framing cleanup did not join")
+					}
+				}
+			})
+			c := newClock(func() (time.Duration, error) { return time.Millisecond, nil })
+			now, e := c.now()
+			if e != nil {
+				t.Fatal(e)
+			}
+			var work *sync.WaitGroup
+			var destinationPeer net.Conn
+			if serverSide {
+				destination, peer := net.Pipe()
+				destinationPeer = peer
+				t.Cleanup(func() { _ = destination.Close(); _ = peer.Close() })
+				x := &session{server: &Server{clock: c}, raw: raw, destinationConn: destination, ctx: root, cancel: cancel, active: true, lease: now.boot + time.Minute, idle: now.boot + time.Minute, absolute: now.wall.Add(time.Minute)}
+				work = &x.work
+				work.Add(1)
+				go x.supervise()
+			} else {
+				x := &Conn{owner: &Client{clock: c}, raw: raw, ctx: root, cancel: cancel, lease: now.boot + time.Minute, absoluteBoot: now.boot + time.Minute, idle: now.boot + time.Minute, absolute: now.wall.Add(time.Minute)}
+				work = &x.work
+				work.Add(1)
+				go x.supervise()
+			}
+			joined := make(chan struct{})
+			go func() { work.Wait(); close(joined) }()
+			t.Cleanup(func() {
+				cancel()
+				select {
+				case <-joined:
+				case <-time.After(time.Second):
+					t.Error("supervisor cleanup did not join")
+				}
+			})
+			// A completed write means the framing reader consumed this entire
+			// frame from net.Pipe. Nobody reads receiver's application pipe.
+			_ = b.SetWriteDeadline(time.Now().Add(time.Second))
+			if _, e := producer.Write([]byte("received but unconsumed DATA")); e != nil {
+				t.Fatal(e)
+			}
+			select {
+			case <-receiver.Done():
+				t.Fatal("receiver ended before the carrier")
+			default:
+			}
+			_ = raw.Close()
+			for _, done := range []<-chan struct{}{joined, receiver.Done()} {
+				select {
+				case <-done:
+				case <-time.After(time.Second):
+					t.Fatal("terminal carrier retained supervisor or backpressured framing despite valid future lease")
+				}
+			}
+			if destinationPeer != nil {
+				_ = destinationPeer.SetReadDeadline(time.Now().Add(time.Second))
+				var data [1]byte
+				if _, e := destinationPeer.Read(data[:]); e != io.EOF {
+					t.Fatalf("terminal carrier retained destination handle: %v", e)
+				}
+			}
+		})
+	}
+}
+
 func (c *blockedClose) Close() error {
 	c.once.Do(func() { close(c.entered); <-c.release })
 	return c.Conn.Close()

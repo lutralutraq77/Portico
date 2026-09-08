@@ -282,10 +282,19 @@ func (x *Conn) CloseWrite() error {
 }
 func (x *Conn) supervise() {
 	defer x.work.Done()
+	var carrierDone <-chan struct{}
+	if transport, ok := x.raw.(interface{ Done() <-chan struct{} }); ok {
+		carrierDone = transport.Done()
+	}
 	tick := time.NewTicker(25 * time.Millisecond)
 	defer tick.Stop()
 	for {
 		select {
+		case <-carrierDone:
+			// An unread application pipe can hide the framing reader's EOF.
+			// The independent carrier lifecycle still terminates this stream.
+			_ = x.Close()
+			return
 		case <-x.ctx.Done():
 			_ = x.Close()
 			return
