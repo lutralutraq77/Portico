@@ -26,13 +26,19 @@ func startConnectorRuntime(t *testing.T, v *workloadFixture, workers int) (conte
 
 func openThroughRuntime(t *testing.T, v *workloadFixture) *workload.Conn {
 	t.Helper()
-	r := v.resource
-	raw, err := v.carrier.device.Dial(ctx, r.ConnectorID)
-	must(t, err)
-	c, err := v.client.Open(ctx, raw, control.ResourceAccess{ID: r.ID, Revision: r.Revision, ConnectorID: r.ConnectorID, Address: r.Address, Port: r.Port, Protocol: r.Protocol})
+	c, err := tryOpenThroughRuntime(v)
 	must(t, err)
 	t.Cleanup(func() { _ = c.Close() })
 	return c
+}
+
+func tryOpenThroughRuntime(v *workloadFixture) (*workload.Conn, error) {
+	r := v.resource
+	raw, err := v.carrier.device.Dial(ctx, r.ConnectorID)
+	if err != nil {
+		return nil, err
+	}
+	return v.client.Open(ctx, raw, control.ResourceAccess{ID: r.ID, Revision: r.Revision, ConnectorID: r.ConnectorID, Address: r.Address, Port: r.Port, Protocol: r.Protocol})
 }
 
 func runtimeEcho(t *testing.T, c *workload.Conn) {
@@ -94,8 +100,35 @@ func TestWorkloadGuestConnectorRuntimeClockFailureStopsAllStreams(t *testing.T) 
 		}
 	})
 	_, done := startConnectorRuntime(t, v, 2)
-	a := openThroughRuntime(t, v)
-	b := openThroughRuntime(t, v)
+	// Claim both pending slots concurrently. Performing a whole TLS/control
+	// authorization before the second Dial can outlast its idle pair deadline.
+	type opened struct {
+		c   *workload.Conn
+		err error
+	}
+	results := make(chan opened, 2)
+	for i := 0; i < 2; i++ {
+		go func() { c, err := tryOpenThroughRuntime(v); results <- opened{c, err} }()
+	}
+	var connections []*workload.Conn
+	for i := 0; i < 2; i++ {
+		select {
+		case result := <-results:
+			if result.c != nil {
+				t.Cleanup(func() { _ = result.c.Close() })
+			}
+			if result.err != nil {
+				t.Errorf("concurrent runtime open: %v", result.err)
+			}
+			connections = append(connections, result.c)
+		case <-time.After(10 * time.Second):
+			t.Fatal("concurrent runtime open stalled")
+		}
+	}
+	if t.Failed() {
+		return
+	}
+	a, b := connections[0], connections[1]
 	runtimeEcho(t, a)
 	runtimeEcho(t, b)
 	unhealthy.Store(true)
