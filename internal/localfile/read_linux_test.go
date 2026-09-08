@@ -141,6 +141,11 @@ func TestGuestProtectedPathTraversal(t *testing.T) {
 		t.Fatal(err)
 	}
 	if b, err := Read(path, 32, true); err != nil || string(b) != "fixture only" {
+		for _, component := range []string{"/", dir, child, path} {
+			var stat unix.Stat_t
+			statErr := unix.Lstat(component, &stat)
+			t.Logf("fixture component=%s uid=%d mode=%#o links=%d size=%d stat=%v", component, stat.Uid, stat.Mode, stat.Nlink, stat.Size, statErr)
+		}
 		t.Fatalf("native protected traversal: %q %v", b, err)
 	}
 	link := filepath.Join(dir, "link")

@@ -100,45 +100,63 @@ func TestWorkloadGuestConfiguredConnectorCommand(t *testing.T) {
 	bound, err := clockhealth.Uncertainty()
 	must(t, err)
 	t.Logf("positive CLI fixture uses synthetic guest kernel synchronization metadata, native bound=%v", bound)
-	root, cancel := context.WithTimeout(context.Background(), 30*time.Second)
-	command := exec.CommandContext(root, "/portico", "connector", "run", "--config", configPath)
-	var logs bytes.Buffer
-	command.Stdout = &logs
-	command.Stderr = &logs
-	must(t, command.Start())
-	stopped := make(chan error, 1)
-	go func() { stopped <- command.Wait() }()
-	joined := false
-	t.Cleanup(func() {
-		cancel()
-		if !joined {
-			select {
-			case <-stopped:
-			case <-time.After(5 * time.Second):
-				t.Error("CLI fixture process did not join")
+	seen := map[string]bool{}
+	for round, signal := range []syscall.Signal{syscall.SIGTERM, syscall.SIGKILL, syscall.SIGTERM} {
+		root, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+		command := exec.CommandContext(root, "/portico", "connector", "run", "--config", configPath)
+		var logs bytes.Buffer
+		command.Stdout = &logs
+		command.Stderr = &logs
+		must(t, command.Start())
+		stopped := make(chan error, 1)
+		go func() { stopped <- command.Wait() }()
+		joined := false
+		t.Cleanup(func() {
+			cancel()
+			if !joined {
+				select {
+				case <-stopped:
+				case <-time.After(5 * time.Second):
+					t.Error("CLI fixture process did not join")
+				}
 			}
+		})
+		carrierEventually(t, func() bool { return v.carrier.relay.Stats().Waiting == 1 })
+		c := openThroughRuntime(t, v)
+		if seen[c.SessionID()] {
+			t.Fatal("restart reused an old session")
 		}
-	})
-	carrierEventually(t, func() bool { return v.carrier.relay.Stats().Waiting == 1 })
-	c := openThroughRuntime(t, v)
-	runtimeEcho(t, c)
-	must(t, command.Process.Signal(syscall.SIGTERM))
-	select {
-	case err := <-stopped:
-		joined = true
-		if err != nil {
-			t.Fatalf("SIGTERM exit: %v %q", err, logs.String())
+		seen[c.SessionID()] = true
+		runtimeEcho(t, c)
+		must(t, command.Process.Signal(signal))
+		select {
+		case err := <-stopped:
+			joined = true
+			if signal == syscall.SIGTERM && err != nil {
+				t.Fatalf("SIGTERM exit: %v %q", err, logs.String())
+			}
+			if signal == syscall.SIGKILL && err == nil {
+				t.Fatal("SIGKILL unexpectedly returned success")
+			}
+		case <-time.After(5 * time.Second):
+			t.Fatal("signal did not join connector process")
 		}
-	case <-time.After(5 * time.Second):
-		t.Fatal("SIGTERM did not join connector process")
+		cancel()
+		want := "Connector runtime stopped.\n"
+		if signal == syscall.SIGKILL {
+			want = ""
+		}
+		if logs.String() != want {
+			t.Fatalf("unexpected CLI output %q", logs.String())
+		}
+		select {
+		case <-c.Done():
+		case <-time.After(5 * time.Second):
+			t.Fatal("terminated process retained client stream")
+		}
+		if _, err := c.Write([]byte("old session")); err == nil {
+			t.Fatal("terminated stream accepted forwarding")
+		}
+		carrierEventually(t, func() bool { return v.closed.Load() == int64(round+1) && v.carrier.relay.Stats().Waiting == 0 })
 	}
-	if logs.String() != "Connector runtime stopped.\n" {
-		t.Fatalf("unexpected CLI output %q", logs.String())
-	}
-	select {
-	case <-c.Done():
-	case <-time.After(5 * time.Second):
-		t.Fatal("SIGTERM retained client stream")
-	}
-	carrierEventually(t, func() bool { return v.closed.Load() == 1 && v.carrier.relay.Stats().Waiting == 0 })
 }

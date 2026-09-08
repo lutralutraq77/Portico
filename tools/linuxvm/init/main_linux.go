@@ -15,6 +15,17 @@ import (
 )
 
 func main() {
+	// An initramfs root may inherit the temporary filesystem's shared mode.
+	// Model a protected service host root explicitly inside this NIC-less guest.
+	// The host filesystem is not mounted into the guest.
+	var rootStat unix.Stat_t
+	if err := unix.Stat("/", &rootStat); err != nil {
+		panic(err)
+	}
+	fmt.Printf("PORTICO_GUEST_ROOT initial_mode=%#o uid=%d\n", rootStat.Mode, rootStat.Uid)
+	if err := os.Chmod("/", 0755); err != nil {
+		panic(err)
+	}
 	_ = syscall.Mount("proc", "/proc", "proc", 0, "")
 	_ = syscall.Mount("sysfs", "/sys", "sysfs", 0, "")
 	_ = syscall.Mount("tmpfs", "/tmp", "tmpfs", 0, "mode=1777")
