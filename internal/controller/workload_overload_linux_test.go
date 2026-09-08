@@ -257,6 +257,7 @@ func monitorOverload(t *testing.T, v *workloadFixture, maxSessions int) func() {
 			s := v.carrier.relay.Stats()
 			w := v.server.Stats()
 			peaks.relay.Streams = max(peaks.relay.Streams, s.Streams)
+			peaks.relay.Waiting = max(peaks.relay.Waiting, s.Waiting)
 			peaks.relay.Connections = max(peaks.relay.Connections, s.Connections)
 			peaks.relay.Endpoints = max(peaks.relay.Endpoints, s.Endpoints)
 			peaks.relay.Watches = max(peaks.relay.Watches, s.Watches)
@@ -275,7 +276,7 @@ func monitorOverload(t *testing.T, v *workloadFixture, maxSessions int) func() {
 		once.Do(func() {
 			close(stop)
 			overloadJoined(t, done)
-			if peaks.samples < 2 || peaks.relay.Streams > 16 || peaks.relay.Connections > 8 || peaks.relay.Endpoints > 16 || peaks.relay.Watches > 16 || peaks.relay.Workers > 64 || peaks.server > maxSessions || peaks.client > 8 {
+			if peaks.samples < 2 || peaks.relay.Streams > 16 || peaks.relay.Waiting > 8 || peaks.relay.Connections > 8 || peaks.relay.Endpoints > 16 || peaks.relay.Watches > 16 || peaks.relay.Workers > 64 || peaks.server > maxSessions || peaks.client > 8 {
 				t.Errorf("overload exceeded configured capacity or retained worker ceiling: %+v", peaks)
 			}
 			t.Logf("sampled overload peaks: %+v", peaks)
