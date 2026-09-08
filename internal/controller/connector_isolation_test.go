@@ -11,6 +11,8 @@ import (
 	"testing"
 	"time"
 
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"portico.local/portico/internal/carrier"
 	"portico.local/portico/internal/control"
 	"portico.local/portico/internal/pki"
@@ -303,12 +305,14 @@ func TestWorkloadGuestTwoConnectorHostingIsolation(t *testing.T) {
 	t.Run("B_cannot_bind_as_A", func(t *testing.T) {
 		call, cancel := context.WithTimeout(ctx, 5*time.Second)
 		defer cancel()
+		api := rawCarrier(t, config)
+		stream, e := api.Bind(call)
+		must(t, e)
+		admitted := v.carrier.admitted.Load()
+		must(t, stream.Send(carrierHello(t, f.connector.ID)))
 		bound := make(chan error, 1)
 		go func() {
-			conn, e := bCarrier.Bind(call, f.connector.ID)
-			if conn != nil {
-				_ = conn.Close()
-			}
+			_, e := stream.Recv()
 			bound <- e
 		}()
 		tick := time.NewTicker(time.Millisecond)
@@ -316,8 +320,8 @@ func TestWorkloadGuestTwoConnectorHostingIsolation(t *testing.T) {
 		for {
 			select {
 			case e := <-bound:
-				if e == nil || call.Err() != nil {
-					t.Fatal("spoofed Bind succeeded or only timed out locally")
+				if status.Code(e) != codes.PermissionDenied || call.Err() != nil || v.carrier.admitted.Load() != admitted+1 {
+					t.Fatal("spoofed Bind did not explicitly reject the authenticated B identity")
 				}
 				return
 			case <-tick.C:
