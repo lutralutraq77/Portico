@@ -17,6 +17,16 @@ func validResource(v ResourceAccess) bool {
 func validAuthorization(v Authorization) bool {
 	return v.Version == Version && pki.ValidID(v.SessionID) && pki.ValidID(v.DeviceID) && pki.ValidID(v.ConnectorID) && pki.ValidID(v.CertificateID) && pki.ValidID(v.ConnectorCertificateID) && validResource(v.Resource) && v.Resource.ConnectorID == v.ConnectorID && v.Sequence > 0 && v.PolicyRevision > 0 && !v.IssuedAt.IsZero() && v.LeaseUntil.After(v.IssuedAt) && v.LeaseUntil.Sub(v.IssuedAt) <= 15*time.Second && !v.LeaseUntil.After(v.SessionUntil) && v.ActivateUntil.After(v.IssuedAt) && !v.ActivateUntil.After(v.LeaseUntil) && v.ActivateUntil.Sub(v.IssuedAt) <= 5*time.Second && v.SessionUntil.After(v.IssuedAt) && v.SessionUntil.Sub(v.IssuedAt) <= time.Hour && v.Resource.Until.Equal(v.SessionUntil)
 }
+
+// Valid checks structure only; runtime consumers must additionally bind the
+// actual TLS identities, original tuple/sequence and request-start deadline.
+func (v Authorization) Valid() bool { return validAuthorization(v) }
+
+func (v HostingSnapshot) Valid() bool { return validHosting(v) }
+
+// ValidFor checks a cancellation response against the exact requested IDs.
+func (v CancellationBatch) ValidFor(r CancellationRequest) bool { return validCancellations(v, r) }
+
 func validHosting(v HostingSnapshot) bool {
 	if v.Version != Version || !pki.ValidID(v.ConnectorID) || !pki.ValidID(v.ConnectorCertificateID) || v.PolicyRevision < 1 || v.CheckedAt.IsZero() || !v.Until.After(v.CheckedAt) || v.Until.Sub(v.CheckedAt) > 15*time.Second || v.Resources == nil || len(v.Resources) > MaxHostingResources {
 		return false

@@ -1,6 +1,6 @@
 # Sessions, expiry and revocation
 
-Status: end-to-end semantics and test targets; no measured socket-termination guarantees. Phase 4 implements controller authorization/activation/renewal, quotas, deadlines and durable cancellation targets. Phase 5 adds authenticated bounded long polling, repeat-until-acknowledged delivery and immutable closure reports; see the [policy API](docs/policy-api.md). The actual socket consumer and request-anchored timers remain unimplemented; a report alone cannot prove closure. [ADR-005](ADR-005-resource-policy-boundary.md) describes the policy boundary.
+Status: end-to-end semantics and test targets; no qualified universal socket-termination guarantee. Phase 4 implements controller authorization/activation/renewal, quotas, deadlines and durable cancellation targets. Phase 5 adds authenticated bounded long polling, repeat-until-acknowledged delivery and immutable closure reports; see the [policy API](docs/policy-api.md). A development [workload consumer](docs/workload-runtime.md) now composes actual inner TLS, exact TCP forwarding, request-start timers and closure after worker completion. Isolated fixture measurements do not qualify physical suspend, hostile load or deployed egress isolation; a report alone cannot prove closure. [ADR-005](ADR-005-resource-policy-boundary.md) describes the policy boundary.
 
 ## Separate lifetimes
 | Lifetime | Proposed default / rule |

@@ -1,8 +1,10 @@
 # Linux runtime test harness
 
-The Windows-hosted harness boots a real Linux amd64 kernel under QEMU TCG, with no network devices or host filesystem shares. Its disposable initramfs contains CLI/domain/PKI/WebAuthn/control-JSON/carrier/control-client/boot-clock/issuer test binaries and a tiny Go PID 1. Guest loopback and a fixture localhost hosts file support actual issuer TLS/process, carrier TLS/gRPC and controller HTTP client tests; neither affects the host. SQLite, issuer databases and temporary encrypted fixture keys live in guest tmpfs. This verifies Linux execution and process-crash behavior; it is not an Ubuntu installation, Linux race run or hardware power-loss test.
+The Windows-hosted harness boots a real Linux amd64 kernel under QEMU TCG, with no network devices or host filesystem shares. Its disposable initramfs contains CLI/domain/PKI/WebAuthn/control-JSON/carrier/control-client/boot-clock/workload/issuer test binaries and a tiny Go PID 1. Guest loopback and a fixture localhost hosts file support actual issuer TLS/process, carrier TLS/gRPC and controller HTTP client tests; neither affects the host. The workload fixture adds 192.0.2.10/32 to guest loopback for an exact destination TCP test without relaxing production destination checks. SQLite, issuer databases and temporary encrypted fixture keys live in guest tmpfs. This verifies Linux execution and process-crash behavior; it is not an Ubuntu installation, Linux race run or hardware power-loss test.
 
 Run ./scripts/test-linux.ps1 after preparing the local assets. Results are recorded in work/reports/linux-runtime.log. The harness requires a final PORTICO_LINUX_ALL_PASS marker and rejects test failures.
+
+For focused development, ./scripts/test-linux.ps1 -WorkloadOnly records work/reports/linux-workload-runtime.log and requires the distinct PORTICO_LINUX_WORKLOAD_PASS marker. That mode runs clock/workload unit tests and the guest destination integration group; it does not qualify the complete suite. The complete controller binary has a 600-second harness timeout after a measured full-suite run exceeded the prior 300-second limit. This test-process limit does not change any connection lease, activation or closure deadline.
 
 ## Pinned assets
 
