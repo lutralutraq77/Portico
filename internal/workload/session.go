@@ -24,6 +24,7 @@ type session struct {
 	stopOnce                                         sync.Once
 	stopped, finished, joined, active                bool
 	id, device, hostBinding                          string
+	hostPolicyRevision                               int64
 	auth                                             control.Authorization
 	destinationConn                                  net.Conn
 	lease, activation, absoluteBoot, hostLease, idle time.Duration
@@ -131,7 +132,7 @@ func (x *session) hosting(first bool) error {
 	}
 	x.mu.Lock()
 	defer x.mu.Unlock()
-	if !x.allowedAt(now) || (!first && (selected.HostBindingID != x.hostBinding || v.PolicyRevision < x.auth.PolicyRevision)) {
+	if !x.allowedAt(now) || v.PolicyRevision < x.hostPolicyRevision || (!first && (selected.HostBindingID != x.hostBinding || v.PolicyRevision < x.auth.PolicyRevision)) {
 		return ErrDenied
 	}
 	if first {
@@ -141,6 +142,7 @@ func (x *session) hosting(first bool) error {
 		x.hostUntil = earlier(x.hostUntil, selected.Until)
 	}
 	x.hostLease = deadline
+	x.hostPolicyRevision = v.PolicyRevision
 	return nil
 }
 func (x *session) accept(start sample, a control.Authorization, initial bool) error {
@@ -165,7 +167,7 @@ func (x *session) accept(start sample, a control.Authorization, initial bool) er
 	}
 	x.mu.Lock()
 	defer x.mu.Unlock()
-	if !x.allowedAt(now) || a.SessionUntil.After(x.hostUntil) {
+	if !x.allowedAt(now) || a.PolicyRevision < x.hostPolicyRevision || a.SessionUntil.After(x.hostUntil) {
 		return ErrDenied
 	}
 	if initial {

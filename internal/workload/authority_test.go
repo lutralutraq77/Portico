@@ -39,7 +39,7 @@ func authorityFixture(t *testing.T) (*session, sample, control.Authorization) {
 }
 
 func TestAuthorizationTransitionPinsOriginalAuthority(t *testing.T) {
-	for _, name := range []string{"valid", "session", "device", "connector", "certificate", "connector_certificate", "resource", "revision", "address", "port", "protocol", "sequence_repeat", "sequence_skip", "policy_rollback", "absolute_extension", "certificate_expiry", "host_expiry", "expired_old_lease", "stopped"} {
+	for _, name := range []string{"valid", "session", "device", "connector", "certificate", "connector_certificate", "resource", "revision", "address", "port", "protocol", "sequence_repeat", "sequence_skip", "policy_rollback", "hosting_revision", "absolute_extension", "certificate_expiry", "host_expiry", "expired_old_lease", "stopped"} {
 		t.Run(name, func(t *testing.T) {
 			x, start, a := authorityFixture(t)
 			a.Sequence++
@@ -72,6 +72,8 @@ func TestAuthorizationTransitionPinsOriginalAuthority(t *testing.T) {
 				a.Sequence++
 			case "policy_rollback":
 				a.PolicyRevision--
+			case "hosting_revision":
+				x.hostPolicyRevision = a.PolicyRevision + 1
 			case "absolute_extension":
 				a.SessionUntil = a.SessionUntil.Add(time.Second)
 				a.Resource.Until = a.SessionUntil
