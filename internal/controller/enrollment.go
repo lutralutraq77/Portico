@@ -214,6 +214,12 @@ func validSecret(secret, hash string) bool {
 // ReserveEnrollment binds a token permanently to one attempt and public key.
 // A retry may use another valid signature of the same empty CSR with that key.
 func (s *Store) ReserveEnrollment(ctx context.Context, actor, id, secret, attempt string, csrDER []byte) error {
+	return s.reserveEnrollment(ctx, actor, id, secret, attempt, csrDER, nil)
+}
+
+// A network redemption endpoint pins its configured issuer before reservation,
+// so a token for another ordinary profile cannot be consumed at the wrong URL.
+func (s *Store) reserveEnrollment(ctx context.Context, actor, id, secret, attempt string, csrDER []byte, trust *pki.Trust) error {
 	csr, e := pki.ParseCSR(csrDER)
 	if e != nil {
 		return ErrInvalid
@@ -225,6 +231,14 @@ func (s *Store) ReserveEnrollment(ctx context.Context, actor, id, secret, attemp
 		v, e := t.enrollment(id)
 		if e != nil {
 			return e
+		}
+		if trust != nil {
+			if e := t.trustBound(trust); e != nil {
+				return e
+			}
+			if v.issuer != trust.IssuerID() || v.profile != trust.Profile() {
+				return t.fail(ErrDenied)
+			}
 		}
 		if !validSecret(secret, v.tokenHash) || t.now.UnixNano() < v.created || t.now.UnixNano() >= v.expires {
 			return t.fail(ErrDenied)

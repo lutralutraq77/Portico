@@ -94,6 +94,7 @@ func main() {
 		{"/tests/connector", []string{"-test.v", "-test.shuffle=on", "-test.timeout=30s"}},
 		{"/tests/localfile", []string{"-test.v", "-test.shuffle=on", "-test.timeout=30s"}},
 		{"/tests/client", []string{"-test.v", "-test.shuffle=on", "-test.timeout=60s"}},
+		{"/tests/enrollment", []string{"-test.v", "-test.shuffle=on", "-test.timeout=180s"}},
 		{"/tests/workload", []string{"-test.v", "-test.shuffle=on", "-test.timeout=180s"}},
 		{"/tests/controller", []string{"-test.v", "-test.shuffle=on", "-test.timeout=600s"}},
 		{"/tests/pki", []string{"-test.v", "-test.shuffle=on", "-test.timeout=180s"}},
