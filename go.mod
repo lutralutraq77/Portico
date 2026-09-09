@@ -7,8 +7,8 @@ require (
 	github.com/go-jose/go-jose/v4 v4.1.5
 	github.com/go-webauthn/webauthn v0.18.0
 	github.com/google/uuid v1.6.0
-	golang.org/x/net v0.57.0
-	google.golang.org/grpc v1.83.1
+	golang.org/x/net v0.58.0
+	google.golang.org/grpc v1.83.2
 	google.golang.org/protobuf v1.36.12
 	modernc.org/sqlite v1.58.0
 )
