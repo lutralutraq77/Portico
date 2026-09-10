@@ -581,7 +581,7 @@ func TestGrantCancellationPreservesOtherResourceOnSameConnection(t *testing.T) {
 	}
 }
 
-func serveControlClient(t *testing.T, v *policyFixture, profile pki.Profile) (*control.Client, control.ClientConfig) {
+func serveControlClient(t *testing.T, v *policyFixture, profile pki.Profile, setup ...func(*PolicyHTTPServer)) (*control.Client, control.ClientConfig) {
 	t.Helper()
 	ln, e := net.Listen("tcp", "127.0.0.1:0")
 	must(t, e)
@@ -592,6 +592,9 @@ func serveControlClient(t *testing.T, v *policyFixture, profile pki.Profile) (*c
 	host := "localhost:" + port
 	server, e := v.engine.NewHTTPServer(PolicyHTTPConfig{Profile: profile, Host: host, ServerIdentity: serverIdentity})
 	must(t, e)
+	for _, configure := range setup {
+		configure(server)
+	}
 	ended := make(chan error, 1)
 	go func() { ended <- server.Serve(ln) }()
 	t.Cleanup(func() {

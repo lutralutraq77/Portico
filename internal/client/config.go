@@ -3,12 +3,14 @@ package client
 
 import (
 	"context"
+	"crypto/tls"
 	"errors"
 	"time"
 
 	"portico.local/portico/internal/carrier"
 	"portico.local/portico/internal/clockhealth"
 	"portico.local/portico/internal/control"
+	"portico.local/portico/internal/enrollment"
 	"portico.local/portico/internal/identityfile"
 	"portico.local/portico/internal/localfile"
 	"portico.local/portico/internal/pki"
@@ -30,6 +32,7 @@ type FileConfig struct {
 	Connectors              TrustFiles    `json:"connectors"`
 	IdentityCertificateFile string        `json:"identity_certificate_file"`
 	IdentityKeyFile         string        `json:"identity_key_file"`
+	EnrollmentConfigFile    string        `json:"enrollment_config_file,omitempty"`
 	Control                 EndpointFiles `json:"control"`
 	Carrier                 EndpointFiles `json:"carrier"`
 	OperationTimeoutMillis  int           `json:"operation_timeout_ms"`
@@ -45,9 +48,42 @@ type Configuration struct {
 func LoadConfig(path string) (*Configuration, error) { return loadConfig(path, localfile.Read) }
 
 func loadConfig(path string, read identityfile.Reader) (*Configuration, error) {
+	return loadConfigIdentity(path, read, nil)
+}
+
+// LoadEncryptedConfig accepts only version 2 with an encrypted enrollment
+// identity. A missing/failed unlock never falls back to plaintext key files.
+// The caller owns passphrase and clears it after this synchronous operation.
+func LoadEncryptedConfig(ctx context.Context, path string, passphrase []byte) (*Configuration, error) {
+	if ctx == nil || ctx.Err() != nil || len(passphrase) < 16 || len(passphrase) > 1024 {
+		return nil, ErrConfiguration
+	}
+	loaded, err := loadConfigIdentity(path, localfile.Read, func(file string, trust *pki.Trust) (tls.Certificate, error) {
+		config, err := enrollment.LoadConfig(file)
+		if err != nil {
+			return tls.Certificate{}, ErrConfiguration
+		}
+		return config.Identity(ctx, passphrase, trust)
+	})
+	if err != nil || ctx.Err() != nil {
+		return nil, ErrConfiguration
+	}
+	return loaded, nil
+}
+
+type identityUnlock func(string, *pki.Trust) (tls.Certificate, error)
+
+func loadConfigIdentity(path string, read identityfile.Reader, unlock identityUnlock) (*Configuration, error) {
 	data, err := read(path, wire.MaxBody, false)
 	var file FileConfig
-	if err != nil || wire.Decode(data, &file) != nil || file.Version != 1 || !pki.ValidID(file.DeploymentID) || file.OperationTimeoutMillis < 1 || file.OperationTimeoutMillis > 5000 || file.IdleTimeoutSeconds < 1 || file.IdleTimeoutSeconds > 900 || !identityfile.LoopbackEndpoint(file.Control.URL) || !identityfile.LoopbackEndpoint(file.Carrier.URL) {
+	if err != nil || wire.Decode(data, &file) != nil || !pki.ValidID(file.DeploymentID) || file.OperationTimeoutMillis < 1 || file.OperationTimeoutMillis > 5000 || file.IdleTimeoutSeconds < 1 || file.IdleTimeoutSeconds > 900 || !identityfile.LoopbackEndpoint(file.Control.URL) || !identityfile.LoopbackEndpoint(file.Carrier.URL) {
+		return nil, ErrConfiguration
+	}
+	if unlock == nil {
+		if file.Version != 1 || file.EnrollmentConfigFile != "" || file.IdentityCertificateFile == "" || file.IdentityKeyFile == "" {
+			return nil, ErrConfiguration
+		}
+	} else if file.Version != 2 || file.EnrollmentConfigFile == "" || file.IdentityCertificateFile != "" || file.IdentityKeyFile != "" {
 		return nil, ErrConfiguration
 	}
 	devices, err := read.Trust(file.DeploymentID, file.Devices, pki.Device)
@@ -58,7 +94,15 @@ func loadConfig(path string, read identityfile.Reader) (*Configuration, error) {
 	if err != nil {
 		return nil, ErrConfiguration
 	}
-	identity, err := read.Identity(devices, file.IdentityCertificateFile, file.IdentityKeyFile)
+	var identity tls.Certificate
+	if unlock == nil {
+		identity, err = read.Identity(devices, file.IdentityCertificateFile, file.IdentityKeyFile)
+	} else {
+		identity, err = unlock(file.EnrollmentConfigFile, devices)
+		if err == nil {
+			identity, err = devices.TLSIdentity(identity)
+		}
+	}
 	if err != nil {
 		return nil, ErrConfiguration
 	}

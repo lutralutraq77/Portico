@@ -77,7 +77,7 @@ func enrollmentHTTP(t *testing.T, f *enrollmentFixture, provider IssuanceProvide
 	if f.trust.Profile() == pki.Connector {
 		principal = f.f.connector.ID
 	}
-	v.config = enroll.Config{Redemption: endpoints[0], Activation: endpoints[1], Trust: f.trust, PrincipalID: principal, NotAfter: f.f.s.now().Add(time.Hour), Timeout: 5 * time.Second, MaxRequests: 2}
+	v.config = enroll.Config{Redemption: endpoints[0], Activation: endpoints[1], Trust: f.trust, PrincipalID: principal, NotAfter: f.f.s.now().Add(time.Hour).Truncate(time.Second), Timeout: 5 * time.Second, MaxRequests: 2}
 	var err error
 	v.client, err = enroll.New(v.config)
 	must(t, err)

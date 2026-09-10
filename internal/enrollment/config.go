@@ -2,6 +2,7 @@ package enrollment
 
 import (
 	"context"
+	"crypto/tls"
 	"path"
 	"strings"
 	"time"
@@ -108,4 +109,32 @@ func (c *Configuration) Activate(ctx context.Context, passphrase []byte) error {
 	}
 	defer client.Close()
 	return a.Activate(ctx, client)
+}
+
+// Identity unlocks the retained certificate/key without making an enrollment
+// request. The resource application supplies independent typed trust, checked
+// before decryption. A retained certificate is not evidence of activation or
+// current authorization: the resource's live TLS/registry checks still apply.
+func (c *Configuration) Identity(ctx context.Context, passphrase []byte, expected *pki.Trust) (tls.Certificate, error) {
+	if c == nil || ctx == nil || ctx.Err() != nil || expected == nil || c.client.Trust == nil || expected.Profile() != c.client.Trust.Profile() || expected.DeploymentID() != c.client.Trust.DeploymentID() || expected.IssuerID() != c.client.Trust.IssuerID() || expected.RootFingerprint() != c.client.Trust.RootFingerprint() || expected.IssuerFingerprint() != c.client.Trust.IssuerFingerprint() {
+		return tls.Certificate{}, ErrRejected
+	}
+	a, err := OpenAttempt(c.stateFile, c.client, c.invitation, passphrase)
+	if err != nil || ctx.Err() != nil {
+		return tls.Certificate{}, ErrRejected
+	}
+	client, err := New(c.client)
+	if err != nil {
+		return tls.Certificate{}, ErrRejected
+	}
+	defer client.Close()
+	identity, err := a.Certificate(client)
+	if err != nil || ctx.Err() != nil {
+		return tls.Certificate{}, ErrRejected
+	}
+	identity, err = expected.TLSIdentity(identity)
+	if err != nil {
+		return tls.Certificate{}, ErrRejected
+	}
+	return identity, nil
 }

@@ -39,9 +39,15 @@ type guestApplication struct {
 
 func guestStartApplication(t *testing.T, args ...string) *guestApplication {
 	t.Helper()
+	return guestStartApplicationWithFiles(t, nil, args...)
+}
+
+func guestStartApplicationWithFiles(t *testing.T, files []*os.File, args ...string) *guestApplication {
+	t.Helper()
 	requireWorkloadGuest(t)
 	root, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
 	v := &guestApplication{command: exec.CommandContext(root, "/portico", args...), done: make(chan struct{})}
+	v.command.ExtraFiles = files
 	childInput, input, err := os.Pipe()
 	must(t, err)
 	output, childOutput, err := os.Pipe()
@@ -86,10 +92,10 @@ func (v *guestApplication) ended(t *testing.T, success bool, message string) {
 	}
 }
 
-func guestClientConfiguration(t *testing.T, v *workloadFixture, connectorPath string) (string, client.FileConfig) {
+func guestClientConfiguration(t *testing.T, v *workloadFixture, connectorPath string, setup ...func(*PolicyHTTPServer)) (string, client.FileConfig) {
 	t.Helper()
 	p := v.carrier.policy
-	_, endpoint := serveControlClient(t, p, pki.Device)
+	_, endpoint := serveControlClient(t, p, pki.Device, setup...)
 	encoded, err := os.ReadFile(connectorPath)
 	must(t, err)
 	var connectorFile struct {

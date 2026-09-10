@@ -24,6 +24,9 @@ func TestUnsupportedOperationsFailWithoutReflectingInput(t *testing.T) {
 		{"enroll", "activate", "--config", "synthetic-sensitive-input", "--secrets-fd", "03"},
 		{"enroll", "reset", "--config", "synthetic-sensitive-input", "--secrets-fd", "3"},
 		{"enroll", "redeem", "--config", "synthetic-sensitive-input", "--token", "synthetic-sensitive-input"},
+		{"client", "catalog", "--config", "synthetic-sensitive-input", "--secrets-fd", "0"},
+		{"client", "catalog", "--config", "synthetic-sensitive-input", "--secrets-fd", "03"},
+		{"client", "connect", "--config", "synthetic-sensitive-input", "--resource", "59d73719-4dc0-4d8c-898e-aa2f9466a89e", "--revision", "1", "--secrets-fd", "1"},
 	} {
 		t.Run(args[0], func(t *testing.T) {
 			var out, errout bytes.Buffer

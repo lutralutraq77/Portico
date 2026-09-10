@@ -30,7 +30,7 @@ type Info struct {
 	DevelopmentOnly bool   `json:"development_only"`
 }
 
-const usage = "Usage: portico version [--json]\n       portico connector run --config /absolute/path/config.json\n       portico client catalog --config /absolute/path/config.json\n       portico client connect --config /absolute/path/config.json --resource UUID --revision N\n       portico enroll prepare|redeem|activate --config /absolute/path/config.json --secrets-fd 3\n       portico help\nPhase 6 development only; Linux client and connector use loopback control/carrier services. Connect requires application stdin/stdout pipes. Enrollment requires a separate inherited secrets pipe at descriptor 3.\n"
+const usage = "Usage: portico version [--json]\n       portico connector run --config /absolute/path/config.json\n       portico client catalog --config /absolute/path/config.json [--secrets-fd 3]\n       portico client connect --config /absolute/path/config.json --resource UUID --revision N [--secrets-fd 3]\n       portico enroll prepare|redeem|activate --config /absolute/path/config.json --secrets-fd 3\n       portico help\nPhase 6 development only; Linux client and connector use loopback control/carrier services. Connect requires application stdin/stdout pipes. Enrollment and version 2 client identities require a separate inherited secrets pipe at descriptor 3.\n"
 
 // Run handles a bounded command surface. Arguments are never echoed on errors,
 // because future invocations may accidentally contain enrollment material.
@@ -70,8 +70,8 @@ func RunInputContext(ctx context.Context, args []string, stdin *os.File, stdout,
 			return 1
 		}
 		return 0
-	case len(args) == 4 && args[0] == "client" && args[1] == "catalog" && args[2] == "--config":
-		config, err := client.LoadConfig(args[3])
+	case (len(args) == 4 || (len(args) == 6 && args[4] == "--secrets-fd" && args[5] == "3")) && args[0] == "client" && args[1] == "catalog" && args[2] == "--config":
+		config, err := loadClientConfiguration(ctx, args[3], len(args) == 6)
 		if err != nil {
 			_, _ = io.WriteString(stderr, "Client configuration rejected.\n")
 			return 1
@@ -87,13 +87,13 @@ func RunInputContext(ctx context.Context, args []string, stdin *os.File, stdout,
 			return 1
 		}
 		return 0
-	case len(args) == 8 && args[0] == "client" && args[1] == "connect" && args[2] == "--config" && args[4] == "--resource" && args[6] == "--revision":
+	case (len(args) == 8 || (len(args) == 10 && args[8] == "--secrets-fd" && args[9] == "3")) && args[0] == "client" && args[1] == "connect" && args[2] == "--config" && args[4] == "--resource" && args[6] == "--revision":
 		revision, err := strconv.ParseInt(args[7], 10, 64)
 		if err != nil || revision < 1 || strconv.FormatInt(revision, 10) != args[7] || !pki.ValidID(args[5]) {
 			_, _ = io.WriteString(stderr, "Unsupported command or arguments. Use portico help.\n")
 			return 2
 		}
-		config, err := client.LoadConfig(args[3])
+		config, err := loadClientConfiguration(ctx, args[3], len(args) == 10)
 		if err != nil {
 			_, _ = io.WriteString(stderr, "Client configuration rejected.\n")
 			return 1
