@@ -48,6 +48,9 @@ func startGuestConnectorProcess(t *testing.T, path string) *guestConnectorProces
 				t.Error("connector process did not join during cleanup")
 			}
 		}
+		if t.Failed() && p.joined {
+			t.Logf("connector process output after joining: %q", p.logs.String())
+		}
 	})
 	return p
 }
@@ -143,6 +146,11 @@ func TestWorkloadGuestConnectorRevocationRestartAndReplay(t *testing.T) {
 	for _, kind := range []string{"connector", "certificate"} {
 		t.Run(kind, func(t *testing.T) {
 			v := newWorkloadFixture(t)
+			t.Cleanup(func() {
+				if t.Failed() {
+					t.Logf("carrier diagnostics: %+v admissions=%d rejections=%d destination accepts=%d closes=%d", v.carrier.relay.Stats(), v.carrier.admitted.Load(), v.carrier.rejected.Load(), v.connections.Load(), v.closed.Load())
+				}
+			})
 			v.server.Close()
 			must(t, v.carrier.connector.Close())
 			p, f := v.carrier.policy, v.carrier.policy.device.f
@@ -184,7 +192,10 @@ func TestWorkloadGuestConnectorRevocationRestartAndReplay(t *testing.T) {
 			runtimeEcho(t, bConn)
 
 			process := startGuestConnectorProcess(t, configPath)
-			carrierEventually(t, func() bool { return v.carrier.relay.Stats().Waiting == 2 })
+			carrierEventually(t, func() bool {
+				process.requireRunning(t)
+				return v.carrier.relay.Stats().Waiting == 2
+			})
 			type opened struct {
 				c   *workload.Conn
 				err error
@@ -198,7 +209,10 @@ func TestWorkloadGuestConnectorRevocationRestartAndReplay(t *testing.T) {
 			for i := 0; i < 2; i++ {
 				select {
 				case r := <-results:
-					must(t, r.err)
+					if r.err != nil {
+						process.requireRunning(t)
+						t.Fatalf("initial workload connection rejected while connector remained running: %v; relay=%+v; destination accepts=%d closes=%d", r.err, v.carrier.relay.Stats(), v.connections.Load(), v.closed.Load())
+					}
 					t.Cleanup(func() { _ = r.c.Close() })
 					sessions = append(sessions, r.c)
 					traffic = append(traffic, startRevocationTraffic(t, r.c, byte(0x41+i)))

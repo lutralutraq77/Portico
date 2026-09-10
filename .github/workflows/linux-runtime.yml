@@ -1,0 +1,46 @@
+name: Isolated Linux runtime
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: linux-runtime-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  guest:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    env:
+      GOMAXPROCS: '2'
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version: '1.27.1'
+          cache: false
+      - name: Install Linux build prerequisites
+        shell: bash
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes --no-install-recommends build-essential libglib2.0-dev ninja-build python3-venv python3-setuptools python3-wheel xorriso
+      - name: Build pinned QEMU and extract pinned kernel
+        run: ./scripts/prepare-linux-runtime.ps1
+      - name: Execute complete suite in NIC-less Linux guest
+        run: ./scripts/test-linux.ps1
+      - name: Upload isolated guest evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: isolated-linux-runtime
+          path: |
+            work/reports/linux-runtime.log
+            work/reports/linux-runtime-environment.json
+            work/toolchains/qemu-linux-build-*/meson-logs/meson-log.txt
+          retention-days: 14
