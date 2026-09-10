@@ -27,6 +27,10 @@ import (
 )
 
 func guestSecretApplication(t *testing.T, secret any, args ...string) *guestApplication {
+	return guestSecretConfiguredApplication(t, secret, nil, args...)
+}
+
+func guestSecretConfiguredApplication(t *testing.T, secret any, process *syscall.SysProcAttr, args ...string) *guestApplication {
 	t.Helper()
 	requireWorkloadGuest(t)
 	data, err := json.Marshal(secret)
@@ -39,10 +43,13 @@ func guestSecretApplication(t *testing.T, secret any, args ...string) *guestAppl
 	must(t, err)
 	defer reader.Close()
 	defer writer.Close()
+	if process != nil && process.Credential != nil {
+		must(t, reader.Chown(int(process.Credential.Uid), int(process.Credential.Gid)))
+	}
 	_, err = writer.Write(data)
 	must(t, err)
 	must(t, writer.Close())
-	return guestStartApplicationWithFiles(t, []*os.File{reader}, args...)
+	return guestStartConfiguredApplication(t, []*os.File{reader}, process, args...)
 }
 
 func guestSecretApplicationResult(t *testing.T, p *guestApplication, success bool, message string) []byte {

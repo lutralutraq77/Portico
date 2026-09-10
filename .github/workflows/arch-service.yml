@@ -1,0 +1,47 @@
+name: Arch user service runtime
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: arch-service-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  service:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    env:
+      GOMAXPROCS: '2'
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version: '1.27.1'
+          cache: false
+      - name: Install Linux build prerequisites
+        shell: bash
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes --no-install-recommends build-essential libglib2.0-dev ninja-build python3-venv python3-setuptools python3-wheel xorriso
+      - name: Build and qualify exact-source Arch development package
+        run: ./scripts/test-arch-package.ps1
+      - name: Build pinned QEMU and extract pinned kernel
+        run: ./scripts/prepare-linux-runtime.ps1
+      - name: Execute installed unit under actual systemd user manager in NIC-less guest
+        run: ./scripts/test-arch-systemd.ps1
+      - name: Upload user service qualification
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: arch-user-service-runtime
+          path: |
+            work/arch-systemd/
+            work/arch-package/
+          retention-days: 7

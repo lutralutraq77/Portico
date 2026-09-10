@@ -60,6 +60,12 @@ func guestStartConfiguredApplication(t *testing.T, files []*os.File, process *sy
 	output, childOutput, err := os.Pipe()
 	must(t, err)
 	v.input, v.output = input, output
+	// A fixture that launches another UID must give that identity its pipe
+	// inodes too: the real CLI safely reopens its inherited /proc/self/fd paths.
+	if process != nil && process.Credential != nil {
+		must(t, childInput.Chown(int(process.Credential.Uid), int(process.Credential.Gid)))
+		must(t, childOutput.Chown(int(process.Credential.Uid), int(process.Credential.Gid)))
+	}
 	v.command.Stdin, v.command.Stdout, v.command.Stderr = childInput, childOutput, &v.logs
 	err = v.command.Start()
 	_ = childInput.Close()

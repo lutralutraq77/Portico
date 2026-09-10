@@ -1,6 +1,6 @@
 # Roadmap and Phase 0 handoff
 
-Status: active implementation is Phase 6, the Linux/Arch client. Phases 0–2 have foundation evidence; Phase 3 issuer/admin/recovery software retains physical and deployment gates. Phase 4 policy and Phase 5 connector components have recorded test evidence. Phase 6 resource access, encrypted enrollment, terminal input, Arch packaging and protected IPC are implemented; the agent catalog has complete hosted qualification, and agent resource streaming is under final integration qualification. Services and desktop/browser/platform workflows remain open. The active objective covers all fifteen phases; see the [delivery ledger](docs/delivery-status.md).
+Status: active implementation is Phase 6, the Linux/Arch client. Phases 0–2 have foundation evidence; Phase 3 issuer/admin/recovery software retains physical and deployment gates. Phase 4 policy and Phase 5 connector components have recorded test evidence. Phase 6 resource access, encrypted enrollment, terminal input, Arch packaging, protected IPC and agent catalog/streaming have hosted qualification. The locked daemon and inactive user unit passed hosted qualification; an actual systemd guest fixture now covers service lifecycle, applied restrictions and enrolled-identity resource flows and awaits execution. Desktop/browser/platform workflows remain open. The active objective covers all fifteen phases; see the [delivery ledger](docs/delivery-status.md).
 
 ## Delivery phases and gates
 | Phase | Scope | Required exit evidence |
