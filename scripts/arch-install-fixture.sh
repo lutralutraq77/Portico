@@ -1,12 +1,19 @@
 #!/usr/bin/env bash
 set -euo pipefail
+trap 'printf "ARCH_INSTALL_FAILED line=%s status=%s\n" "$LINENO" "$?" >&2' ERR
 test "$(id -u)" -eq 0
 packages=(/input/portico-cli-development-*.pkg.tar.zst)
 test "${#packages[@]}" -eq 1
 test -f "${packages[0]}"
+# The official minimal image deliberately omits manuals and documentation.
+# Admit only this package's two documentation files so this fixture can check
+# their real installation. Keep every signature and other extraction rule.
+pacman-conf NoExtract
+printf '\n[options]\nNoExtract = !usr/share/man/man1/portico.1.gz !usr/share/doc/portico-cli-development/DEVELOPMENT.txt\n' >> /etc/pacman.conf
 # This is a fresh networkless disposable container, with no host install roots.
 # Use its unchanged local-package signature policy. No signature-policy override.
 pacman -U --noconfirm "${packages[0]}"
+stat -c 'installed binary mode=%a uid=%u gid=%g' /usr/bin/portico
 test "$(stat -c '%u:%g:%a' /usr/bin/portico)" = '0:0:755'
 test -f /usr/share/man/man1/portico.1.gz || test -f /usr/share/man/man1/portico.1
 test -f /usr/share/doc/portico-cli-development/DEVELOPMENT.txt
