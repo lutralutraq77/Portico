@@ -20,6 +20,7 @@ const _ = grpc.SupportPackageIsVersion9
 
 const (
 	Agent_Catalog_FullMethodName = "/portico.agent.v1.Agent/Catalog"
+	Agent_Connect_FullMethodName = "/portico.agent.v1.Agent/Connect"
 )
 
 // AgentClient is the client API for Agent service.
@@ -27,6 +28,7 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type AgentClient interface {
 	Catalog(ctx context.Context, in *CatalogRequest, opts ...grpc.CallOption) (*CatalogResponse, error)
+	Connect(ctx context.Context, opts ...grpc.CallOption) (grpc.BidiStreamingClient[TunnelFrame, TunnelFrame], error)
 }
 
 type agentClient struct {
@@ -47,11 +49,25 @@ func (c *agentClient) Catalog(ctx context.Context, in *CatalogRequest, opts ...g
 	return out, nil
 }
 
+func (c *agentClient) Connect(ctx context.Context, opts ...grpc.CallOption) (grpc.BidiStreamingClient[TunnelFrame, TunnelFrame], error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	stream, err := c.cc.NewStream(ctx, &Agent_ServiceDesc.Streams[0], Agent_Connect_FullMethodName, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &grpc.GenericClientStream[TunnelFrame, TunnelFrame]{ClientStream: stream}
+	return x, nil
+}
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type Agent_ConnectClient = grpc.BidiStreamingClient[TunnelFrame, TunnelFrame]
+
 // AgentServer is the server API for Agent service.
 // All implementations must embed UnimplementedAgentServer
 // for forward compatibility.
 type AgentServer interface {
 	Catalog(context.Context, *CatalogRequest) (*CatalogResponse, error)
+	Connect(grpc.BidiStreamingServer[TunnelFrame, TunnelFrame]) error
 	mustEmbedUnimplementedAgentServer()
 }
 
@@ -64,6 +80,9 @@ type UnimplementedAgentServer struct{}
 
 func (UnimplementedAgentServer) Catalog(context.Context, *CatalogRequest) (*CatalogResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method Catalog not implemented")
+}
+func (UnimplementedAgentServer) Connect(grpc.BidiStreamingServer[TunnelFrame, TunnelFrame]) error {
+	return status.Error(codes.Unimplemented, "method Connect not implemented")
 }
 func (UnimplementedAgentServer) mustEmbedUnimplementedAgentServer() {}
 func (UnimplementedAgentServer) testEmbeddedByValue()               {}
@@ -104,6 +123,13 @@ func _Agent_Catalog_Handler(srv interface{}, ctx context.Context, dec func(inter
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Agent_Connect_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(AgentServer).Connect(&grpc.GenericServerStream[TunnelFrame, TunnelFrame]{ServerStream: stream})
+}
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type Agent_ConnectServer = grpc.BidiStreamingServer[TunnelFrame, TunnelFrame]
+
 // Agent_ServiceDesc is the grpc.ServiceDesc for Agent service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -116,6 +142,13 @@ var Agent_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Agent_Catalog_Handler,
 		},
 	},
-	Streams:  []grpc.StreamDesc{},
+	Streams: []grpc.StreamDesc{
+		{
+			StreamName:    "Connect",
+			Handler:       _Agent_Connect_Handler,
+			ServerStreams: true,
+			ClientStreams: true,
+		},
+	},
 	Metadata: "agent.proto",
 }

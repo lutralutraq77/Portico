@@ -26,6 +26,25 @@ message CatalogResponse {
   repeated Resource resources = 2;
 }
 
+// OPEN selects only a resource ID and exact revision. READY follows the
+// existing remote authorization/open handshake. Client CloseSend is input FIN;
+// server FIN closes output only. Final RPC status still carries late failures.
+message TunnelFrame {
+  enum Kind {
+    UNSPECIFIED = 0;
+    OPEN = 1;
+    READY = 2;
+    DATA = 3;
+    FIN = 4;
+  }
+  uint32 version = 1;
+  Kind kind = 2;
+  string resource_id = 3;
+  int64 revision = 4;
+  bytes data = 5;
+}
+
 service Agent {
   rpc Catalog(CatalogRequest) returns (CatalogResponse);
+  rpc Connect(stream TunnelFrame) returns (stream TunnelFrame);
 }

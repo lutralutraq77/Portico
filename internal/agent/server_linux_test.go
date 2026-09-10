@@ -52,7 +52,7 @@ func serveFixture(t *testing.T, b catalogBackend) (*server, string) {
 	done := make(chan error, 1)
 	go func() { done <- s.grpc.Serve(&limitedListener{Listener: l, server: s}) }()
 	t.Cleanup(func() {
-		s.grpc.Stop()
+		s.stop()
 		l.Close()
 		select {
 		case <-done:
@@ -195,7 +195,7 @@ func TestGuestAgentCatalogRPC(t *testing.T) {
 		case <-time.After(3 * time.Second):
 			t.Fatal("client cancellation blocked")
 		}
-		s.grpc.Stop()
+		s.stop()
 		select {
 		case <-finished:
 		default:
@@ -251,7 +251,7 @@ func TestGuestAgentCatalogRPC(t *testing.T) {
 		if s.connections.Load() != maxConnections {
 			t.Fatal("excess connection changed admitted count")
 		}
-		s.grpc.Stop()
+		s.stop()
 		if s.connections.Load() != 0 {
 			t.Fatal("stop retained unauthenticated handshakes")
 		}

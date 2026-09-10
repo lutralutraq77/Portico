@@ -22,6 +22,20 @@ type Output interface {
 // pollable: Close/deadlines interrupt blocked operations. There is no listener,
 // proxy target field or cached permit. Configuration selects native clock health.
 func (c *Configuration) Connect(ctx context.Context, id string, revision int64, input Input, output Output) error {
+	return c.connect(ctx, id, revision, input, output, nil)
+}
+
+// ConnectReady reports successful remote authorization/open before consuming
+// application input. A failed notification closes the already opened stream;
+// it never supplies or substitutes a permit. Endpoint ownership matches Connect.
+func (c *Configuration) ConnectReady(ctx context.Context, id string, revision int64, input Input, output Output, ready func() error) error {
+	if ready == nil {
+		return ErrConfiguration
+	}
+	return c.connect(ctx, id, revision, input, output, ready)
+}
+
+func (c *Configuration) connect(ctx context.Context, id string, revision int64, input Input, output Output, ready func() error) error {
 	if input == nil || output == nil {
 		return ErrConfiguration
 	}
@@ -35,6 +49,9 @@ func (c *Configuration) Connect(ctx context.Context, id string, revision int64, 
 		return err
 	}
 	defer connection.close()
+	if ready != nil && ready() != nil {
+		return ErrConnection
+	}
 	return forward(ctx, connection.stream, input, output, c.workload.OperationTimeout)
 }
 

@@ -21,6 +21,61 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+type TunnelFrame_Kind int32
+
+const (
+	TunnelFrame_UNSPECIFIED TunnelFrame_Kind = 0
+	TunnelFrame_OPEN        TunnelFrame_Kind = 1
+	TunnelFrame_READY       TunnelFrame_Kind = 2
+	TunnelFrame_DATA        TunnelFrame_Kind = 3
+	TunnelFrame_FIN         TunnelFrame_Kind = 4
+)
+
+// Enum value maps for TunnelFrame_Kind.
+var (
+	TunnelFrame_Kind_name = map[int32]string{
+		0: "UNSPECIFIED",
+		1: "OPEN",
+		2: "READY",
+		3: "DATA",
+		4: "FIN",
+	}
+	TunnelFrame_Kind_value = map[string]int32{
+		"UNSPECIFIED": 0,
+		"OPEN":        1,
+		"READY":       2,
+		"DATA":        3,
+		"FIN":         4,
+	}
+)
+
+func (x TunnelFrame_Kind) Enum() *TunnelFrame_Kind {
+	p := new(TunnelFrame_Kind)
+	*p = x
+	return p
+}
+
+func (x TunnelFrame_Kind) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (TunnelFrame_Kind) Descriptor() protoreflect.EnumDescriptor {
+	return file_agent_proto_enumTypes[0].Descriptor()
+}
+
+func (TunnelFrame_Kind) Type() protoreflect.EnumType {
+	return &file_agent_proto_enumTypes[0]
+}
+
+func (x TunnelFrame_Kind) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use TunnelFrame_Kind.Descriptor instead.
+func (TunnelFrame_Kind) EnumDescriptor() ([]byte, []int) {
+	return file_agent_proto_rawDescGZIP(), []int{3, 0}
+}
+
 // OS peer credentials authenticate the local caller. Inventory is advisory;
 // neither this response nor a local socket connection grants resource access.
 type CatalogRequest struct {
@@ -227,6 +282,85 @@ func (x *CatalogResponse) GetResources() []*Resource {
 	return nil
 }
 
+// OPEN selects only a resource ID and exact revision. READY follows the
+// existing remote authorization/open handshake. Client CloseSend is input FIN;
+// server FIN closes output only. Final RPC status still carries late failures.
+type TunnelFrame struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Version       uint32                 `protobuf:"varint,1,opt,name=version,proto3" json:"version,omitempty"`
+	Kind          TunnelFrame_Kind       `protobuf:"varint,2,opt,name=kind,proto3,enum=portico.agent.v1.TunnelFrame_Kind" json:"kind,omitempty"`
+	ResourceId    string                 `protobuf:"bytes,3,opt,name=resource_id,json=resourceId,proto3" json:"resource_id,omitempty"`
+	Revision      int64                  `protobuf:"varint,4,opt,name=revision,proto3" json:"revision,omitempty"`
+	Data          []byte                 `protobuf:"bytes,5,opt,name=data,proto3" json:"data,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *TunnelFrame) Reset() {
+	*x = TunnelFrame{}
+	mi := &file_agent_proto_msgTypes[3]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *TunnelFrame) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*TunnelFrame) ProtoMessage() {}
+
+func (x *TunnelFrame) ProtoReflect() protoreflect.Message {
+	mi := &file_agent_proto_msgTypes[3]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use TunnelFrame.ProtoReflect.Descriptor instead.
+func (*TunnelFrame) Descriptor() ([]byte, []int) {
+	return file_agent_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *TunnelFrame) GetVersion() uint32 {
+	if x != nil {
+		return x.Version
+	}
+	return 0
+}
+
+func (x *TunnelFrame) GetKind() TunnelFrame_Kind {
+	if x != nil {
+		return x.Kind
+	}
+	return TunnelFrame_UNSPECIFIED
+}
+
+func (x *TunnelFrame) GetResourceId() string {
+	if x != nil {
+		return x.ResourceId
+	}
+	return ""
+}
+
+func (x *TunnelFrame) GetRevision() int64 {
+	if x != nil {
+		return x.Revision
+	}
+	return 0
+}
+
+func (x *TunnelFrame) GetData() []byte {
+	if x != nil {
+		return x.Data
+	}
+	return nil
+}
+
 var File_agent_proto protoreflect.FileDescriptor
 
 const file_agent_proto_rawDesc = "" +
@@ -246,9 +380,23 @@ const file_agent_proto_rawDesc = "" +
 	"\x05until\x18\t \x01(\tR\x05until\"e\n" +
 	"\x0fCatalogResponse\x12\x18\n" +
 	"\aversion\x18\x01 \x01(\rR\aversion\x128\n" +
-	"\tresources\x18\x02 \x03(\v2\x1a.portico.agent.v1.ResourceR\tresources2W\n" +
+	"\tresources\x18\x02 \x03(\v2\x1a.portico.agent.v1.ResourceR\tresources\"\xf1\x01\n" +
+	"\vTunnelFrame\x12\x18\n" +
+	"\aversion\x18\x01 \x01(\rR\aversion\x126\n" +
+	"\x04kind\x18\x02 \x01(\x0e2\".portico.agent.v1.TunnelFrame.KindR\x04kind\x12\x1f\n" +
+	"\vresource_id\x18\x03 \x01(\tR\n" +
+	"resourceId\x12\x1a\n" +
+	"\brevision\x18\x04 \x01(\x03R\brevision\x12\x12\n" +
+	"\x04data\x18\x05 \x01(\fR\x04data\"?\n" +
+	"\x04Kind\x12\x0f\n" +
+	"\vUNSPECIFIED\x10\x00\x12\b\n" +
+	"\x04OPEN\x10\x01\x12\t\n" +
+	"\x05READY\x10\x02\x12\b\n" +
+	"\x04DATA\x10\x03\x12\a\n" +
+	"\x03FIN\x10\x042\xa4\x01\n" +
 	"\x05Agent\x12N\n" +
-	"\aCatalog\x12 .portico.agent.v1.CatalogRequest\x1a!.portico.agent.v1.CatalogResponseB(Z&portico.local/portico/internal/agentpbb\x06proto3"
+	"\aCatalog\x12 .portico.agent.v1.CatalogRequest\x1a!.portico.agent.v1.CatalogResponse\x12K\n" +
+	"\aConnect\x12\x1d.portico.agent.v1.TunnelFrame\x1a\x1d.portico.agent.v1.TunnelFrame(\x010\x01B(Z&portico.local/portico/internal/agentpbb\x06proto3"
 
 var (
 	file_agent_proto_rawDescOnce sync.Once
@@ -262,21 +410,27 @@ func file_agent_proto_rawDescGZIP() []byte {
 	return file_agent_proto_rawDescData
 }
 
-var file_agent_proto_msgTypes = make([]protoimpl.MessageInfo, 3)
+var file_agent_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
+var file_agent_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
 var file_agent_proto_goTypes = []any{
-	(*CatalogRequest)(nil),  // 0: portico.agent.v1.CatalogRequest
-	(*Resource)(nil),        // 1: portico.agent.v1.Resource
-	(*CatalogResponse)(nil), // 2: portico.agent.v1.CatalogResponse
+	(TunnelFrame_Kind)(0),   // 0: portico.agent.v1.TunnelFrame.Kind
+	(*CatalogRequest)(nil),  // 1: portico.agent.v1.CatalogRequest
+	(*Resource)(nil),        // 2: portico.agent.v1.Resource
+	(*CatalogResponse)(nil), // 3: portico.agent.v1.CatalogResponse
+	(*TunnelFrame)(nil),     // 4: portico.agent.v1.TunnelFrame
 }
 var file_agent_proto_depIdxs = []int32{
-	1, // 0: portico.agent.v1.CatalogResponse.resources:type_name -> portico.agent.v1.Resource
-	0, // 1: portico.agent.v1.Agent.Catalog:input_type -> portico.agent.v1.CatalogRequest
-	2, // 2: portico.agent.v1.Agent.Catalog:output_type -> portico.agent.v1.CatalogResponse
-	2, // [2:3] is the sub-list for method output_type
-	1, // [1:2] is the sub-list for method input_type
-	1, // [1:1] is the sub-list for extension type_name
-	1, // [1:1] is the sub-list for extension extendee
-	0, // [0:1] is the sub-list for field type_name
+	2, // 0: portico.agent.v1.CatalogResponse.resources:type_name -> portico.agent.v1.Resource
+	0, // 1: portico.agent.v1.TunnelFrame.kind:type_name -> portico.agent.v1.TunnelFrame.Kind
+	1, // 2: portico.agent.v1.Agent.Catalog:input_type -> portico.agent.v1.CatalogRequest
+	4, // 3: portico.agent.v1.Agent.Connect:input_type -> portico.agent.v1.TunnelFrame
+	3, // 4: portico.agent.v1.Agent.Catalog:output_type -> portico.agent.v1.CatalogResponse
+	4, // 5: portico.agent.v1.Agent.Connect:output_type -> portico.agent.v1.TunnelFrame
+	4, // [4:6] is the sub-list for method output_type
+	2, // [2:4] is the sub-list for method input_type
+	2, // [2:2] is the sub-list for extension type_name
+	2, // [2:2] is the sub-list for extension extendee
+	0, // [0:2] is the sub-list for field type_name
 }
 
 func init() { file_agent_proto_init() }
@@ -289,13 +443,14 @@ func file_agent_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_agent_proto_rawDesc), len(file_agent_proto_rawDesc)),
-			NumEnums:      0,
-			NumMessages:   3,
+			NumEnums:      1,
+			NumMessages:   4,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
 		GoTypes:           file_agent_proto_goTypes,
 		DependencyIndexes: file_agent_proto_depIdxs,
+		EnumInfos:         file_agent_proto_enumTypes,
 		MessageInfos:      file_agent_proto_msgTypes,
 	}.Build()
 	File_agent_proto = out.File

@@ -1,0 +1,29 @@
+# Development Linux agent resource streams
+
+An application can use the explicitly unlocked [local agent](agent-catalog.md) without receiving its private key:
+
+```text
+portico agent connect --socket /private/path/agent.sock --resource UUID --revision N
+```
+
+The command requires separate application stdin/stdout pipes. Stdout contains only resource bytes; errors on stderr remain fixed messages. The agent uses the existing client's fresh authenticated catalog and exact ID/revision selection, pinned control/carrier transport, inner mutual TLS, remote authorization, live leases/revocation and final write acknowledgement. The local request cannot supply a destination, connector override, grant, certificate or newer revision. Per-user socket access is not itself resource authority. The local kernel UID checks and encrypted-identity loading rules remain those of the [protected transport](local-ipc.md) and [agent session](agent-catalog.md).
+
+## Stream contract
+
+The generated `Agent.Connect` bidirectional gRPC protocol requires one version-1 OPEN frame containing only the resource ID and revision. READY is sent only after the existing remote authorization/open handshake succeeds. The client reads no application input before READY. Subsequent client frames contain DATA only, with 1–32,768 bytes and no selector fields. Closing the request stream means input FIN. The server independently sends DATA and one output FIN. Unknown fields, invalid versions, repeated selectors, empty/oversized DATA, client READY/FIN and server DATA after FIN reject.
+
+Output FIN closes the application's output but leaves input usable. It is not final success. Successful command completion requires input FIN, output FIN and final successful gRPC status after the backend's remote acknowledgement checks. A failure after output FIN still produces a failed exit. The adapter cannot retract bytes already consumed by an application.
+
+## Bounds and shutdown
+
+Existing limits remain eight accepted connections and eight active backend operations, one concurrent RPC per connection, 64 KiB messages and 8 KiB headers. There is no unbounded stream queue. OPEN must arrive within five seconds. The command's initial connection/READY stage and the server's remote opening stage are each bounded to ten seconds; existing narrower backend authorization deadlines continue to apply. Each DATA chunk delivered to application output has a five-second write deadline. This bounds a blocked application even when gRPC's final status is waiting behind an earlier output write. A successful backend completion allows at most five seconds for remaining local framing to finish. The complete connection is bounded by the agent's existing fifteen-minute unlock window.
+
+Cancellation closes owned pollable endpoints. A handler's admission slot remains held until its input receiver, output sender and backend have all exited, including gRPC calls canceled by handler return. Agent shutdown closes transports, joins handlers and then joins these workers. Successful transfer and output half-close are tested separately from this cancellation path. No OS DNS, routing, firewall or VPN settings are changed.
+
+## Qualification
+
+The focused NIC-less Linux guest passed 15 top-level checks and 92 subcases with zero failures or skips. This includes actual generated RPCs, 300,000 exact binary bytes, output FIN before input FIN, failure after output FIN, no input consumption on denial, cancellation while application I/O is blocked, server shutdown, an idle OPEN timeout, eight simultaneous streams and the actual command's application pipes. Hostile peers cover malformed ordering and false completion. The blocked-output shutdown check completed in 5.08 seconds under its explicit five-second delivery deadline plus fixture scheduling allowance.
+
+The log is `work/reports/phase-6-agent-stream-delivery/runtime.log`, SHA-256 `45d0fdeeab9dd0a60b0a13dac7b90b47541ce9ab6706336c60940021a97cb022`; initramfs SHA-256 `7a01c604ee90e6f32a2fd82504212fa010d06ac4aa9102fcf98fc5ca0d4a892f`. The preceding failing logs are preserved: `phase-6-agent-stream/runtime.log` (`c4bd3d6e7299520bb29dd5a66b9725ccd589bc39a1273a61007c10f65665d6e5`) had two assertions that did not read rejection status after output FIN; `phase-6-agent-stream-status/runtime.log` (`51a4ddbf4207be4d9262e6b39c623754c39a921c24ee17e6aba9a848751c1430`) exposed the blocked-output shutdown issue subsequently fixed by the per-write deadline.
+
+Five-second native tunnel fuzzing passed 16,236 inputs; its log is `work/reports/agent-stream-fuzz.log`, SHA-256 `8d09b68cf1a2f871ced98c419c84c34b6067f14cfc274f589db71cbc2f42e933`. Native Windows agent/client/CLI race checks passed before the output deadline fix; Linux vet/staticcheck and pinned generation checks also passed on the corrected code. The actual enrolled-identity/controller transfer/revocation scenario and final-source hosted qualification are pending. Earlier catalog-only hosted evidence in [the agent evidence record](phase-6-agent-evidence.json) does not qualify this newer resource protocol. Installed services, platform key custody, desktop/browser workflows, same-user application isolation and physical suspend qualification remain open in the [delivery ledger](delivery-status.md).

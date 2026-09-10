@@ -32,6 +32,9 @@ func TestUnsupportedOperationsFailWithoutReflectingInput(t *testing.T) {
 		{"agent", "run", "--config", "synthetic-sensitive-input", "--socket", "synthetic-sensitive-input", "--secrets-fd", "0"},
 		{"agent", "run", "--config", "synthetic-sensitive-input", "--socket", "synthetic-sensitive-input", "--prompt", "--secrets-fd", "3"},
 		{"agent", "catalog", "--socket", "synthetic-sensitive-input", "--prompt"},
+		{"agent", "connect", "--socket", "synthetic-sensitive-input", "--resource", "192.0.2.10:443", "--revision", "1"},
+		{"agent", "connect", "--socket", "synthetic-sensitive-input", "--resource", "59d73719-4dc0-4d8c-898e-aa2f9466a89e", "--revision", "01"},
+		{"agent", "connect", "--socket", "synthetic-sensitive-input", "--resource", "59d73719-4dc0-4d8c-898e-aa2f9466a89e", "--revision", "1", "--prompt"},
 		{"enroll", "prepare", "--config", "synthetic-sensitive-input", "--secrets-fd", "3", "--prompt"},
 		{"client", "connect", "--config", "synthetic-sensitive-input", "--resource", "59d73719-4dc0-4d8c-898e-aa2f9466a89e", "--revision", "1", "--secrets-fd", "1"},
 	} {

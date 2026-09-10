@@ -59,14 +59,18 @@ func guestSecretApplicationResult(t *testing.T, p *guestApplication, success boo
 }
 
 func TestWorkloadGuestEncryptedClientEnrollmentAndRevocation(t *testing.T) {
-	testEncryptedClientEnrollmentAndRevocation(t, false)
+	testEncryptedClientEnrollmentAndRevocation(t, false, false)
 }
 
 func TestWorkloadGuestPromptClientEnrollmentAndRevocation(t *testing.T) {
-	testEncryptedClientEnrollmentAndRevocation(t, true)
+	testEncryptedClientEnrollmentAndRevocation(t, true, false)
 }
 
-func testEncryptedClientEnrollmentAndRevocation(t *testing.T, prompt bool) {
+func TestWorkloadGuestAgentEnrollmentAndRevocation(t *testing.T) {
+	testEncryptedClientEnrollmentAndRevocation(t, false, true)
+}
+
+func testEncryptedClientEnrollmentAndRevocation(t *testing.T, prompt, agentResource bool) {
 	t.Helper()
 	start := guestSecretApplication
 	if prompt {
@@ -279,6 +283,32 @@ func testEncryptedClientEnrollmentAndRevocation(t *testing.T, prompt bool) {
 	}
 	ready.Stop()
 	tick.Stop()
+	startResource := func(t *testing.T, id string, revision int64) *guestApplication {
+		t.Helper()
+		if agentResource {
+			return guestStartApplication(t, "agent", "connect", "--socket", agentPath, "--resource", id, "--revision", strconv.FormatInt(revision, 10))
+		}
+		return start(t, unlock, connectArgs(id, revision)...)
+	}
+	resourceFailure := "Client resource connection failed.\n"
+	if agentResource {
+		resourceFailure = "Local agent resource connection failed.\n"
+		for _, selection := range []struct {
+			name, id string
+			revision int64
+		}{
+			{"agent_unknown_resource", NewID(), 1},
+			{"agent_wrong_revision", v.resource.ID, v.resource.Revision + 1},
+		} {
+			t.Run(selection.name, func(t *testing.T) {
+				output := guestSecretApplicationResult(t, startResource(t, selection.id, selection.revision), false, resourceFailure)
+				if len(output) != 0 {
+					t.Fatal("denied agent returned application bytes")
+				}
+				assertNoAuthority(t)
+			})
+		}
+	}
 	t.Run("agent_catalog_from_retained_identity", func(t *testing.T) {
 		output := guestSecretApplicationResult(t, guestStartApplication(t, "agent", "catalog", "--socket", agentPath), true, "")
 		var catalog control.CatalogSnapshot
@@ -296,7 +326,7 @@ func testEncryptedClientEnrollmentAndRevocation(t *testing.T, prompt bool) {
 	})
 	t.Run("transfer_then_revoke_enrollment", func(t *testing.T) {
 		bindOnCatalog.Store(true)
-		p := start(t, unlock, connectArgs(v.resource.ID, v.resource.Revision)...)
+		p := startResource(t, v.resource.ID, v.resource.Revision)
 		payload := []byte{'e', 'n', 'c', 'r', 'y', 'p', 't', 'e', 'd', 0, 0xff, '\n'}
 		must(t, p.input.SetWriteDeadline(time.Now().Add(90*time.Second)))
 		_, err := p.input.Write(payload)
@@ -321,12 +351,15 @@ func testEncryptedClientEnrollmentAndRevocation(t *testing.T, prompt bool) {
 			t.Fatal("encrypted identity did not carry exact application bytes")
 		}
 		must(t, f.s.Update(ctx, f.actor, func(tx *Tx) error { return tx.RevokeEnrollment(invitation) }))
-		p.ended(t, false, "Client resource connection failed.\n")
+		p.ended(t, false, resourceFailure)
 		carrierEventually(t, func() bool {
 			var receipts int
 			return f.s.db.QueryRow("SELECT count(*) FROM session_closure_receipts").Scan(&receipts) == nil && receipts == 1 && v.closed.Load() == 1
 		})
-		result(t, unlock, false, "Client resource connection failed.\n", connectArgs(v.resource.ID, v.resource.Revision)...)
+		output := guestSecretApplicationResult(t, startResource(t, v.resource.ID, v.resource.Revision), false, resourceFailure)
+		if len(output) != 0 {
+			t.Fatal("revoked resource returned application bytes")
+		}
 		if v.connections.Load() != 1 {
 			t.Fatal("new encrypted client process reused revoked authority")
 		}
@@ -356,6 +389,6 @@ func testEncryptedClientEnrollmentAndRevocation(t *testing.T, prompt bool) {
 		t.Fatal("resource access altered enrollment state or requested another signature")
 	}
 	if !t.Failed() {
-		t.Logf("real encrypted client processes: prompt=%t, activation gating, exact catalog, denials, exact application transfer, enrollment revocation and closure receipt; original ciphertext retained", prompt)
+		t.Logf("real encrypted client processes: prompt=%t agent_resource=%t, activation gating, exact catalog, denials, exact application transfer, enrollment revocation and closure receipt; original ciphertext retained", prompt, agentResource)
 	}
 }

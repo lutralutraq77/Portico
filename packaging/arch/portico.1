@@ -22,6 +22,22 @@ portico \- development access to individually authorized private resources
 .B --revision
 .I N
 .RB [ "--secrets-fd 3" " | " --prompt ]
+.br
+.B portico agent run --config
+.I FILE
+.B --socket
+.I SOCKET
+.RB ( "--secrets-fd 3" " | " --prompt )
+.br
+.B portico agent catalog --socket
+.I SOCKET
+.br
+.B portico agent connect --socket
+.I SOCKET
+.B --resource
+.I UUID
+.B --revision
+.I N
 .SH DESCRIPTION
 This development binary uses approved local configuration and pinned private
 services. It is not a supported distribution or a self-configuring installer.
@@ -33,6 +49,14 @@ certificate, and activates that certificate with fresh private-key proof.
 Retry the original state after an uncertain response; do not replace the key.
 Resource access requires a current device identity, an exact resource revision
 and live authorization. Catalog entries alone grant no connection authority.
+.PP
+The Linux agent retains an explicitly unlocked encrypted identity for at most
+fifteen minutes, including suspend, and serves that user's protected Unix socket.
+Its private mode-0700 parent must already exist. Both peers' kernel UIDs are
+checked; other applications sharing that UID are trusted. Agent catalog fetches
+fresh inventory; agent connect selects an exact resource and performs fresh
+remote authorization. Output half-close is distinct from final command success.
+Blocked application output fails after a five-second per-write deadline.
 .SH SECRET INPUT
 Enrollment and version-2 encrypted client configuration require one explicit
 secret source. Do not put passwords or invitation secrets in command arguments,

@@ -52,7 +52,7 @@ func run(ctx context.Context, path string, backend catalogBackend) (result error
 	if err != nil {
 		return ErrRejected
 	}
-	defer s.grpc.Stop()
+	defer s.stop()
 	tick := time.NewTicker(250 * time.Millisecond)
 	defer tick.Stop()
 	done := make(chan error, 1)
@@ -60,14 +60,14 @@ func run(ctx context.Context, path string, backend catalogBackend) (result error
 	for {
 		select {
 		case <-ctx.Done():
-			s.grpc.Stop()
+			s.stop()
 			<-done
 			return nil
 		case <-done:
 			return ErrRejected
 		case <-tick.C:
 			if !s.window.valid() {
-				s.grpc.Stop()
+				s.stop()
 				<-done
 				return nil
 			}
@@ -82,6 +82,15 @@ type server struct {
 	connections atomic.Int64
 	requests    atomic.Int64
 	window      *window
+	workers     sync.WaitGroup
+}
+
+// Stop first cancels transports and joins handlers, so no handler can add new
+// workers while Wait runs. Streaming admission stays held until all its workers
+// have exited, including Recv/Send calls unblocked by the handler's return.
+func (s *server) stop() {
+	s.grpc.Stop()
+	s.workers.Wait()
 }
 
 func newServer(backend catalogBackend) (*server, error) {
