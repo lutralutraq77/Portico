@@ -1,0 +1,27 @@
+# Generated from a clean Portico source revision for isolated development tests.
+# This is an unsigned development package, not a supported release.
+pkgname=portico-cli-development
+pkgver=@PACKAGE_VERSION@
+pkgrel=1
+pkgdesc='Development commands for individually authorized private resources'
+arch=('x86_64')
+url='https://github.com/lutralutraq77/Portico'
+# The owner has not selected the project license. This grants no new rights.
+license=()
+depends=()
+options=('!strip' '!debug')
+source=('portico' 'portico.1' 'DEVELOPMENT.txt')
+sha256sums=('@BINARY_SHA256@' '@MANUAL_SHA256@' '@NOTICE_SHA256@')
+
+check() {
+    ./portico version --json > version.json
+    grep -q '"development_only":true' version.json
+    grep -q '"os":"linux"' version.json
+    grep -q '"architecture":"amd64"' version.json
+}
+
+package() {
+    install -Dm755 portico "$pkgdir/usr/bin/portico"
+    install -Dm644 portico.1 "$pkgdir/usr/share/man/man1/portico.1"
+    install -Dm644 DEVELOPMENT.txt "$pkgdir/usr/share/doc/portico-cli-development/DEVELOPMENT.txt"
+}

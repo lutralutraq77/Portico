@@ -1,0 +1,9 @@
+{
+  "schema": 1,
+  "image": "quay.io/archlinux/archlinux@sha256:2685bf92cc6215cc922488ae8e80b4875f4bdf19fef648818b1742517ce27077",
+  "platform": "linux/amd64",
+  "observed_tag": "base-devel",
+  "observed_tag_updated": "2026-09-10T09:12:09Z",
+  "verified_on": "2026-09-10",
+  "source": "https://quay.io/api/v1/repository/archlinux/archlinux/tag/?onlyActiveTags=true&filter_tag_name=eq:base-devel&limit=3"
+}
