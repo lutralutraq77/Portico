@@ -19,6 +19,11 @@ func TestUnsupportedOperationsFailWithoutReflectingInput(t *testing.T) {
 		{"client", "connect", "--config", "synthetic-sensitive-input", "--resource", "192.0.2.10:443", "--revision", "1"},
 		{"client", "connect", "--config", "synthetic-sensitive-input", "--resource", "59d73719-4dc0-4d8c-898e-aa2f9466a89e", "--revision", "01"},
 		{"client", "connect", "--config", "synthetic-sensitive-input", "--resource", "59d73719-4dc0-4d8c-898e-aa2f9466a89e", "--revision", "9223372036854775808"},
+		{"enroll", "prepare", "--config", "synthetic-sensitive-input", "--secrets-fd", "0"},
+		{"enroll", "redeem", "--config", "synthetic-sensitive-input", "--secrets-fd", "1"},
+		{"enroll", "activate", "--config", "synthetic-sensitive-input", "--secrets-fd", "03"},
+		{"enroll", "reset", "--config", "synthetic-sensitive-input", "--secrets-fd", "3"},
+		{"enroll", "redeem", "--config", "synthetic-sensitive-input", "--token", "synthetic-sensitive-input"},
 	} {
 		t.Run(args[0], func(t *testing.T) {
 			var out, errout bytes.Buffer
@@ -50,6 +55,16 @@ func TestVersionIsExplicitlyDevelopmentOnly(t *testing.T) {
 }
 
 type brokenWriter struct{}
+
+func TestEnrollmentConfigurationErrorsDoNotReflectPaths(t *testing.T) {
+	for _, operation := range []string{"prepare", "redeem", "activate"} {
+		var out, errout bytes.Buffer
+		code := cli.Run([]string{"enroll", operation, "--config", "synthetic-sensitive-input", "--secrets-fd", "3"}, &out, &errout)
+		if code != 1 || out.Len() != 0 || errout.String() != "Enrollment operation failed. Original state is preserved; do not replace the key to retry.\n" {
+			t.Fatal("enrollment configuration failure reflected input or unexpected output")
+		}
+	}
+}
 
 func TestClientConfigurationErrorsDoNotReflectPaths(t *testing.T) {
 	for _, args := range [][]string{

@@ -8,16 +8,18 @@ Durable ordinary enrollment includes hashed invitations, attempt/CSR binding, on
 
 The development libraries now expose separate HTTPS redemption and activation
 servers and an ordinary enrollment client. The servers accept supplied loopback
-listeners only. These are components for the Linux enrollment workflow; there is
-no installed enrollment service, invitation-file loader or enrollment CLI yet.
+listeners only. The [development Linux enrollment command](enrollment-command.md)
+now composes these components with encrypted local key/attempt state and a
+separate inherited secret pipe. An installed enrollment service and interactive
+launcher remain required.
 
 The caller obtains the invitation secret, expected principal and certificate
 deadline, issuer/root trust, and both endpoints' server roots and SPKI pins
 through an approved trusted channel. Server authentication finishes before the
 client sends the invitation. Discovery and trust on first use do not establish
 trust. The caller owns the signer and must durably retain its key and attempt ID
-before sending a request. The current transport library does not generate or
-persist that key/attempt; encrypted local state remains required.
+before sending a request. The transport library does not generate or persist
+that key/attempt; the separate state/command layer enforces that ordering.
 
 1. `POST /api/v1/enrollment/redeem` carries only `Version`, `InvitationID`,
    `Secret`, `AttemptID` and a base64 `CSR`. Version is 1. The CSR proves local
@@ -75,5 +77,6 @@ both ordinary profiles passed on source a1e284ca09b71c7acedb73fb16e4fd5bf222ee6a
 The [enrollment report](phase-6-enrollment-report.md) records the complete hosted
 Linux guest, native Windows/Linux quality checks, exact source tree and archived
 evidence. Later local-state changes need separate verification. Full platform
-enrollment, encrypted local state, administrator hardware, installed services,
-production custody and all remaining acceptance gates remain open.
+enrollment and integration of encrypted state into resource access, administrator
+hardware, installed services, production custody and all remaining acceptance
+gates remain open.

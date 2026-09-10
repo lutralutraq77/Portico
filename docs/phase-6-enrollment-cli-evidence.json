@@ -1,0 +1,96 @@
+{
+  "schema": 1,
+  "phase": 6,
+  "date": "2026-09-10",
+  "scope": "Encrypted ordinary enrollment state, protected public configuration and development CLI; source-file hashes identify the focused guest candidate.",
+  "source_files": [
+    {
+      "path": "internal/enrollment/state.go",
+      "sha256": "8e8705a1181654501cb5ac0f09c56b1910b3d6d433becfca68689f77e4f87c96"
+    },
+    {
+      "path": "internal/enrollment/state_test.go",
+      "sha256": "2d901ef3da53281a96a136692fec594ce0b16c78b0d0381af8d516dfe80da856"
+    },
+    {
+      "path": "internal/enrollment/state_linux_test.go",
+      "sha256": "78e134c832db8e8aace3b4426b9b0b253a3db91bb4ac07b0ff203fa72093e4c6"
+    },
+    {
+      "path": "internal/enrollment/config.go",
+      "sha256": "c36b96ff5cde7c0f722cec480309959715a8e237c8f3c4436c4264c29b93a829"
+    },
+    {
+      "path": "internal/enrollment/config_test.go",
+      "sha256": "14ed6c6522972261e6232b8e09d1143547be0ab8c2afddcbe0ff4130d063fc93"
+    },
+    {
+      "path": "internal/cli/run.go",
+      "sha256": "edfb9b25d54a67472b5e2e5113088740c8aaf6d77b91fc4ca646a88ae502e2a9"
+    },
+    {
+      "path": "internal/cli/enrollment.go",
+      "sha256": "2be7aa634ce927f12ce94ae2f43499e19922e3d0a65d96efea1aae8a208f8c42"
+    },
+    {
+      "path": "internal/cli/enrollment_linux.go",
+      "sha256": "f92a532828ca1a7ab729411d91b522d5e6d9484813cb00cf4bd3eac6458ca4e3"
+    },
+    {
+      "path": "internal/cli/enrollment_linux_test.go",
+      "sha256": "c394e659c4ee28bd5458144f30398628813ae64dcdff5334a883eba1e80b8d13"
+    },
+    {
+      "path": "internal/cli/enrollment_other.go",
+      "sha256": "0563c011bcb738c2a2d0dca87512f20e7008bbf7e698178e38c2085aae8d5062"
+    }
+  ],
+  "linux_focused": {
+    "marker": "PORTICO_LINUX_ENROLLMENT_CLI_FOCUSED_PASS",
+    "top_level_tests_passed": 13,
+    "test_subcases_passed": 67,
+    "skips": 0,
+    "failures": 0,
+    "race_instrumented": false,
+    "complete_suite": false,
+    "log_sha256": "3db424aeb05ac2def27d23de6c73d5adb8f42425feefa600bdb1f36898810267",
+    "archive": "work/reports/phase-6-enrollment-resumed/enrollment-cli",
+    "scenario": "Separate actual CLI processes use a private inherited pipe, retain one encrypted key/attempt across lost redemption and activation responses, and reject substituted certificate state.",
+    "scenario_seconds": 146.95,
+    "network_devices": 0,
+    "host_filesystem_shares": 0,
+    "kernel_sha256": "1e6bf9027720c75c3ed0d79171f21b5791ee40ca9795d07c7c6e04dc5ea2ae90",
+    "qemu_version": "11.1.0"
+  },
+  "native_enrollment_race": {
+    "passed": true,
+    "seconds": 72.71,
+    "log_sha256": "38eeb1dfbc6b2af9dbdde3e254f731742110cb3acc858eacab532f9072abd849",
+    "scope": "Enrollment library and configuration. Linux-exclusive guest/process/secret-pipe tests are skipped or excluded on Windows."
+  },
+  "full_windows_check": "pending",
+  "final_source_hosted": "pending",
+  "earlier_durable_file_source": {
+    "commit": "aa8029bbc065c9f6ec048b44d0c133ece62e66ef",
+    "all_hosted_passed": true,
+    "guest_run": 34477566171,
+    "native_quality_run": 34477566250,
+    "guest_artifact_id": 10152485859,
+    "guest_zip_sha256": "10369eda8cd960dd010d3c71efa9aa8ff1bb6b7e0101436649de18ee5b3420d5",
+    "guest_log_sha256": "97983fd4f1d2e3de39edceb91cec900b83949c015e62d41bbd69bfab673e97ab",
+    "scope": "Durable localfile code, before encrypted state and CLI."
+  },
+  "acceptance": {
+    "total": 91,
+    "implemented": 7,
+    "planned": 84,
+    "newly_promoted": []
+  },
+  "remaining": [
+    "Encrypted identity integration into resource access",
+    "Interactive launcher and desktop unlocking",
+    "Platform key custody and IPC isolation",
+    "Installed enrollment/controller/connector services and packaging",
+    "Full fifteen-phase acceptance and independent review"
+  ]
+}

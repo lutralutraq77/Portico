@@ -30,7 +30,7 @@ type Info struct {
 	DevelopmentOnly bool   `json:"development_only"`
 }
 
-const usage = "Usage: portico version [--json]\n       portico connector run --config /absolute/path/config.json\n       portico client catalog --config /absolute/path/config.json\n       portico client connect --config /absolute/path/config.json --resource UUID --revision N\n       portico help\nPhase 6 development only; Linux client and connector use loopback control/carrier services. Connect requires application stdin/stdout pipes.\n"
+const usage = "Usage: portico version [--json]\n       portico connector run --config /absolute/path/config.json\n       portico client catalog --config /absolute/path/config.json\n       portico client connect --config /absolute/path/config.json --resource UUID --revision N\n       portico enroll prepare|redeem|activate --config /absolute/path/config.json --secrets-fd 3\n       portico help\nPhase 6 development only; Linux client and connector use loopback control/carrier services. Connect requires application stdin/stdout pipes. Enrollment requires a separate inherited secrets pipe at descriptor 3.\n"
 
 // Run handles a bounded command surface. Arguments are never echoed on errors,
 // because future invocations may accidentally contain enrollment material.
@@ -57,6 +57,8 @@ func RunInputContext(ctx context.Context, args []string, stdin *os.File, stdout,
 			return 1
 		}
 		return 0
+	case len(args) == 6 && args[0] == "enroll" && (args[1] == "prepare" || args[1] == "redeem" || args[1] == "activate") && args[2] == "--config" && args[4] == "--secrets-fd" && args[5] == "3":
+		return runEnrollment(ctx, args[1], args[3], stdout, stderr)
 	case len(args) == 1 && args[0] == "version":
 		if _, err := fmt.Fprintf(stdout, "Portico %s (Phase 6; development only)\n", version); err != nil {
 			return 1
