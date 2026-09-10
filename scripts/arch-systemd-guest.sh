@@ -105,9 +105,31 @@ test ! -e /run/user/1000/portico-agent
 sha256sum --check --strict /portico-fixture-state.sha256
 sha256sum --check --strict /portico-fixture-package.sha256
 echo PORTICO_ARCH_SERVICE_USER_MANAGER_RESTART
+# Keep a real PAM login open while credential-switched enrollment commands run.
+# Those commands do not create login sessions themselves; without this holder,
+# logind normally tears down the user manager after the last runuser exits.
+session_ready=/run/user/1000/portico-fixture-session-ready
+test ! -e "$session_ready"
+runuser -u porticofixture -- /usr/bin/bash -c 'umask 077; printf ready > /run/user/1000/portico-fixture-session-ready; exec /usr/bin/sleep 650' &
+session_keeper=$!
+cleanup_session() {
+    kill "$session_keeper" 2>/dev/null || :
+    wait "$session_keeper" 2>/dev/null || :
+}
+trap cleanup_session EXIT
+deadline=$((SECONDS+20))
+until test -f "$session_ready"; do
+    kill -0 "$session_keeper"
+    (( SECONDS < deadline ))
+    sleep 0.1
+done
+test "$(stat -c '%u:%g:%a' "$session_ready")" = 1000:1000:600
+test -n "$(loginctl show-user 1000 --property=Sessions --value)"
+echo PORTICO_ARCH_SERVICE_LOGIN_SESSION_HELD
 ip link set dev lo up
 ip address add 192.0.2.10/32 dev lo
 PORTICO_ISOLATED_VM=1 PORTICO_SYSTEMD_FIXTURE=1 /controller -test.v -test.timeout=600s '-test.run=^TestSystemdGuestAgentEnrollmentAndRevocation$'
+kill -0 "$session_keeper"
 sha256sum --check --strict /portico-fixture-package.sha256
 echo PORTICO_ARCH_SERVICE_ENROLLED_IDENTITY_PASS
 echo PORTICO_ARCH_SYSTEMD_PASS
