@@ -42,9 +42,8 @@ func guestSecretApplication(t *testing.T, secret any, args ...string) *guestAppl
 	return guestStartApplicationWithFiles(t, []*os.File{reader}, args...)
 }
 
-func guestSecretResult(t *testing.T, secret any, success bool, message string, args ...string) []byte {
+func guestSecretApplicationResult(t *testing.T, p *guestApplication, success bool, message string) []byte {
 	t.Helper()
-	p := guestSecretApplication(t, secret, args...)
 	// Password processing uses the production KDF. This bounds process startup,
 	// not network operations, policy leases or authority-closure deadlines.
 	must(t, p.output.SetReadDeadline(time.Now().Add(90*time.Second)))
@@ -58,6 +57,23 @@ func guestSecretResult(t *testing.T, secret any, success bool, message string, a
 }
 
 func TestWorkloadGuestEncryptedClientEnrollmentAndRevocation(t *testing.T) {
+	testEncryptedClientEnrollmentAndRevocation(t, false)
+}
+
+func TestWorkloadGuestPromptClientEnrollmentAndRevocation(t *testing.T) {
+	testEncryptedClientEnrollmentAndRevocation(t, true)
+}
+
+func testEncryptedClientEnrollmentAndRevocation(t *testing.T, prompt bool) {
+	t.Helper()
+	start := guestSecretApplication
+	if prompt {
+		start = guestPromptApplication
+	}
+	result := func(t *testing.T, secret any, success bool, message string, args ...string) []byte {
+		t.Helper()
+		return guestSecretApplicationResult(t, start(t, secret, args...), success, message)
+	}
 	v := newWorkloadFixture(t) // Guard before any real destination socket.
 	f := v.carrier.policy.device.f
 	h := enrollmentHTTP(t, v.carrier.policy.device, v.carrier.policy.device.provider(t))
@@ -139,7 +155,7 @@ func TestWorkloadGuestEncryptedClientEnrollmentAndRevocation(t *testing.T) {
 	unlock := map[string]string{"passphrase": passphrase}
 	operation := func(name string, input any, expected string) {
 		t.Helper()
-		output := guestSecretResult(t, input, true, "", "enroll", name, "--config", enrollmentPath, "--secrets-fd", "3")
+		output := result(t, input, true, "", "enroll", name, "--config", enrollmentPath, "--secrets-fd", "3")
 		if string(output) != expected || bytes.Contains(output, []byte(secret)) {
 			t.Fatal("enrollment command changed fixed output or exposed the invitation")
 		}
@@ -164,12 +180,12 @@ func TestWorkloadGuestEncryptedClientEnrollmentAndRevocation(t *testing.T) {
 		}
 	}
 	t.Run("retained_certificate_requires_activation", func(t *testing.T) {
-		guestSecretResult(t, unlock, false, "Client resource connection failed.\n", catalogArgs...)
+		result(t, unlock, false, "Client resource connection failed.\n", catalogArgs...)
 		assertNoAuthority(t)
 	})
 	operation("activate", unlock, "Enrollment activation confirmed.\n")
 	t.Run("catalog_from_encrypted_identity", func(t *testing.T) {
-		output := guestSecretResult(t, unlock, true, "", catalogArgs...)
+		output := result(t, unlock, true, "", catalogArgs...)
 		var catalog control.CatalogSnapshot
 		must(t, json.Unmarshal(output, &catalog))
 		found := false
@@ -184,10 +200,14 @@ func TestWorkloadGuestEncryptedClientEnrollmentAndRevocation(t *testing.T) {
 		assertNoAuthority(t)
 	})
 	t.Run("wrong_password", func(t *testing.T) {
-		guestSecretResult(t, map[string]string{"passphrase": passphrase + "wrong"}, false, "Client configuration rejected.\n", catalogArgs...)
+		result(t, map[string]string{"passphrase": passphrase + "wrong"}, false, "Client configuration rejected.\n", catalogArgs...)
 		assertNoAuthority(t)
 	})
-	for _, name := range []string{"plaintext_fallback", "changed_trust", "unexpected_secret_field"} {
+	mutations := []string{"plaintext_fallback", "changed_trust"}
+	if !prompt { // Terminal input has no caller-supplied JSON fields.
+		mutations = append(mutations, "unexpected_secret_field")
+	}
+	for _, name := range mutations {
 		t.Run(name, func(t *testing.T) {
 			changed := file
 			input := map[string]string{"passphrase": passphrase}
@@ -201,7 +221,7 @@ func TestWorkloadGuestEncryptedClientEnrollmentAndRevocation(t *testing.T) {
 			}
 			writeJSON(path, changed)
 			defer writeJSON(path, file)
-			guestSecretResult(t, input, false, "Client configuration rejected.\n", catalogArgs...)
+			result(t, input, false, "Client configuration rejected.\n", catalogArgs...)
 			assertNoAuthority(t)
 		})
 	}
@@ -210,13 +230,13 @@ func TestWorkloadGuestEncryptedClientEnrollmentAndRevocation(t *testing.T) {
 		revision int64
 	}{{"unknown_resource", NewID(), 1}, {"wrong_revision", v.resource.ID, v.resource.Revision + 1}} {
 		t.Run(selection.name, func(t *testing.T) {
-			guestSecretResult(t, unlock, false, "Client resource connection failed.\n", connectArgs(selection.id, selection.revision)...)
+			result(t, unlock, false, "Client resource connection failed.\n", connectArgs(selection.id, selection.revision)...)
 			assertNoAuthority(t)
 		})
 	}
 	t.Run("transfer_then_revoke_enrollment", func(t *testing.T) {
 		bindOnCatalog.Store(true)
-		p := guestSecretApplication(t, unlock, connectArgs(v.resource.ID, v.resource.Revision)...)
+		p := start(t, unlock, connectArgs(v.resource.ID, v.resource.Revision)...)
 		payload := []byte{'e', 'n', 'c', 'r', 'y', 'p', 't', 'e', 'd', 0, 0xff, '\n'}
 		must(t, p.input.SetWriteDeadline(time.Now().Add(90*time.Second)))
 		_, err := p.input.Write(payload)
@@ -234,7 +254,7 @@ func TestWorkloadGuestEncryptedClientEnrollmentAndRevocation(t *testing.T) {
 			var receipts int
 			return f.s.db.QueryRow("SELECT count(*) FROM session_closure_receipts").Scan(&receipts) == nil && receipts == 1 && v.closed.Load() == 1
 		})
-		guestSecretResult(t, unlock, false, "Client resource connection failed.\n", connectArgs(v.resource.ID, v.resource.Revision)...)
+		result(t, unlock, false, "Client resource connection failed.\n", connectArgs(v.resource.ID, v.resource.Revision)...)
 		if v.connections.Load() != 1 {
 			t.Fatal("new encrypted client process reused revoked authority")
 		}
@@ -246,5 +266,5 @@ func TestWorkloadGuestEncryptedClientEnrollmentAndRevocation(t *testing.T) {
 	if !bytes.Equal(original, retained) || !bytes.Equal(originalCertificate, retainedCertificate) || h.f.calls.Load() != priorSignatures+1 {
 		t.Fatal("resource access altered enrollment state or requested another signature")
 	}
-	t.Log("real encrypted client processes: activation gating, exact catalog, seven denials, exact application transfer, enrollment revocation and closure receipt; original ciphertext retained")
+	t.Logf("real encrypted client processes: prompt=%t, activation gating, exact catalog, denials, exact application transfer, enrollment revocation and closure receipt; original ciphertext retained", prompt)
 }

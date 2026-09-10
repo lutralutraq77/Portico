@@ -8,11 +8,11 @@ import (
 	"portico.local/portico/internal/wire"
 )
 
-func loadClientConfiguration(ctx context.Context, path string, encrypted bool) (*client.Configuration, error) {
-	if !encrypted {
+func loadClientConfiguration(ctx context.Context, path string, source secretSource) (*client.Configuration, error) {
+	if source == noSecretSource {
 		return client.LoadConfig(path)
 	}
-	data, err := readEnrollmentSecrets(ctx, 3)
+	data, err := readCommandSecrets(ctx, "client", source)
 	if err != nil {
 		return nil, client.ErrConfiguration
 	}

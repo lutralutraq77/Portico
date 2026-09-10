@@ -15,7 +15,7 @@ type enrollmentSecrets struct {
 	InvitationSecret string `json:"invitation_secret"`
 }
 
-func runEnrollment(ctx context.Context, operation, configuration string, stdout, stderr io.Writer) int {
+func runEnrollment(ctx context.Context, operation, configuration string, source secretSource, stdout, stderr io.Writer) int {
 	fail := func() int {
 		_, _ = io.WriteString(stderr, "Enrollment operation failed. Original state is preserved; do not replace the key to retry.\n")
 		return 1
@@ -24,9 +24,9 @@ func runEnrollment(ctx context.Context, operation, configuration string, stdout,
 	if err != nil {
 		return fail()
 	}
-	// A separate inherited read pipe carries secrets. Application stdin/stdout,
-	// command arguments, environment variables and config files carry none.
-	data, err := readEnrollmentSecrets(ctx, 3)
+	// Secrets use an explicit private pipe or the foreground controlling
+	// terminal. Application stdin/stdout and configuration carry none.
+	data, err := readCommandSecrets(ctx, operation, source)
 	if err != nil {
 		return fail()
 	}

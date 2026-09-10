@@ -29,6 +29,11 @@ func main() {
 	_ = syscall.Mount("proc", "/proc", "proc", 0, "")
 	_ = syscall.Mount("sysfs", "/sys", "sysfs", 0, "")
 	_ = syscall.Mount("tmpfs", "/tmp", "tmpfs", 0, "mode=1777")
+	// PTYs belong only to this disposable kernel. They exercise hidden input
+	// and terminal ownership without opening or changing a host terminal.
+	if err := syscall.Mount("devpts", "/dev/pts", "devpts", syscall.MS_NOSUID|syscall.MS_NOEXEC, "newinstance,mode=0600,ptmxmode=0600"); err != nil {
+		panic(err)
+	}
 	_ = os.Setenv("TMPDIR", "/tmp")
 	_ = os.Setenv("HOME", "/tmp")
 	// Real issuer tests use TLS between isolated guest processes. Bringing up

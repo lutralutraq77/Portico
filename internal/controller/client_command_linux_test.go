@@ -35,6 +35,7 @@ type guestApplication struct {
 	logs          bytes.Buffer
 	done          chan struct{}
 	err           error // Read only after done, which joins Wait and its stderr copier.
+	terminalCheck func(*testing.T)
 }
 
 func guestStartApplication(t *testing.T, args ...string) *guestApplication {
@@ -44,10 +45,16 @@ func guestStartApplication(t *testing.T, args ...string) *guestApplication {
 
 func guestStartApplicationWithFiles(t *testing.T, files []*os.File, args ...string) *guestApplication {
 	t.Helper()
+	return guestStartConfiguredApplication(t, files, nil, args...)
+}
+
+func guestStartConfiguredApplication(t *testing.T, files []*os.File, process *syscall.SysProcAttr, args ...string) *guestApplication {
+	t.Helper()
 	requireWorkloadGuest(t)
 	root, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
 	v := &guestApplication{command: exec.CommandContext(root, "/portico", args...), done: make(chan struct{})}
 	v.command.ExtraFiles = files
+	v.command.SysProcAttr = process
 	childInput, input, err := os.Pipe()
 	must(t, err)
 	output, childOutput, err := os.Pipe()
@@ -70,6 +77,7 @@ func guestStartApplicationWithFiles(t *testing.T, files []*os.File, args ...stri
 		_ = output.Close()
 		select {
 		case <-v.done:
+			v.checkTerminal(t)
 			if t.Failed() {
 				t.Logf("fixture process exit=%v stderr=%q", v.err, v.logs.String())
 			}
@@ -84,11 +92,21 @@ func (v *guestApplication) ended(t *testing.T, success bool, message string) {
 	t.Helper()
 	select {
 	case <-v.done:
+		v.checkTerminal(t)
 		if (v.err == nil) != success || v.logs.String() != message {
 			t.Fatalf("application exit=%v stderr=%q", v.err, v.logs.String())
 		}
 	case <-time.After(5 * time.Second):
 		t.Fatal("application did not join while local I/O was blocked")
+	}
+}
+
+func (v *guestApplication) checkTerminal(t *testing.T) {
+	t.Helper()
+	if v.terminalCheck != nil {
+		check := v.terminalCheck
+		v.terminalCheck = nil
+		check(t)
 	}
 }
 
