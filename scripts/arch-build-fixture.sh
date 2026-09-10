@@ -21,7 +21,8 @@ packages=(portico-cli-development-*.pkg.tar.zst)
 test "${#packages[@]}" -eq 1
 test -f "${packages[0]}"
 cp "${packages[0]}" /output/
-cp version.json /output/
+# makepkg executes check() in srcdir, not in the recipe's parent directory.
+cp src/version.json /output/
 pacman -Q > /output/build-packages.txt
 printf '%s\n' "$SOURCE_DATE_EPOCH" > /output/source-date-epoch.txt
 echo PORTICO_ARCH_PACKAGE_BUILT
