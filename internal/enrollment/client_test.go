@@ -15,6 +15,7 @@ import (
 	"net/http/httptest"
 	"net/url"
 	"strings"
+	"sync"
 	"sync/atomic"
 	"testing"
 	"time"
@@ -250,5 +251,56 @@ func TestClientActivationRequiresExactReceiptAndFreshTLSIdentity(t *testing.T) {
 				t.Fatalf("activation result: %v", err)
 			}
 		})
+	}
+}
+
+func TestRequestBodyCancellationPreservesReadBytesAndErasesSource(t *testing.T) {
+	// A cancelled HTTP upload may read/close the body after Do returns. Race
+	// instrumentation must see neither concurrent erasure nor torn copied bytes.
+	for i := 0; i < 64; i++ {
+		data := bytes.Repeat([]byte{0xa5}, MaxBody)
+		b := &requestBody{data: data}
+		ready := make(chan struct{})
+		firstRead := make(chan struct{})
+		var work sync.WaitGroup
+		work.Add(1)
+		go func() {
+			defer work.Done()
+			<-ready
+			var chunk [37]byte
+			started := false
+			for {
+				n, err := b.Read(chunk[:])
+				if !started {
+					started = true
+					close(firstRead)
+				}
+				for _, v := range chunk[:n] {
+					if v != 0xa5 {
+						t.Error("upload received bytes modified by cleanup")
+						return
+					}
+				}
+				if err == io.EOF {
+					return
+				}
+				if err != nil {
+					t.Error(err)
+					return
+				}
+			}
+		}()
+		close(ready)
+		<-firstRead
+		testfixture.Must(t, b.Close())
+		work.Wait()
+		if !bytes.Equal(data, make([]byte, MaxBody)) {
+			t.Fatal("request source was not erased")
+		}
+		var p [1]byte
+		if n, err := b.Read(p[:]); n != 0 || err != io.EOF {
+			t.Fatal("closed body resumed upload")
+		}
+		testfixture.Must(t, b.Close())
 	}
 }

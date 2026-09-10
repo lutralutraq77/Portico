@@ -65,7 +65,10 @@ signing operation remains in `issuing`; cancellation does not release it for a
 new signing attempt. The client closes in-flight requests and joins their
 network operations. Buffered plaintext in the process cannot be guaranteed
 erased by Go's garbage collector; the implementation clears owned mutable token
-buffers but does not claim memory-forensic secrecy.
+buffers but does not claim memory-forensic secrecy. Request-body reads and
+erasure share a lock because HTTP transport cleanup can continue after an error
+returns. Closing a body makes subsequent reads return EOF and creates no replay
+copy of the invitation.
 
 Qualification includes actual HTTPS component tests and a composed restricted
 Smallstep workflow for both ordinary profiles. Passing runs must be recorded

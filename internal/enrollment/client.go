@@ -47,6 +47,35 @@ type Client struct {
 	slots  chan struct{}
 }
 
+// Transport may finish closing a request body after RoundTrip returns an error.
+// Serialize reading and erasure so cancellation cannot clear a buffer that the
+// transport is still reading. No replay/GetBody copy of the secret is created.
+type requestBody struct {
+	mu     sync.Mutex
+	data   []byte
+	offset int
+}
+
+func (b *requestBody) Read(p []byte) (int, error) {
+	b.mu.Lock()
+	defer b.mu.Unlock()
+	if b.offset == len(b.data) {
+		return 0, io.EOF
+	}
+	n := copy(p, b.data[b.offset:])
+	b.offset += n
+	return n, nil
+}
+
+func (b *requestBody) Close() error {
+	b.mu.Lock()
+	defer b.mu.Unlock()
+	clear(b.data)
+	b.data = nil
+	b.offset = 0
+	return nil
+}
+
 func New(c Config) (*Client, error) {
 	if c.Trust == nil || (c.Trust.Profile() != pki.Device && c.Trust.Profile() != pki.Connector) || !pki.ValidID(c.PrincipalID) || !c.NotAfter.After(time.Now()) || !c.NotAfter.Equal(c.NotAfter.Truncate(time.Second)) || c.NotAfter.After(c.Trust.NotAfter()) || c.Timeout <= 0 || c.Timeout > 5*time.Second || c.MaxRequests < 1 || c.MaxRequests > 8 || c.Redemption.URL == c.Activation.URL {
 		return nil, ErrRejected
@@ -128,7 +157,8 @@ func (c *Client) post(ctx context.Context, endpoint Endpoint, identity *tls.Cert
 	if err != nil || len(data) > MaxBody {
 		return ErrRejected
 	}
-	defer clear(data)
+	bodySource := &requestBody{data: data}
+	defer bodySource.Close()
 	tc, err := endpointTLS(endpoint, identity)
 	if err != nil {
 		return ErrRejected
@@ -136,10 +166,11 @@ func (c *Client) post(ctx context.Context, endpoint Endpoint, identity *tls.Cert
 	transport := &http.Transport{TLSClientConfig: tc, Proxy: nil, DisableCompression: true, DisableKeepAlives: true, MaxConnsPerHost: 1, TLSHandshakeTimeout: c.config.Timeout, ResponseHeaderTimeout: c.config.Timeout, MaxResponseHeaderBytes: 8192, DialContext: (&net.Dialer{Timeout: c.config.Timeout}).DialContext}
 	defer transport.CloseIdleConnections()
 	httpClient := &http.Client{Transport: transport, CheckRedirect: func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse }}
-	r, err := http.NewRequestWithContext(ctx, http.MethodPost, endpoint.URL+path, bytes.NewReader(data))
+	r, err := http.NewRequestWithContext(ctx, http.MethodPost, endpoint.URL+path, bodySource)
 	if err != nil {
 		return ErrRejected
 	}
+	r.ContentLength = int64(len(data))
 	r.Header.Set("Content-Type", "application/json")
 	response, err := httpClient.Do(r)
 	if err != nil {
