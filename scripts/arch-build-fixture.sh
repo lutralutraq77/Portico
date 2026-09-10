@@ -3,7 +3,7 @@ set -euo pipefail
 test "$(id -u)" -ne 0
 mkdir /tmp/portico-package
 cd /tmp/portico-package
-cp /input/PKGBUILD /input/portico /input/portico.1 /input/DEVELOPMENT.txt .
+cp /input/PKGBUILD /input/portico /input/portico.1 /input/DEVELOPMENT.txt /input/portico-agent.service .
 chmod u+x portico
 stat -c 'build input mode=%a uid=%u gid=%g' portico
 awk '$2 == "/tmp" { print "build mount: " $0 }' /proc/mounts

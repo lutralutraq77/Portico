@@ -31,6 +31,7 @@ try {
     foreach ($entry in $buildInfo.Settings) { $settings[$entry.Key] = $entry.Value }
     if ($settings['GOOS'] -ne 'linux' -or $settings['GOARCH'] -ne 'amd64' -or $settings['CGO_ENABLED'] -ne '0') { throw 'Unexpected build target' }
     Write-PackageText 'portico.1' ([IO.File]::ReadAllText((Join-Path $PorticoRoot 'packaging/arch/portico.1')))
+    Write-PackageText 'portico-agent.service' ([IO.File]::ReadAllText((Join-Path $PorticoRoot 'packaging/systemd/portico-agent.service')))
     $notice = @"
 PORTICO — UNSIGNED DEVELOPMENT PACKAGE
 
@@ -42,7 +43,7 @@ This package is for isolated development qualification. It is not a supported
 release and makes no license grant. Project licensing, release signers and
 distribution trust remain owner decisions. Do not publish it as a release.
 
-Installation provides the command and its manual only. Approved configuration,
+Installation provides the command, manual and an inactive per-user unit. Approved configuration,
 independently verified trust and provisioned private services remain necessary.
 There is no automatic enrollment, service activation, port publication, password
 store, network change or permission repair. Removing the package leaves user
@@ -54,12 +55,12 @@ not replace the isolated Linux security suite or real hardware qualification.
 "@
     Write-PackageText 'DEVELOPMENT.txt' ($notice + "`n")
     $hashes = @{}
-    foreach ($name in @('portico','portico.1','DEVELOPMENT.txt')) {
+    foreach ($name in @('portico','portico.1','DEVELOPMENT.txt','portico-agent.service')) {
         $hashes[$name] = (Get-FileHash -LiteralPath (Join-Path $root $name) -Algorithm SHA256).Hash.ToLowerInvariant()
     }
     $packageVersion = '0.6.0.dev.g' + $revision.Substring(0,12)
     $recipe = [IO.File]::ReadAllText((Join-Path $PorticoRoot 'packaging/arch/PKGBUILD.in'))
-    $recipe = $recipe.Replace('@PACKAGE_VERSION@',$packageVersion).Replace('@BINARY_SHA256@',$hashes['portico']).Replace('@MANUAL_SHA256@',$hashes['portico.1']).Replace('@NOTICE_SHA256@',$hashes['DEVELOPMENT.txt'])
+    $recipe = $recipe.Replace('@PACKAGE_VERSION@',$packageVersion).Replace('@BINARY_SHA256@',$hashes['portico']).Replace('@MANUAL_SHA256@',$hashes['portico.1']).Replace('@NOTICE_SHA256@',$hashes['DEVELOPMENT.txt']).Replace('@UNIT_SHA256@',$hashes['portico-agent.service'])
     if ($recipe -match '@[A-Z_]+@') { throw 'Unresolved package recipe field' }
     Write-PackageText 'PKGBUILD' $recipe
     $hashes['PKGBUILD'] = (Get-FileHash -LiteralPath (Join-Path $root 'PKGBUILD') -Algorithm SHA256).Hash.ToLowerInvariant()

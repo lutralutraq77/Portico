@@ -83,6 +83,15 @@ type server struct {
 	requests    atomic.Int64
 	window      *window
 	workers     sync.WaitGroup
+	manager     *manager
+	streams     atomic.Int64
+}
+
+func (s *server) valid() bool {
+	if s.manager != nil {
+		return s.manager.valid()
+	}
+	return s.window.valid()
 }
 
 // Stop first cancels transports and joins handlers, so no handler can add new
@@ -99,6 +108,7 @@ func newServer(backend catalogBackend) (*server, error) {
 		return nil, err
 	}
 	s := &server{backend: backend, window: w}
+	s.manager, _ = backend.(*manager)
 	// The credentials adapter recognizes the Unix transport. UID verification
 	// is performed by localipc.Listen before gRPC receives a connection.
 	s.grpc = grpc.NewServer(grpc.Creds(local.NewCredentials()), grpc.MaxConcurrentStreams(1), grpc.MaxRecvMsgSize(MaxMessage), grpc.MaxSendMsgSize(MaxMessage), grpc.StaticStreamWindowSize(64*1024), grpc.StaticConnWindowSize(64*1024), grpc.MaxHeaderListSize(8192), grpc.ReadBufferSize(4096), grpc.WriteBufferSize(4096), grpc.ConnectionTimeout(operationTimeout), grpc.WaitForHandlers(true), grpc.KeepaliveParams(keepalive.ServerParameters{MaxConnectionIdle: 30 * time.Second, MaxConnectionAge: unlockLifetime, MaxConnectionAgeGrace: operationTimeout}), grpc.UnknownServiceHandler(func(any, grpc.ServerStream) error { return rejected() }))
@@ -109,7 +119,7 @@ func newServer(backend catalogBackend) (*server, error) {
 func rejected() error { return status.Error(codes.PermissionDenied, "local agent operation rejected") }
 
 func (s *server) Catalog(ctx context.Context, r *pb.CatalogRequest) (*pb.CatalogResponse, error) {
-	if !validRequest(r) || ctx == nil || ctx.Err() != nil || !s.window.valid() {
+	if !validRequest(r) || ctx == nil || ctx.Err() != nil || !s.valid() {
 		return nil, rejected()
 	}
 	if s.requests.Add(1) > maxConnections {
@@ -120,7 +130,7 @@ func (s *server) Catalog(ctx context.Context, r *pb.CatalogRequest) (*pb.Catalog
 	ctx, cancel := context.WithTimeout(ctx, operationTimeout)
 	defer cancel()
 	resources, err := s.backend.Catalog(ctx)
-	if err != nil || ctx.Err() != nil || !s.window.valid() {
+	if err != nil || ctx.Err() != nil || !s.valid() {
 		return nil, rejected()
 	}
 	response, err := encodeCatalog(resources)

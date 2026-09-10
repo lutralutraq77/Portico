@@ -12,6 +12,7 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"sync"
 	"sync/atomic"
 	"syscall"
 	"testing"
@@ -59,18 +60,22 @@ func guestSecretApplicationResult(t *testing.T, p *guestApplication, success boo
 }
 
 func TestWorkloadGuestEncryptedClientEnrollmentAndRevocation(t *testing.T) {
-	testEncryptedClientEnrollmentAndRevocation(t, false, false)
+	testEncryptedClientEnrollmentAndRevocation(t, false, false, false)
 }
 
 func TestWorkloadGuestPromptClientEnrollmentAndRevocation(t *testing.T) {
-	testEncryptedClientEnrollmentAndRevocation(t, true, false)
+	testEncryptedClientEnrollmentAndRevocation(t, true, false, false)
 }
 
 func TestWorkloadGuestAgentEnrollmentAndRevocation(t *testing.T) {
-	testEncryptedClientEnrollmentAndRevocation(t, false, true)
+	testEncryptedClientEnrollmentAndRevocation(t, false, true, false)
 }
 
-func testEncryptedClientEnrollmentAndRevocation(t *testing.T, prompt, agentResource bool) {
+func TestWorkloadGuestDaemonEnrollmentAndRevocation(t *testing.T) {
+	testEncryptedClientEnrollmentAndRevocation(t, false, true, true)
+}
+
+func testEncryptedClientEnrollmentAndRevocation(t *testing.T, prompt, agentResource, daemon bool) {
 	t.Helper()
 	start := guestSecretApplication
 	if prompt {
@@ -106,6 +111,7 @@ func testEncryptedClientEnrollmentAndRevocation(t *testing.T, prompt, agentResou
 	connectorPath, _, _ := guestConnectorConfiguration(t, v, 1)
 	runCtx, cancel := context.WithCancel(context.Background())
 	startConnector := make(chan struct{})
+	var startConnectorOnce sync.Once
 	connectorDone := make(chan error, 1)
 	go func() {
 		select {
@@ -132,7 +138,7 @@ func testEncryptedClientEnrollmentAndRevocation(t *testing.T, prompt, agentResou
 			// and completed TLS. Its ordinary catalog/authorization handler still
 			// executes unchanged, and all production deadlines remain in force.
 			if bindOnCatalog.CompareAndSwap(true, false) {
-				close(startConnector)
+				startConnectorOnce.Do(func() { close(startConnector) })
 				timer := time.NewTimer(3 * time.Second)
 				defer timer.Stop()
 				tick := time.NewTicker(5 * time.Millisecond)
@@ -264,7 +270,12 @@ func testEncryptedClientEnrollmentAndRevocation(t *testing.T, prompt, agentResou
 	// process-fixture budget covers only catalog/transfer/revocation and shutdown.
 	// It unlocks once and must continue to consult live controller state.
 	agentPath := filepath.Join(dir, "agent.sock")
-	agentProcess := start(t, unlock, "agent", "run", "--config", path, "--socket", agentPath, "--secrets-fd", "3")
+	var agentProcess *guestApplication
+	if daemon {
+		agentProcess = guestStartApplication(t, "agent", "daemon", "--config", path, "--socket", agentPath)
+	} else {
+		agentProcess = start(t, unlock, "agent", "run", "--config", path, "--socket", agentPath, "--secrets-fd", "3")
+	}
 	ready := time.NewTimer(90 * time.Second)
 	defer ready.Stop()
 	tick := time.NewTicker(25 * time.Millisecond)
@@ -291,6 +302,33 @@ func testEncryptedClientEnrollmentAndRevocation(t *testing.T, prompt, agentResou
 		return start(t, unlock, connectArgs(id, revision)...)
 	}
 	resourceFailure := "Client resource connection failed.\n"
+	unlockDaemon := func(t *testing.T) {
+		t.Helper()
+		output := result(t, unlock, true, "", "agent", "unlock", "--socket", agentPath, "--secrets-fd", "3")
+		if string(output) != "Local agent unlocked.\n" {
+			t.Fatal("daemon unlock output changed")
+		}
+	}
+	if daemon {
+		t.Run("daemon_starts_locked_without_resource_authority", func(t *testing.T) {
+			output := guestSecretApplicationResult(t, guestStartApplication(t, "agent", "status", "--socket", agentPath), true, "")
+			if string(output) != "{\"version\":1,\"state\":\"locked\"}\n" {
+				t.Fatal("daemon did not start locked")
+			}
+			guestSecretApplicationResult(t, guestStartApplication(t, "agent", "catalog", "--socket", agentPath), false, "Local agent catalog failed.\n")
+			guestSecretApplicationResult(t, startResource(t, v.resource.ID, v.resource.Revision), false, "Local agent resource connection failed.\n")
+			assertNoAuthority(t)
+		})
+		t.Run("daemon_wrong_password_remains_locked", func(t *testing.T) {
+			result(t, map[string]string{"passphrase": passphrase + "wrong"}, false, "Local agent unlock failed.\n", "agent", "unlock", "--socket", agentPath, "--secrets-fd", "3")
+			output := guestSecretApplicationResult(t, guestStartApplication(t, "agent", "status", "--socket", agentPath), true, "")
+			if string(output) != "{\"version\":1,\"state\":\"locked\"}\n" {
+				t.Fatal("wrong daemon password changed locked state")
+			}
+			assertNoAuthority(t)
+		})
+		t.Run("daemon_explicit_unlock", unlockDaemon)
+	}
 	if agentResource {
 		resourceFailure = "Local agent resource connection failed.\n"
 		for _, selection := range []struct {
@@ -324,7 +362,9 @@ func testEncryptedClientEnrollmentAndRevocation(t *testing.T, prompt, agentResou
 		}
 		assertNoAuthority(t)
 	})
-	t.Run("transfer_then_revoke_enrollment", func(t *testing.T) {
+	transfer := func(t *testing.T) *guestApplication {
+		t.Helper()
+		beforeConnections, beforeBytes := v.connections.Load(), v.received.Load()
 		bindOnCatalog.Store(true)
 		p := startResource(t, v.resource.ID, v.resource.Revision)
 		payload := []byte{'e', 'n', 'c', 'r', 'y', 'p', 't', 'e', 'd', 0, 0xff, '\n'}
@@ -347,20 +387,46 @@ func testEncryptedClientEnrollmentAndRevocation(t *testing.T, prompt, agentResou
 			}
 		}
 		must(t, err)
-		if !bytes.Equal(got, payload) || v.connections.Load() != 1 || v.received.Load() != int64(len(payload)) {
+		if !bytes.Equal(got, payload) || v.connections.Load() != beforeConnections+1 || v.received.Load() != beforeBytes+int64(len(payload)) {
 			t.Fatal("encrypted identity did not carry exact application bytes")
 		}
+		return p
+	}
+	closed := func(t *testing.T, count int64) {
+		t.Helper()
+		carrierEventually(t, func() bool {
+			var receipts int64
+			return f.s.db.QueryRow("SELECT count(*) FROM session_closure_receipts").Scan(&receipts) == nil && receipts == count && v.closed.Load() == count
+		})
+	}
+	if daemon {
+		t.Run("daemon_manual_lock_closes_live_resource_then_explicit_reunlock", func(t *testing.T) {
+			p := transfer(t)
+			connections := v.connections.Load()
+			output := guestSecretApplicationResult(t, guestStartApplication(t, "agent", "lock", "--socket", agentPath), true, "")
+			if string(output) != "Local agent locked.\n" {
+				t.Fatal("daemon lock output changed")
+			}
+			p.ended(t, false, resourceFailure)
+			closed(t, connections)
+			guestSecretApplicationResult(t, startResource(t, v.resource.ID, v.resource.Revision), false, resourceFailure)
+			if v.connections.Load() != connections {
+				t.Fatal("locked daemon acquired new destination")
+			}
+			unlockDaemon(t)
+		})
+	}
+	t.Run("transfer_then_revoke_enrollment", func(t *testing.T) {
+		p := transfer(t)
+		connections := v.connections.Load()
 		must(t, f.s.Update(ctx, f.actor, func(tx *Tx) error { return tx.RevokeEnrollment(invitation) }))
 		p.ended(t, false, resourceFailure)
-		carrierEventually(t, func() bool {
-			var receipts int
-			return f.s.db.QueryRow("SELECT count(*) FROM session_closure_receipts").Scan(&receipts) == nil && receipts == 1 && v.closed.Load() == 1
-		})
+		closed(t, connections)
 		output := guestSecretApplicationResult(t, startResource(t, v.resource.ID, v.resource.Revision), false, resourceFailure)
 		if len(output) != 0 {
 			t.Fatal("revoked resource returned application bytes")
 		}
-		if v.connections.Load() != 1 {
+		if v.connections.Load() != connections {
 			t.Fatal("new encrypted client process reused revoked authority")
 		}
 	})
@@ -375,7 +441,11 @@ func testEncryptedClientEnrollmentAndRevocation(t *testing.T, prompt, agentResou
 		}
 	})
 	must(t, agentProcess.command.Process.Signal(syscall.SIGTERM))
-	if output := guestSecretApplicationResult(t, agentProcess, true, ""); string(output) != "Local agent stopped; unlock again to start a new session.\n" {
+	stopped := "Local agent stopped; unlock again to start a new session.\n"
+	if daemon {
+		stopped = "Local agent daemon stopped.\n"
+	}
+	if output := guestSecretApplicationResult(t, agentProcess, true, ""); string(output) != stopped {
 		t.Fatal("agent shutdown output changed")
 	}
 	if _, err := os.Lstat(agentPath); !os.IsNotExist(err) {
@@ -389,6 +459,6 @@ func testEncryptedClientEnrollmentAndRevocation(t *testing.T, prompt, agentResou
 		t.Fatal("resource access altered enrollment state or requested another signature")
 	}
 	if !t.Failed() {
-		t.Logf("real encrypted client processes: prompt=%t agent_resource=%t, activation gating, exact catalog, denials, exact application transfer, enrollment revocation and closure receipt; original ciphertext retained", prompt, agentResource)
+		t.Logf("real encrypted client processes: prompt=%t agent_resource=%t daemon=%t, activation gating, exact catalog, denials, exact application transfer, enrollment revocation and closure receipt; original ciphertext retained", prompt, agentResource, daemon)
 	}
 }

@@ -1,6 +1,6 @@
 # Roadmap and Phase 0 handoff
 
-Status: phases 0–2 have foundation evidence. Phase 3 has verified issuer/admin/recovery software with physical and deployment gates open. Phase 4 policy software is implemented; Phase 5 connector software and overload/lifecycle scenarios are under qualification. The active objective covers all fifteen phases; see the [delivery ledger](docs/delivery-status.md).
+Status: active implementation is Phase 6, the Linux/Arch client. Phases 0–2 have foundation evidence; Phase 3 issuer/admin/recovery software retains physical and deployment gates. Phase 4 policy and Phase 5 connector components have recorded test evidence. Phase 6 resource access, encrypted enrollment, terminal input, Arch packaging and protected IPC are implemented; the agent catalog has complete hosted qualification, and agent resource streaming is under final integration qualification. Services and desktop/browser/platform workflows remain open. The active objective covers all fifteen phases; see the [delivery ledger](docs/delivery-status.md).
 
 ## Delivery phases and gates
 | Phase | Scope | Required exit evidence |
@@ -17,7 +17,7 @@ Status: phases 0–2 have foundation evidence. Phase 3 has verified issuer/admin
 | 9 — Android client | Required client, Kotlin platform integration, qualified app access | Real Keystore/lifecycle/Doze tests; honest Mullvad access-mode limits |
 | 10 — Network hardening | Supported Compose deployment, LAN/Docker/IPv6/NAT profiles and safe rollout design | NET-01–08, including accidental publication and timed rollback |
 | 11 — Mullvad/DNS | Isolated real Mullvad coexistence; default DNS invariance; qualified hostname mode | VPN/DNS evidence; optional split DNS stays absent until its tests pass |
-| 12 — Optional SSH CA | Local SSH keys and narrowly authorized short-lived SSH certificates | Separate issuance/auth review; SSH authentication remains required |
+| 12 — SSH CA | Local SSH keys and narrowly authorized short-lived SSH certificates; included in the current fifteen-phase objective | Separate issuance/auth review; SSH authentication remains required |
 | 13 — Update system | Signed distribution, version/capability visibility, staged install/rollback | UPDATE tests and real signing/recovery custody |
 | 14 — Audit/hardening | Full acceptance suite and independent security review | Threat model matches implementation; all required gates pass; no unresolved critical/high findings |
 

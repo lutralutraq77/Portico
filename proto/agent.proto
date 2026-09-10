@@ -44,7 +44,27 @@ message TunnelFrame {
   bytes data = 5;
 }
 
+message StateRequest { uint32 version = 1; }
+message UnlockRequest {
+  uint32 version = 1;
+  bytes passphrase = 2;
+}
+message StateResponse {
+  enum State {
+    UNSPECIFIED = 0;
+    LOCKED = 1;
+    UNLOCKING = 2;
+    UNLOCKED = 3;
+    DRAINING = 4;
+  }
+  uint32 version = 1;
+  State state = 2;
+}
+
 service Agent {
   rpc Catalog(CatalogRequest) returns (CatalogResponse);
   rpc Connect(stream TunnelFrame) returns (stream TunnelFrame);
+  rpc Status(StateRequest) returns (StateResponse);
+  rpc Unlock(UnlockRequest) returns (StateResponse);
+  rpc Lock(StateRequest) returns (StateResponse);
 }

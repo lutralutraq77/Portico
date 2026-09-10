@@ -20,10 +20,17 @@ type streamBackend interface {
 // lookup, authenticated remote open, lease renewal, revocation and final ACK.
 func (s *server) Connect(stream grpc.BidiStreamingServer[pb.TunnelFrame, pb.TunnelFrame]) error {
 	backend, ok := s.backend.(streamBackend)
-	if !ok || !s.window.valid() || stream.Context().Err() != nil {
+	if !ok || !s.valid() || stream.Context().Err() != nil {
 		return rejected()
 	}
 	if s.requests.Add(1) > maxConnections {
+		s.requests.Add(-1)
+		return rejected()
+	}
+	// Keep two connection slots available for normal daemon control traffic.
+	// Other processes sharing this UID are trusted and can still deny service.
+	if s.manager != nil && s.streams.Add(1) > maxConnections-2 {
+		s.streams.Add(-1)
 		s.requests.Add(-1)
 		return rejected()
 	}
@@ -36,6 +43,9 @@ func (s *server) Connect(stream grpc.BidiStreamingServer[pb.TunnelFrame, pb.Tunn
 	go func() {
 		defer s.workers.Done()
 		workers.Wait()
+		if s.manager != nil {
+			s.streams.Add(-1)
+		}
 		s.requests.Add(-1)
 	}()
 	defer workers.Done()
@@ -74,7 +84,7 @@ func (s *server) Connect(stream grpc.BidiStreamingServer[pb.TunnelFrame, pb.Tunn
 	var selection *pb.TunnelFrame
 	select {
 	case selection = <-opened:
-		if selection == nil || !s.window.valid() {
+		if selection == nil || !s.valid() {
 			return rejected()
 		}
 	case <-initial.C:
@@ -87,7 +97,7 @@ func (s *server) Connect(stream grpc.BidiStreamingServer[pb.TunnelFrame, pb.Tunn
 		defer input.Close()
 		defer written.Close()
 		backendDone <- backend.ConnectReady(ctx, selection.ResourceId, selection.Revision, input, written, func() error {
-			if ctx.Err() != nil || !s.window.valid() || stream.Send(frame(pb.TunnelFrame_READY)) != nil {
+			if ctx.Err() != nil || !s.valid() || stream.Send(frame(pb.TunnelFrame_READY)) != nil {
 				return ErrRejected
 			}
 			close(ready)
@@ -147,7 +157,7 @@ func (s *server) Connect(stream grpc.BidiStreamingServer[pb.TunnelFrame, pb.Tunn
 			return rejected()
 		}
 	}
-	if ctx.Err() != nil || !s.window.valid() {
+	if ctx.Err() != nil || !s.valid() {
 		return rejected()
 	}
 	return nil

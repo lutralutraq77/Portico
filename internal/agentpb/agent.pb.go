@@ -76,6 +76,61 @@ func (TunnelFrame_Kind) EnumDescriptor() ([]byte, []int) {
 	return file_agent_proto_rawDescGZIP(), []int{3, 0}
 }
 
+type StateResponse_State int32
+
+const (
+	StateResponse_UNSPECIFIED StateResponse_State = 0
+	StateResponse_LOCKED      StateResponse_State = 1
+	StateResponse_UNLOCKING   StateResponse_State = 2
+	StateResponse_UNLOCKED    StateResponse_State = 3
+	StateResponse_DRAINING    StateResponse_State = 4
+)
+
+// Enum value maps for StateResponse_State.
+var (
+	StateResponse_State_name = map[int32]string{
+		0: "UNSPECIFIED",
+		1: "LOCKED",
+		2: "UNLOCKING",
+		3: "UNLOCKED",
+		4: "DRAINING",
+	}
+	StateResponse_State_value = map[string]int32{
+		"UNSPECIFIED": 0,
+		"LOCKED":      1,
+		"UNLOCKING":   2,
+		"UNLOCKED":    3,
+		"DRAINING":    4,
+	}
+)
+
+func (x StateResponse_State) Enum() *StateResponse_State {
+	p := new(StateResponse_State)
+	*p = x
+	return p
+}
+
+func (x StateResponse_State) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (StateResponse_State) Descriptor() protoreflect.EnumDescriptor {
+	return file_agent_proto_enumTypes[1].Descriptor()
+}
+
+func (StateResponse_State) Type() protoreflect.EnumType {
+	return &file_agent_proto_enumTypes[1]
+}
+
+func (x StateResponse_State) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use StateResponse_State.Descriptor instead.
+func (StateResponse_State) EnumDescriptor() ([]byte, []int) {
+	return file_agent_proto_rawDescGZIP(), []int{6, 0}
+}
+
 // OS peer credentials authenticate the local caller. Inventory is advisory;
 // neither this response nor a local socket connection grants resource access.
 type CatalogRequest struct {
@@ -361,6 +416,154 @@ func (x *TunnelFrame) GetData() []byte {
 	return nil
 }
 
+type StateRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Version       uint32                 `protobuf:"varint,1,opt,name=version,proto3" json:"version,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *StateRequest) Reset() {
+	*x = StateRequest{}
+	mi := &file_agent_proto_msgTypes[4]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *StateRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*StateRequest) ProtoMessage() {}
+
+func (x *StateRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_agent_proto_msgTypes[4]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use StateRequest.ProtoReflect.Descriptor instead.
+func (*StateRequest) Descriptor() ([]byte, []int) {
+	return file_agent_proto_rawDescGZIP(), []int{4}
+}
+
+func (x *StateRequest) GetVersion() uint32 {
+	if x != nil {
+		return x.Version
+	}
+	return 0
+}
+
+type UnlockRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Version       uint32                 `protobuf:"varint,1,opt,name=version,proto3" json:"version,omitempty"`
+	Passphrase    []byte                 `protobuf:"bytes,2,opt,name=passphrase,proto3" json:"passphrase,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UnlockRequest) Reset() {
+	*x = UnlockRequest{}
+	mi := &file_agent_proto_msgTypes[5]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UnlockRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UnlockRequest) ProtoMessage() {}
+
+func (x *UnlockRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_agent_proto_msgTypes[5]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UnlockRequest.ProtoReflect.Descriptor instead.
+func (*UnlockRequest) Descriptor() ([]byte, []int) {
+	return file_agent_proto_rawDescGZIP(), []int{5}
+}
+
+func (x *UnlockRequest) GetVersion() uint32 {
+	if x != nil {
+		return x.Version
+	}
+	return 0
+}
+
+func (x *UnlockRequest) GetPassphrase() []byte {
+	if x != nil {
+		return x.Passphrase
+	}
+	return nil
+}
+
+type StateResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Version       uint32                 `protobuf:"varint,1,opt,name=version,proto3" json:"version,omitempty"`
+	State         StateResponse_State    `protobuf:"varint,2,opt,name=state,proto3,enum=portico.agent.v1.StateResponse_State" json:"state,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *StateResponse) Reset() {
+	*x = StateResponse{}
+	mi := &file_agent_proto_msgTypes[6]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *StateResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*StateResponse) ProtoMessage() {}
+
+func (x *StateResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_agent_proto_msgTypes[6]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use StateResponse.ProtoReflect.Descriptor instead.
+func (*StateResponse) Descriptor() ([]byte, []int) {
+	return file_agent_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *StateResponse) GetVersion() uint32 {
+	if x != nil {
+		return x.Version
+	}
+	return 0
+}
+
+func (x *StateResponse) GetState() StateResponse_State {
+	if x != nil {
+		return x.State
+	}
+	return StateResponse_UNSPECIFIED
+}
+
 var File_agent_proto protoreflect.FileDescriptor
 
 const file_agent_proto_rawDesc = "" +
@@ -393,10 +596,30 @@ const file_agent_proto_rawDesc = "" +
 	"\x04OPEN\x10\x01\x12\t\n" +
 	"\x05READY\x10\x02\x12\b\n" +
 	"\x04DATA\x10\x03\x12\a\n" +
-	"\x03FIN\x10\x042\xa4\x01\n" +
+	"\x03FIN\x10\x04\"(\n" +
+	"\fStateRequest\x12\x18\n" +
+	"\aversion\x18\x01 \x01(\rR\aversion\"I\n" +
+	"\rUnlockRequest\x12\x18\n" +
+	"\aversion\x18\x01 \x01(\rR\aversion\x12\x1e\n" +
+	"\n" +
+	"passphrase\x18\x02 \x01(\fR\n" +
+	"passphrase\"\xb7\x01\n" +
+	"\rStateResponse\x12\x18\n" +
+	"\aversion\x18\x01 \x01(\rR\aversion\x12;\n" +
+	"\x05state\x18\x02 \x01(\x0e2%.portico.agent.v1.StateResponse.StateR\x05state\"O\n" +
+	"\x05State\x12\x0f\n" +
+	"\vUNSPECIFIED\x10\x00\x12\n" +
+	"\n" +
+	"\x06LOCKED\x10\x01\x12\r\n" +
+	"\tUNLOCKING\x10\x02\x12\f\n" +
+	"\bUNLOCKED\x10\x03\x12\f\n" +
+	"\bDRAINING\x10\x042\x84\x03\n" +
 	"\x05Agent\x12N\n" +
 	"\aCatalog\x12 .portico.agent.v1.CatalogRequest\x1a!.portico.agent.v1.CatalogResponse\x12K\n" +
-	"\aConnect\x12\x1d.portico.agent.v1.TunnelFrame\x1a\x1d.portico.agent.v1.TunnelFrame(\x010\x01B(Z&portico.local/portico/internal/agentpbb\x06proto3"
+	"\aConnect\x12\x1d.portico.agent.v1.TunnelFrame\x1a\x1d.portico.agent.v1.TunnelFrame(\x010\x01\x12I\n" +
+	"\x06Status\x12\x1e.portico.agent.v1.StateRequest\x1a\x1f.portico.agent.v1.StateResponse\x12J\n" +
+	"\x06Unlock\x12\x1f.portico.agent.v1.UnlockRequest\x1a\x1f.portico.agent.v1.StateResponse\x12G\n" +
+	"\x04Lock\x12\x1e.portico.agent.v1.StateRequest\x1a\x1f.portico.agent.v1.StateResponseB(Z&portico.local/portico/internal/agentpbb\x06proto3"
 
 var (
 	file_agent_proto_rawDescOnce sync.Once
@@ -410,27 +633,38 @@ func file_agent_proto_rawDescGZIP() []byte {
 	return file_agent_proto_rawDescData
 }
 
-var file_agent_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_agent_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
+var file_agent_proto_enumTypes = make([]protoimpl.EnumInfo, 2)
+var file_agent_proto_msgTypes = make([]protoimpl.MessageInfo, 7)
 var file_agent_proto_goTypes = []any{
-	(TunnelFrame_Kind)(0),   // 0: portico.agent.v1.TunnelFrame.Kind
-	(*CatalogRequest)(nil),  // 1: portico.agent.v1.CatalogRequest
-	(*Resource)(nil),        // 2: portico.agent.v1.Resource
-	(*CatalogResponse)(nil), // 3: portico.agent.v1.CatalogResponse
-	(*TunnelFrame)(nil),     // 4: portico.agent.v1.TunnelFrame
+	(TunnelFrame_Kind)(0),    // 0: portico.agent.v1.TunnelFrame.Kind
+	(StateResponse_State)(0), // 1: portico.agent.v1.StateResponse.State
+	(*CatalogRequest)(nil),   // 2: portico.agent.v1.CatalogRequest
+	(*Resource)(nil),         // 3: portico.agent.v1.Resource
+	(*CatalogResponse)(nil),  // 4: portico.agent.v1.CatalogResponse
+	(*TunnelFrame)(nil),      // 5: portico.agent.v1.TunnelFrame
+	(*StateRequest)(nil),     // 6: portico.agent.v1.StateRequest
+	(*UnlockRequest)(nil),    // 7: portico.agent.v1.UnlockRequest
+	(*StateResponse)(nil),    // 8: portico.agent.v1.StateResponse
 }
 var file_agent_proto_depIdxs = []int32{
-	2, // 0: portico.agent.v1.CatalogResponse.resources:type_name -> portico.agent.v1.Resource
+	3, // 0: portico.agent.v1.CatalogResponse.resources:type_name -> portico.agent.v1.Resource
 	0, // 1: portico.agent.v1.TunnelFrame.kind:type_name -> portico.agent.v1.TunnelFrame.Kind
-	1, // 2: portico.agent.v1.Agent.Catalog:input_type -> portico.agent.v1.CatalogRequest
-	4, // 3: portico.agent.v1.Agent.Connect:input_type -> portico.agent.v1.TunnelFrame
-	3, // 4: portico.agent.v1.Agent.Catalog:output_type -> portico.agent.v1.CatalogResponse
-	4, // 5: portico.agent.v1.Agent.Connect:output_type -> portico.agent.v1.TunnelFrame
-	4, // [4:6] is the sub-list for method output_type
-	2, // [2:4] is the sub-list for method input_type
-	2, // [2:2] is the sub-list for extension type_name
-	2, // [2:2] is the sub-list for extension extendee
-	0, // [0:2] is the sub-list for field type_name
+	1, // 2: portico.agent.v1.StateResponse.state:type_name -> portico.agent.v1.StateResponse.State
+	2, // 3: portico.agent.v1.Agent.Catalog:input_type -> portico.agent.v1.CatalogRequest
+	5, // 4: portico.agent.v1.Agent.Connect:input_type -> portico.agent.v1.TunnelFrame
+	6, // 5: portico.agent.v1.Agent.Status:input_type -> portico.agent.v1.StateRequest
+	7, // 6: portico.agent.v1.Agent.Unlock:input_type -> portico.agent.v1.UnlockRequest
+	6, // 7: portico.agent.v1.Agent.Lock:input_type -> portico.agent.v1.StateRequest
+	4, // 8: portico.agent.v1.Agent.Catalog:output_type -> portico.agent.v1.CatalogResponse
+	5, // 9: portico.agent.v1.Agent.Connect:output_type -> portico.agent.v1.TunnelFrame
+	8, // 10: portico.agent.v1.Agent.Status:output_type -> portico.agent.v1.StateResponse
+	8, // 11: portico.agent.v1.Agent.Unlock:output_type -> portico.agent.v1.StateResponse
+	8, // 12: portico.agent.v1.Agent.Lock:output_type -> portico.agent.v1.StateResponse
+	8, // [8:13] is the sub-list for method output_type
+	3, // [3:8] is the sub-list for method input_type
+	3, // [3:3] is the sub-list for extension type_name
+	3, // [3:3] is the sub-list for extension extendee
+	0, // [0:3] is the sub-list for field type_name
 }
 
 func init() { file_agent_proto_init() }
@@ -443,8 +677,8 @@ func file_agent_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_agent_proto_rawDesc), len(file_agent_proto_rawDesc)),
-			NumEnums:      1,
-			NumMessages:   4,
+			NumEnums:      2,
+			NumMessages:   7,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

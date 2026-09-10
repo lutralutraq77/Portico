@@ -24,7 +24,7 @@ $dockerArgs = @('run','--rm','--pull=never','--platform',$lock.platform,'--netwo
 & docker @dockerArgs 2>&1 | Tee-Object -FilePath (Join-Path $root 'build.log')
 if ($LASTEXITCODE -ne 0) { throw 'Arch package build fixture failed' }
 $driver = Join-Path $PSScriptRoot 'arch-install-fixture.sh'
-$dockerArgs = @('run','--rm','--pull=never','--platform',$lock.platform,'--network=none','--security-opt=no-new-privileges','--env','LC_ALL=C','--env',('PORTICO_BINARY_SHA256='+$provenance.files.portico),'--volume',($output+':/input:ro'),'--volume',($driver+':/driver.sh:ro'),$lock.image,'bash','/driver.sh')
+$dockerArgs = @('run','--rm','--pull=never','--platform',$lock.platform,'--network=none','--security-opt=no-new-privileges','--env','LC_ALL=C','--env',('PORTICO_BINARY_SHA256='+$provenance.files.portico),'--env',('PORTICO_UNIT_SHA256='+$provenance.files.'portico-agent.service'),'--volume',($output+':/input:ro'),'--volume',($driver+':/driver.sh:ro'),$lock.image,'bash','/driver.sh')
 & docker @dockerArgs 2>&1 | Tee-Object -FilePath (Join-Path $root 'install.log')
 if ($LASTEXITCODE -ne 0) { throw 'Arch install/remove fixture failed' }
 $artifacts = @(Get-ChildItem -LiteralPath $output -Filter '*.pkg.tar.zst' -File)

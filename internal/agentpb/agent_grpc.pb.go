@@ -21,6 +21,9 @@ const _ = grpc.SupportPackageIsVersion9
 const (
 	Agent_Catalog_FullMethodName = "/portico.agent.v1.Agent/Catalog"
 	Agent_Connect_FullMethodName = "/portico.agent.v1.Agent/Connect"
+	Agent_Status_FullMethodName  = "/portico.agent.v1.Agent/Status"
+	Agent_Unlock_FullMethodName  = "/portico.agent.v1.Agent/Unlock"
+	Agent_Lock_FullMethodName    = "/portico.agent.v1.Agent/Lock"
 )
 
 // AgentClient is the client API for Agent service.
@@ -29,6 +32,9 @@ const (
 type AgentClient interface {
 	Catalog(ctx context.Context, in *CatalogRequest, opts ...grpc.CallOption) (*CatalogResponse, error)
 	Connect(ctx context.Context, opts ...grpc.CallOption) (grpc.BidiStreamingClient[TunnelFrame, TunnelFrame], error)
+	Status(ctx context.Context, in *StateRequest, opts ...grpc.CallOption) (*StateResponse, error)
+	Unlock(ctx context.Context, in *UnlockRequest, opts ...grpc.CallOption) (*StateResponse, error)
+	Lock(ctx context.Context, in *StateRequest, opts ...grpc.CallOption) (*StateResponse, error)
 }
 
 type agentClient struct {
@@ -62,12 +68,45 @@ func (c *agentClient) Connect(ctx context.Context, opts ...grpc.CallOption) (grp
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
 type Agent_ConnectClient = grpc.BidiStreamingClient[TunnelFrame, TunnelFrame]
 
+func (c *agentClient) Status(ctx context.Context, in *StateRequest, opts ...grpc.CallOption) (*StateResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(StateResponse)
+	err := c.cc.Invoke(ctx, Agent_Status_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *agentClient) Unlock(ctx context.Context, in *UnlockRequest, opts ...grpc.CallOption) (*StateResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(StateResponse)
+	err := c.cc.Invoke(ctx, Agent_Unlock_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *agentClient) Lock(ctx context.Context, in *StateRequest, opts ...grpc.CallOption) (*StateResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(StateResponse)
+	err := c.cc.Invoke(ctx, Agent_Lock_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // AgentServer is the server API for Agent service.
 // All implementations must embed UnimplementedAgentServer
 // for forward compatibility.
 type AgentServer interface {
 	Catalog(context.Context, *CatalogRequest) (*CatalogResponse, error)
 	Connect(grpc.BidiStreamingServer[TunnelFrame, TunnelFrame]) error
+	Status(context.Context, *StateRequest) (*StateResponse, error)
+	Unlock(context.Context, *UnlockRequest) (*StateResponse, error)
+	Lock(context.Context, *StateRequest) (*StateResponse, error)
 	mustEmbedUnimplementedAgentServer()
 }
 
@@ -83,6 +122,15 @@ func (UnimplementedAgentServer) Catalog(context.Context, *CatalogRequest) (*Cata
 }
 func (UnimplementedAgentServer) Connect(grpc.BidiStreamingServer[TunnelFrame, TunnelFrame]) error {
 	return status.Error(codes.Unimplemented, "method Connect not implemented")
+}
+func (UnimplementedAgentServer) Status(context.Context, *StateRequest) (*StateResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method Status not implemented")
+}
+func (UnimplementedAgentServer) Unlock(context.Context, *UnlockRequest) (*StateResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method Unlock not implemented")
+}
+func (UnimplementedAgentServer) Lock(context.Context, *StateRequest) (*StateResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method Lock not implemented")
 }
 func (UnimplementedAgentServer) mustEmbedUnimplementedAgentServer() {}
 func (UnimplementedAgentServer) testEmbeddedByValue()               {}
@@ -130,6 +178,60 @@ func _Agent_Connect_Handler(srv interface{}, stream grpc.ServerStream) error {
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
 type Agent_ConnectServer = grpc.BidiStreamingServer[TunnelFrame, TunnelFrame]
 
+func _Agent_Status_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(StateRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AgentServer).Status(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Agent_Status_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AgentServer).Status(ctx, req.(*StateRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Agent_Unlock_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UnlockRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AgentServer).Unlock(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Agent_Unlock_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AgentServer).Unlock(ctx, req.(*UnlockRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Agent_Lock_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(StateRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AgentServer).Lock(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Agent_Lock_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AgentServer).Lock(ctx, req.(*StateRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Agent_ServiceDesc is the grpc.ServiceDesc for Agent service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -140,6 +242,18 @@ var Agent_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Catalog",
 			Handler:    _Agent_Catalog_Handler,
+		},
+		{
+			MethodName: "Status",
+			Handler:    _Agent_Status_Handler,
+		},
+		{
+			MethodName: "Unlock",
+			Handler:    _Agent_Unlock_Handler,
+		},
+		{
+			MethodName: "Lock",
+			Handler:    _Agent_Lock_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{

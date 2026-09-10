@@ -32,6 +32,12 @@ func TestUnsupportedOperationsFailWithoutReflectingInput(t *testing.T) {
 		{"agent", "run", "--config", "synthetic-sensitive-input", "--socket", "synthetic-sensitive-input", "--secrets-fd", "0"},
 		{"agent", "run", "--config", "synthetic-sensitive-input", "--socket", "synthetic-sensitive-input", "--prompt", "--secrets-fd", "3"},
 		{"agent", "catalog", "--socket", "synthetic-sensitive-input", "--prompt"},
+		{"agent", "daemon", "--config", "synthetic-sensitive-input", "--socket", "synthetic-sensitive-input", "--prompt"},
+		{"agent", "unlock", "--socket", "synthetic-sensitive-input"},
+		{"agent", "unlock", "--socket", "synthetic-sensitive-input", "--secrets-fd", "0"},
+		{"agent", "unlock", "--socket", "synthetic-sensitive-input", "--prompt", "--secrets-fd", "3"},
+		{"agent", "lock", "--socket", "synthetic-sensitive-input", "--secrets-fd", "3"},
+		{"agent", "status", "--socket", "synthetic-sensitive-input", "--config", "synthetic-sensitive-input"},
 		{"agent", "connect", "--socket", "synthetic-sensitive-input", "--resource", "192.0.2.10:443", "--revision", "1"},
 		{"agent", "connect", "--socket", "synthetic-sensitive-input", "--resource", "59d73719-4dc0-4d8c-898e-aa2f9466a89e", "--revision", "01"},
 		{"agent", "connect", "--socket", "synthetic-sensitive-input", "--resource", "59d73719-4dc0-4d8c-898e-aa2f9466a89e", "--revision", "1", "--prompt"},
@@ -76,6 +82,10 @@ func TestAgentFailuresDoNotReflectPaths(t *testing.T) {
 	}{
 		{[]string{"agent", "catalog", "--socket", "synthetic-sensitive-input"}, "Local agent catalog failed.\n"},
 		{[]string{"agent", "run", "--config", "synthetic-sensitive-input", "--socket", "synthetic-sensitive-input", "--secrets-fd", "3"}, "Agent configuration rejected.\n"},
+		{[]string{"agent", "daemon", "--config", "synthetic-sensitive-input", "--socket", "synthetic-sensitive-input"}, "Local agent daemon failed.\n"},
+		{[]string{"agent", "unlock", "--socket", "synthetic-sensitive-input", "--secrets-fd", "3"}, "Local agent unlock failed.\n"},
+		{[]string{"agent", "lock", "--socket", "synthetic-sensitive-input"}, "Local agent lock failed.\n"},
+		{[]string{"agent", "status", "--socket", "synthetic-sensitive-input"}, "Local agent status failed.\n"},
 	} {
 		var out, errout bytes.Buffer
 		if code := cli.Run(test.args, &out, &errout); code != 1 || out.Len() != 0 || errout.String() != test.message {

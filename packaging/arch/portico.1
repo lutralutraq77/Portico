@@ -32,6 +32,18 @@ portico \- development access to individually authorized private resources
 .B portico agent catalog --socket
 .I SOCKET
 .br
+.B portico agent daemon --config
+.I FILE
+.B --socket
+.I SOCKET
+.br
+.B portico agent unlock --socket
+.I SOCKET
+.RB ( "--secrets-fd 3" " | " --prompt )
+.br
+.B portico agent lock|status --socket
+.I SOCKET
+.br
 .B portico agent connect --socket
 .I SOCKET
 .B --resource
@@ -57,6 +69,17 @@ checked; other applications sharing that UID are trusted. Agent catalog fetches
 fresh inventory; agent connect selects an exact resource and performs fresh
 remote authorization. Output half-close is distinct from final command success.
 Blocked application output fails after a five-second per-write deadline.
+.PP
+Agent daemon starts locked. Unlock explicitly decrypts the configured identity;
+lock cancels its active resource operations and joins old key users. A pending
+password calculation may finish before it joins, but cannot reopen a locked
+session. Status returns locked, unlocking, unlocked or draining. Daemon mode
+admits six resource streams, leaving room for normal control requests.
+.PP
+The development package includes an inactive systemd user unit. It contains no
+password and starts locked after every restart. Its fixed configuration path is
+~/.config/portico/client.json; its socket is in the user's private runtime
+directory under portico-agent/agent.sock. Installation does not enable it.
 .SH SECRET INPUT
 Enrollment and version-2 encrypted client configuration require one explicit
 secret source. Do not put passwords or invitation secrets in command arguments,

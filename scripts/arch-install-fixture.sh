@@ -18,6 +18,14 @@ test "$(stat -c '%u:%g:%a' /usr/bin/portico)" = '0:0:755'
 test -f /usr/share/man/man1/portico.1.gz || test -f /usr/share/man/man1/portico.1
 test -f /usr/share/doc/portico-cli-development/DEVELOPMENT.txt
 printf '%s  /usr/bin/portico\n' "$PORTICO_BINARY_SHA256" | sha256sum --check --strict
+test "$(stat -c '%u:%g:%a' /usr/lib/systemd/user/portico-agent.service)" = '0:0:644'
+printf '%s  /usr/lib/systemd/user/portico-agent.service\n' "$PORTICO_UNIT_SHA256" | sha256sum --check --strict
+mkdir -p /run/user/0
+chmod 0700 /run/user/0
+XDG_RUNTIME_DIR=/run/user/0 systemd-analyze --user verify /usr/lib/systemd/user/portico-agent.service
+test ! -e /etc/systemd/user/default.target.wants/portico-agent.service
+test ! -e /root/.config/systemd/user/default.target.wants/portico-agent.service
+echo PORTICO_ARCH_USER_UNIT_VERIFIED_INACTIVE
 portico version --json
 portico help
 pacman -Ql portico-cli-development
@@ -29,6 +37,7 @@ chmod 0600 /var/lib/portico-package-fixture/state
 cp /var/lib/portico-package-fixture/state /tmp/original-state
 pacman -R --noconfirm portico-cli-development
 test ! -e /usr/bin/portico
+test ! -e /usr/lib/systemd/user/portico-agent.service
 cmp /tmp/original-state /var/lib/portico-package-fixture/state
 test "$(stat -c '%u:%g:%a' /var/lib/portico-package-fixture/state)" = '0:0:600'
 echo PORTICO_ARCH_INSTALL_REMOVE_PASS

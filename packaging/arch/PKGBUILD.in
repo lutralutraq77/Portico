@@ -10,8 +10,8 @@ url='https://github.com/lutralutraq77/Portico'
 license=()
 depends=()
 options=('!strip' '!debug')
-source=('portico' 'portico.1' 'DEVELOPMENT.txt')
-sha256sums=('@BINARY_SHA256@' '@MANUAL_SHA256@' '@NOTICE_SHA256@')
+source=('portico' 'portico.1' 'DEVELOPMENT.txt' 'portico-agent.service')
+sha256sums=('@BINARY_SHA256@' '@MANUAL_SHA256@' '@NOTICE_SHA256@' '@UNIT_SHA256@')
 
 check() {
     ./portico version --json > version.json
@@ -24,4 +24,5 @@ package() {
     install -Dm755 portico "$pkgdir/usr/bin/portico"
     install -Dm644 portico.1 "$pkgdir/usr/share/man/man1/portico.1"
     install -Dm644 DEVELOPMENT.txt "$pkgdir/usr/share/doc/portico-cli-development/DEVELOPMENT.txt"
+    install -Dm644 portico-agent.service "$pkgdir/usr/lib/systemd/user/portico-agent.service"
 }

@@ -31,7 +31,7 @@ type Info struct {
 	DevelopmentOnly bool   `json:"development_only"`
 }
 
-const usage = "Usage: portico version [--json]\n       portico connector run --config /absolute/path/config.json\n       portico client catalog --config /absolute/path/config.json [--secrets-fd 3 | --prompt]\n       portico client connect --config /absolute/path/config.json --resource UUID --revision N [--secrets-fd 3 | --prompt]\n       portico agent run --config /absolute/path/config.json --socket /private/path/agent.sock (--secrets-fd 3 | --prompt)\n       portico agent catalog --socket /private/path/agent.sock\n       portico agent connect --socket /private/path/agent.sock --resource UUID --revision N\n       portico enroll prepare|redeem|activate --config /absolute/path/config.json (--secrets-fd 3 | --prompt)\n       portico help\nPhase 6 development only; Linux client and connector use loopback control/carrier services. Connect requires application stdin/stdout pipes. Enrollment and version 2 client identities require an explicit secret source: inherited pipe 3, or hidden foreground terminal input with --prompt.\n"
+const usage = "Usage: portico version [--json]\n       portico connector run --config /absolute/path/config.json\n       portico client catalog --config /absolute/path/config.json [--secrets-fd 3 | --prompt]\n       portico client connect --config /absolute/path/config.json --resource UUID --revision N [--secrets-fd 3 | --prompt]\n       portico agent run --config /absolute/path/config.json --socket /private/path/agent.sock (--secrets-fd 3 | --prompt)\n       portico agent daemon --config /absolute/path/config.json --socket /private/path/agent.sock\n       portico agent unlock --socket /private/path/agent.sock (--secrets-fd 3 | --prompt)\n       portico agent lock|status --socket /private/path/agent.sock\n       portico agent catalog --socket /private/path/agent.sock\n       portico agent connect --socket /private/path/agent.sock --resource UUID --revision N\n       portico enroll prepare|redeem|activate --config /absolute/path/config.json (--secrets-fd 3 | --prompt)\n       portico help\nPhase 6 development only; Linux client and connector use loopback control/carrier services. Connect requires application stdin/stdout pipes. Enrollment and version 2 client identities require an explicit secret source: inherited pipe 3, or hidden foreground terminal input with --prompt.\n"
 
 // Run handles a bounded command surface. Arguments are never echoed on errors,
 // because future invocations may accidentally contain enrollment material.
@@ -72,6 +72,48 @@ func RunInputContext(ctx context.Context, args []string, stdin *os.File, stdout,
 			return 1
 		}
 		if _, err := io.WriteString(stdout, "Local agent stopped; unlock again to start a new session.\n"); err != nil {
+			return 1
+		}
+		return 0
+	case len(args) == 6 && args[0] == "agent" && args[1] == "daemon" && args[2] == "--config" && args[4] == "--socket":
+		if agent.RunLocked(ctx, args[5], args[3]) != nil {
+			_, _ = io.WriteString(stderr, "Local agent daemon failed.\n")
+			return 1
+		}
+		if _, err := io.WriteString(stdout, "Local agent daemon stopped.\n"); err != nil {
+			return 1
+		}
+		return 0
+	case valid4 && source4 != noSecretSource && args[0] == "agent" && args[1] == "unlock" && args[2] == "--socket":
+		passphrase, err := readClientPassphrase(ctx, source4)
+		defer clear(passphrase)
+		if err != nil || agent.Unlock(ctx, args[3], passphrase) != nil {
+			_, _ = io.WriteString(stderr, "Local agent unlock failed.\n")
+			return 1
+		}
+		if _, err := io.WriteString(stdout, "Local agent unlocked.\n"); err != nil {
+			return 1
+		}
+		return 0
+	case len(args) == 4 && args[0] == "agent" && args[1] == "lock" && args[2] == "--socket":
+		if agent.Lock(ctx, args[3]) != nil {
+			_, _ = io.WriteString(stderr, "Local agent lock failed.\n")
+			return 1
+		}
+		if _, err := io.WriteString(stdout, "Local agent locked.\n"); err != nil {
+			return 1
+		}
+		return 0
+	case len(args) == 4 && args[0] == "agent" && args[1] == "status" && args[2] == "--socket":
+		state, err := agent.Status(ctx, args[3])
+		if err != nil {
+			_, _ = io.WriteString(stderr, "Local agent status failed.\n")
+			return 1
+		}
+		if json.NewEncoder(stdout).Encode(struct {
+			Version int    `json:"version"`
+			State   string `json:"state"`
+		}{1, state}) != nil {
 			return 1
 		}
 		return 0
