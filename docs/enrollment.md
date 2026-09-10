@@ -4,7 +4,7 @@ The canonical design is [PKI_DESIGN.md](../PKI_DESIGN.md).
 
 Durable ordinary enrollment includes hashed invitations, attempt/CSR binding, one issuer invocation, registered public results and real TLS activation. The [restricted issuer](issuer.md) now implements the provider against Smallstep. Administrator-approved ordinary invitations can commit with their one-use WebAuthn assertion and audit event. Administrator bootstrap certificates still enter through a trusted local owner operation; no public registration/reset endpoint exists. See [ADR-004](../ADR-004-restricted-issuer-admin-recovery.md) and [current integration evidence](phase-3-integration-report.md).
 
-## Ordinary enrollment transport under qualification
+## Verified ordinary enrollment transport components
 
 The development libraries now expose separate HTTPS redemption and activation
 servers and an ordinary enrollment client. The servers accept supplied loopback
@@ -70,9 +70,10 @@ erasure share a lock because HTTP transport cleanup can continue after an error
 returns. Closing a body makes subsequent reads return EOF and creates no replay
 copy of the invitation.
 
-Qualification includes actual HTTPS component tests and a composed restricted
-Smallstep workflow for both ordinary profiles. Passing runs must be recorded
-against the current source before making a verification claim. The earlier
-Phase 3 and Phase 6 reports do not prove these newer transport changes. Full
-platform enrollment, encrypted local state, administrator hardware, installed
-services, production custody and all remaining acceptance gates remain open.
+Actual HTTPS component tests and a composed restricted Smallstep workflow for
+both ordinary profiles passed on source a1e284ca09b71c7acedb73fb16e4fd5bf222ee6a.
+The [enrollment report](phase-6-enrollment-report.md) records the complete hosted
+Linux guest, native Windows/Linux quality checks, exact source tree and archived
+evidence. Later local-state changes need separate verification. Full platform
+enrollment, encrypted local state, administrator hardware, installed services,
+production custody and all remaining acceptance gates remain open.

@@ -1,5 +1,6 @@
-// Package localfile reads bounded, locally protected service configuration.
-// It does not create files, follow symbolic links or repair permissions.
+// Package localfile reads bounded, locally protected service configuration and
+// creates immutable private state. It never follows symbolic links, overwrites
+// an existing state file or repairs permissions on caller-owned files.
 package localfile
 
 import "errors"
