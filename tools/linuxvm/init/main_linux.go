@@ -99,6 +99,7 @@ func main() {
 		{"/tests/connector", []string{"-test.v", "-test.shuffle=on", "-test.timeout=30s"}},
 		{"/tests/localfile", []string{"-test.v", "-test.shuffle=on", "-test.timeout=30s"}},
 		{"/tests/localipc", []string{"-test.v", "-test.shuffle=on", "-test.timeout=60s"}},
+		{"/tests/agent", []string{"-test.v", "-test.shuffle=on", "-test.timeout=90s"}},
 		{"/tests/client", []string{"-test.v", "-test.shuffle=on", "-test.timeout=60s"}},
 		// Production-cost password KDF tests run sequentially in the emulator.
 		// This suite budget does not change any enrollment network deadline.

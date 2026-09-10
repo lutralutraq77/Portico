@@ -28,6 +28,10 @@ func TestUnsupportedOperationsFailWithoutReflectingInput(t *testing.T) {
 		{"client", "catalog", "--config", "synthetic-sensitive-input", "--secrets-fd", "03"},
 		{"client", "catalog", "--config", "synthetic-sensitive-input", "--prompt", "--secrets-fd", "3"},
 		{"client", "catalog", "--config", "synthetic-sensitive-input", "--prompt=synthetic-sensitive-input"},
+		{"agent", "run", "--config", "synthetic-sensitive-input", "--socket", "synthetic-sensitive-input"},
+		{"agent", "run", "--config", "synthetic-sensitive-input", "--socket", "synthetic-sensitive-input", "--secrets-fd", "0"},
+		{"agent", "run", "--config", "synthetic-sensitive-input", "--socket", "synthetic-sensitive-input", "--prompt", "--secrets-fd", "3"},
+		{"agent", "catalog", "--socket", "synthetic-sensitive-input", "--prompt"},
 		{"enroll", "prepare", "--config", "synthetic-sensitive-input", "--secrets-fd", "3", "--prompt"},
 		{"client", "connect", "--config", "synthetic-sensitive-input", "--resource", "59d73719-4dc0-4d8c-898e-aa2f9466a89e", "--revision", "1", "--secrets-fd", "1"},
 	} {
@@ -61,6 +65,21 @@ func TestVersionIsExplicitlyDevelopmentOnly(t *testing.T) {
 }
 
 type brokenWriter struct{}
+
+func TestAgentFailuresDoNotReflectPaths(t *testing.T) {
+	for _, test := range []struct {
+		args    []string
+		message string
+	}{
+		{[]string{"agent", "catalog", "--socket", "synthetic-sensitive-input"}, "Local agent catalog failed.\n"},
+		{[]string{"agent", "run", "--config", "synthetic-sensitive-input", "--socket", "synthetic-sensitive-input", "--secrets-fd", "3"}, "Agent configuration rejected.\n"},
+	} {
+		var out, errout bytes.Buffer
+		if code := cli.Run(test.args, &out, &errout); code != 1 || out.Len() != 0 || errout.String() != test.message {
+			t.Fatalf("agent failure: code=%d output=%q error=%q", code, out.String(), errout.String())
+		}
+	}
+}
 
 func TestEnrollmentConfigurationErrorsDoNotReflectPaths(t *testing.T) {
 	for _, operation := range []string{"prepare", "redeem", "activate"} {

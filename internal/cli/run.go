@@ -11,6 +11,7 @@ import (
 	"runtime"
 	"strconv"
 
+	"portico.local/portico/internal/agent"
 	"portico.local/portico/internal/client"
 	"portico.local/portico/internal/clockhealth"
 	"portico.local/portico/internal/connector"
@@ -30,7 +31,7 @@ type Info struct {
 	DevelopmentOnly bool   `json:"development_only"`
 }
 
-const usage = "Usage: portico version [--json]\n       portico connector run --config /absolute/path/config.json\n       portico client catalog --config /absolute/path/config.json [--secrets-fd 3 | --prompt]\n       portico client connect --config /absolute/path/config.json --resource UUID --revision N [--secrets-fd 3 | --prompt]\n       portico enroll prepare|redeem|activate --config /absolute/path/config.json (--secrets-fd 3 | --prompt)\n       portico help\nPhase 6 development only; Linux client and connector use loopback control/carrier services. Connect requires application stdin/stdout pipes. Enrollment and version 2 client identities require an explicit secret source: inherited pipe 3, or hidden foreground terminal input with --prompt.\n"
+const usage = "Usage: portico version [--json]\n       portico connector run --config /absolute/path/config.json\n       portico client catalog --config /absolute/path/config.json [--secrets-fd 3 | --prompt]\n       portico client connect --config /absolute/path/config.json --resource UUID --revision N [--secrets-fd 3 | --prompt]\n       portico agent run --config /absolute/path/config.json --socket /private/path/agent.sock (--secrets-fd 3 | --prompt)\n       portico agent catalog --socket /private/path/agent.sock\n       portico enroll prepare|redeem|activate --config /absolute/path/config.json (--secrets-fd 3 | --prompt)\n       portico help\nPhase 6 development only; Linux client and connector use loopback control/carrier services. Connect requires application stdin/stdout pipes. Enrollment and version 2 client identities require an explicit secret source: inherited pipe 3, or hidden foreground terminal input with --prompt.\n"
 
 // Run handles a bounded command surface. Arguments are never echoed on errors,
 // because future invocations may accidentally contain enrollment material.
@@ -52,10 +53,38 @@ func RunInputContext(ctx context.Context, args []string, stdin *os.File, stdout,
 		return 2
 	}
 	source4, valid4 := parseSecretOption(args, 4)
+	source6, valid6 := parseSecretOption(args, 6)
 	source8, valid8 := parseSecretOption(args, 8)
 	switch {
 	case len(args) == 0 || (len(args) == 1 && (args[0] == "help" || args[0] == "--help" || args[0] == "-h")):
 		if _, err := io.WriteString(stdout, usage); err != nil {
+			return 1
+		}
+		return 0
+	case valid6 && source6 != noSecretSource && args[0] == "agent" && args[1] == "run" && args[2] == "--config" && args[4] == "--socket":
+		config, err := loadClientConfiguration(ctx, args[3], source6)
+		if err != nil {
+			_, _ = io.WriteString(stderr, "Agent configuration rejected.\n")
+			return 1
+		}
+		if agent.Run(ctx, args[5], config) != nil {
+			_, _ = io.WriteString(stderr, "Local agent stopped after a failed check.\n")
+			return 1
+		}
+		if _, err := io.WriteString(stdout, "Local agent stopped; unlock again to start a new session.\n"); err != nil {
+			return 1
+		}
+		return 0
+	case len(args) == 4 && args[0] == "agent" && args[1] == "catalog" && args[2] == "--socket":
+		resources, err := agent.Catalog(ctx, args[3])
+		if err != nil {
+			_, _ = io.WriteString(stderr, "Local agent catalog failed.\n")
+			return 1
+		}
+		if json.NewEncoder(stdout).Encode(struct {
+			Version   int                      `json:"version"`
+			Resources []control.ResourceAccess `json:"resources"`
+		}{1, resources}) != nil {
 			return 1
 		}
 		return 0

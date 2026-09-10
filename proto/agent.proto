@@ -1,0 +1,31 @@
+syntax = "proto3";
+
+package portico.agent.v1;
+option go_package = "portico.local/portico/internal/agentpb";
+
+// OS peer credentials authenticate the local caller. Inventory is advisory;
+// neither this response nor a local socket connection grants resource access.
+message CatalogRequest {
+  uint32 version = 1;
+}
+
+message Resource {
+  string id = 1;
+  int64 revision = 2;
+  string name = 3;
+  string connector_id = 4;
+  string connector_name = 5;
+  string address = 6;
+  string protocol = 7;
+  uint32 port = 8;
+  string until = 9;
+}
+
+message CatalogResponse {
+  uint32 version = 1;
+  repeated Resource resources = 2;
+}
+
+service Agent {
+  rpc Catalog(CatalogRequest) returns (CatalogResponse);
+}

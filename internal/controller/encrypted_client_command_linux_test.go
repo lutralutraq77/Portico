@@ -13,9 +13,11 @@ import (
 	"path/filepath"
 	"strconv"
 	"sync/atomic"
+	"syscall"
 	"testing"
 	"time"
 
+	"portico.local/portico/internal/carrier"
 	"portico.local/portico/internal/connector"
 	"portico.local/portico/internal/control"
 	enroll "portico.local/portico/internal/enrollment"
@@ -74,7 +76,26 @@ func testEncryptedClientEnrollmentAndRevocation(t *testing.T, prompt bool) {
 		t.Helper()
 		return guestSecretApplicationResult(t, start(t, secret, args...), success, message)
 	}
-	v := newWorkloadFixture(t) // Guard before any real destination socket.
+	var bindingObserved atomic.Int64
+	var firstDeviceAdmission atomic.Bool
+	// This is a process/KDF integration fixture. The generic carrier fixture's
+	// two-second idle pairing window can expire between returning its catalog
+	// and the new process's carrier TLS handshake under emulation. Keep the
+	// production authorization/lease/open deadlines and all hostile timeout
+	// cases unchanged; use an explicit supported idle pairing window here.
+	v := newWorkloadFixtureWithCarrier(t, echoWorkloadDestination, func(c *carrier.Config) {
+		c.PairTimeout = 10 * time.Second
+		admit := c.Admit
+		c.Admit = func(ctx context.Context, credential pki.Credential, der []byte) error {
+			if credential.Profile == pki.Device && firstDeviceAdmission.CompareAndSwap(false, true) {
+				observed := bindingObserved.Load()
+				if observed != 0 {
+					t.Logf("process fixture carrier admission after observed binding: %s (idle pairing window %s)", time.Since(time.Unix(0, observed)), c.PairTimeout)
+				}
+			}
+			return admit(ctx, credential, der)
+		}
+	}) // Guard before any real destination socket.
 	f := v.carrier.policy.device.f
 	h := enrollmentHTTP(t, v.carrier.policy.device, v.carrier.policy.device.provider(t))
 	priorSignatures := h.f.calls.Load()
@@ -122,6 +143,7 @@ func testEncryptedClientEnrollmentAndRevocation(t *testing.T, prompt bool) {
 					case <-tick.C:
 					}
 				}
+				bindingObserved.Store(time.Now().UnixNano())
 			}
 			handler.ServeHTTP(w, r)
 		})
@@ -234,6 +256,44 @@ func testEncryptedClientEnrollmentAndRevocation(t *testing.T, prompt bool) {
 			assertNoAuthority(t)
 		})
 	}
+	// Start the actual per-user agent after the other KDF-heavy denials so its
+	// process-fixture budget covers only catalog/transfer/revocation and shutdown.
+	// It unlocks once and must continue to consult live controller state.
+	agentPath := filepath.Join(dir, "agent.sock")
+	agentProcess := start(t, unlock, "agent", "run", "--config", path, "--socket", agentPath, "--secrets-fd", "3")
+	ready := time.NewTimer(90 * time.Second)
+	defer ready.Stop()
+	tick := time.NewTicker(25 * time.Millisecond)
+	defer tick.Stop()
+	for {
+		if _, err := os.Lstat(agentPath); err == nil {
+			break
+		}
+		select {
+		case <-agentProcess.done:
+			t.Fatalf("agent startup exit=%v stderr=%q", agentProcess.err, agentProcess.logs.String())
+		case <-ready.C:
+			t.Fatal("agent did not finish bounded fixture startup")
+		case <-tick.C:
+		}
+	}
+	ready.Stop()
+	tick.Stop()
+	t.Run("agent_catalog_from_retained_identity", func(t *testing.T) {
+		output := guestSecretApplicationResult(t, guestStartApplication(t, "agent", "catalog", "--socket", agentPath), true, "")
+		var catalog control.CatalogSnapshot
+		must(t, json.Unmarshal(output, &catalog))
+		found := false
+		for _, r := range catalog.Resources {
+			if r.ID == v.resource.ID {
+				found = r.Revision == v.resource.Revision && r.ConnectorID == v.resource.ConnectorID && r.Address == v.resource.Address && r.Port == v.resource.Port && r.Protocol == "tcp"
+			}
+		}
+		if catalog.Version != 1 || !found {
+			t.Fatal("agent changed the authenticated exact resource tuple")
+		}
+		assertNoAuthority(t)
+	})
 	t.Run("transfer_then_revoke_enrollment", func(t *testing.T) {
 		bindOnCatalog.Store(true)
 		p := start(t, unlock, connectArgs(v.resource.ID, v.resource.Revision)...)
@@ -271,6 +331,23 @@ func testEncryptedClientEnrollmentAndRevocation(t *testing.T, prompt bool) {
 			t.Fatal("new encrypted client process reused revoked authority")
 		}
 	})
+	t.Run("agent_does_not_cache_revoked_identity_authority", func(t *testing.T) {
+		// Establish the precondition independently even if transfer failed
+		// before its revocation step. A transfer failure must remain visible,
+		// but must not masquerade as acceptance of a revoked agent identity.
+		must(t, f.s.Update(ctx, f.actor, func(tx *Tx) error { return tx.RevokeEnrollment(invitation) }))
+		output := guestSecretApplicationResult(t, guestStartApplication(t, "agent", "catalog", "--socket", agentPath), false, "Local agent catalog failed.\n")
+		if len(output) != 0 {
+			t.Fatal("revoked agent returned inventory")
+		}
+	})
+	must(t, agentProcess.command.Process.Signal(syscall.SIGTERM))
+	if output := guestSecretApplicationResult(t, agentProcess, true, ""); string(output) != "Local agent stopped; unlock again to start a new session.\n" {
+		t.Fatal("agent shutdown output changed")
+	}
+	if _, err := os.Lstat(agentPath); !os.IsNotExist(err) {
+		t.Fatal("agent left its local socket after shutdown")
+	}
 	retained, err := os.ReadFile(enrollmentFile.StateFile)
 	must(t, err)
 	retainedCertificate, err := os.ReadFile(enrollmentFile.StateFile + ".certificate")

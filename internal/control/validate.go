@@ -22,6 +22,9 @@ func validAuthorization(v Authorization) bool {
 // actual TLS identities, original tuple/sequence and request-start deadline.
 func (v Authorization) Valid() bool { return validAuthorization(v) }
 
+// Valid checks catalog structure only. It cannot grant resource authority.
+func (v ResourceAccess) Valid() bool { return validResource(v) }
+
 func (v HostingSnapshot) Valid() bool { return validHosting(v) }
 
 // ValidFor checks a cancellation response against the exact requested IDs.

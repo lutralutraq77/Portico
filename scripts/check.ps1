@@ -59,6 +59,7 @@ try {
     Invoke-Check 'bounded WebAuthn fuzzing' 'go' @('test','./internal/adminauth','-run=^$','-fuzz=FuzzWebAuthnResponses','-fuzztime=5s','-parallel=2')
     Invoke-Check 'bounded control JSON fuzzing' 'go' @('test','./internal/wire','-run=^$','-fuzz=FuzzControlJSON','-fuzztime=5s','-parallel=2')
     Invoke-Check 'bounded carrier protobuf fuzzing' 'go' @('test','./internal/carrier','-run=^$','-fuzz=FuzzCarrierFrames','-fuzztime=5s','-parallel=2')
+    Invoke-Check 'bounded agent protobuf fuzzing' 'go' @('test','./internal/agent','-run=^$','-fuzz=FuzzAgentCatalog','-fuzztime=5s','-parallel=2')
     Invoke-Check 'bounded workload framing fuzzing' 'go' @('test','./internal/workload','-run=^$','-fuzz=FuzzWorkloadOpen','-fuzztime=5s','-parallel=2')
     Push-Location (Join-Path $PorticoRoot 'issuer')
     try {
