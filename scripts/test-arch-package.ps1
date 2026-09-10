@@ -20,7 +20,7 @@ $imageInfo = & docker image inspect $lock.image
 if ($LASTEXITCODE -ne 0) { throw 'Cannot record Arch image identity' }
 [IO.File]::WriteAllText((Join-Path $root 'image.json'), ($imageInfo -join "`n"))
 $driver = Join-Path $PSScriptRoot 'arch-build-fixture.sh'
-$dockerArgs = @('run','--rm','--pull=never','--platform',$lock.platform,'--network=none','--read-only','--user=nobody','--cap-drop=ALL','--security-opt=no-new-privileges','--tmpfs','/tmp:rw,nosuid,nodev,size=512m,mode=1777','--env','LC_ALL=C','--env',('SOURCE_DATE_EPOCH='+$provenance.source_date_epoch),'--volume',($root+':/input:ro'),'--volume',($output+':/output:rw'),'--volume',($driver+':/driver.sh:ro'),$lock.image,'bash','/driver.sh')
+$dockerArgs = @('run','--rm','--pull=never','--platform',$lock.platform,'--network=none','--read-only','--user=nobody','--cap-drop=ALL','--security-opt=no-new-privileges','--tmpfs','/tmp:rw,exec,nosuid,nodev,size=512m,mode=1777','--env','LC_ALL=C','--env',('SOURCE_DATE_EPOCH='+$provenance.source_date_epoch),'--volume',($root+':/input:ro'),'--volume',($output+':/output:rw'),'--volume',($driver+':/driver.sh:ro'),$lock.image,'bash','/driver.sh')
 & docker @dockerArgs 2>&1 | Tee-Object -FilePath (Join-Path $root 'build.log')
 if ($LASTEXITCODE -ne 0) { throw 'Arch package build fixture failed' }
 $driver = Join-Path $PSScriptRoot 'arch-install-fixture.sh'

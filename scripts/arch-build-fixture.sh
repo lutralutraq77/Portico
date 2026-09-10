@@ -5,6 +5,8 @@ mkdir /tmp/portico-package
 cd /tmp/portico-package
 cp /input/PKGBUILD /input/portico /input/portico.1 /input/DEVELOPMENT.txt .
 chmod u+x portico
+stat -c 'build input mode=%a uid=%u gid=%g' portico
+awk '$2 == "/tmp" { print "build mount: " $0 }' /proc/mounts
 cp portico /tmp/portico-original
 printf '\0' >> portico
 if makepkg --verifysource --noconfirm > /tmp/checksum-negative.log 2>&1; then

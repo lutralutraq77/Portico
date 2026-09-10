@@ -56,12 +56,26 @@
     "client_subcases_passed": 7,
     "failure": "EOF before first application payload delivery in transfer_then_revoke_enrollment",
     "client_scenario_seconds": 275.62,
-    "diagnostic_rerun": "in progress; test diagnostics changed, production code unchanged",
-    "cause": "unresolved"
+    "diagnostic_rerun": "passed; test diagnostics changed, production code unchanged",
+    "cause": "undetermined; not reproduced in the diagnostic or hosted run"
+  },
+  "local_diagnostic": {
+    "status": "passed",
+    "runtime_source": "0c3972279c889cf2e5cb2384d0ff784f4b70fb2b",
+    "test_change": "failure diagnostics only",
+    "log": "work/reports/phase-6-terminal-client-diagnostic/runtime.log",
+    "sha256": "674a0dfb70fb0c447a55baa48c5b45a23f6bf7ca1adf247d8a696699239411f2",
+    "initramfs_sha256": "3031ffd3b6b4eaeed95ca8a8829a6ebd8d9da308dd8f5de52ddfc10e04736498",
+    "top_level_passes": 4,
+    "subcase_passes": 34,
+    "failures": 0,
+    "skips": 0,
+    "prompt_client_scenario_seconds": 381.02,
+    "marker": "PORTICO_LINUX_TERMINAL_CLIENT_FOCUSED_PASS"
   },
   "limitations": [
     "Synthetic guest clock metadata and connector clock health",
-    "Local focused transfer failure remains under diagnosis",
+    "Original local focused transfer failure was not reproduced; its cause remains undetermined",
     "No physical terminal, hardware-key or suspend qualification",
     "No desktop agent, platform IPC, installed service or supported release claim",
     "Acceptance manifest remains seven implemented and 84 planned cases"
