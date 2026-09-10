@@ -244,6 +244,18 @@ func testEncryptedClientEnrollmentAndRevocation(t *testing.T, prompt bool) {
 		must(t, p.output.SetReadDeadline(time.Now().Add(90*time.Second)))
 		got := make([]byte, len(payload))
 		_, err = io.ReadFull(p.output, got)
+		if err != nil {
+			var sessions int
+			queryErr := f.s.db.QueryRow("SELECT count(*) FROM authorized_sessions").Scan(&sessions)
+			t.Logf("initial transfer failed: destination_connections=%d destination_received=%d destination_closed=%d authorized_sessions=%d query_error=%v carrier_admitted=%d carrier_rejected=%d carrier=%+v", v.connections.Load(), v.received.Load(), v.closed.Load(), sessions, queryErr, v.carrier.admitted.Load(), v.carrier.rejected.Load(), v.carrier.relay.Stats())
+			t.Logf("connector workload=%+v health=%v", v.server.Stats(), v.server.CheckHealth())
+			select {
+			case <-p.done:
+				t.Logf("completed client exit=%v stderr=%q", p.err, p.logs.String())
+			case <-time.After(5 * time.Second):
+				t.Log("client has not joined after transfer failure")
+			}
+		}
 		must(t, err)
 		if !bytes.Equal(got, payload) || v.connections.Load() != 1 || v.received.Load() != int64(len(payload)) {
 			t.Fatal("encrypted identity did not carry exact application bytes")
@@ -266,5 +278,7 @@ func testEncryptedClientEnrollmentAndRevocation(t *testing.T, prompt bool) {
 	if !bytes.Equal(original, retained) || !bytes.Equal(originalCertificate, retainedCertificate) || h.f.calls.Load() != priorSignatures+1 {
 		t.Fatal("resource access altered enrollment state or requested another signature")
 	}
-	t.Logf("real encrypted client processes: prompt=%t, activation gating, exact catalog, denials, exact application transfer, enrollment revocation and closure receipt; original ciphertext retained", prompt)
+	if !t.Failed() {
+		t.Logf("real encrypted client processes: prompt=%t, activation gating, exact catalog, denials, exact application transfer, enrollment revocation and closure receipt; original ciphertext retained", prompt)
+	}
 }
