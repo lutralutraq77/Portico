@@ -2,6 +2,7 @@
 # Runs only in a fresh networkless build container. The output is a guest
 # initramfs; no host installation root, cgroup tree or private state is mounted.
 set -Eeuo pipefail
+trap 'printf "PORTICO_ARCH_ROOTFS_FAILED line=%s status=%s\n" "$LINENO" "$?" >&2' ERR
 test "$(id -u)" -eq 0
 packages=(/input/portico-cli-development-*.pkg.tar.zst)
 test "${#packages[@]}" -eq 1
@@ -59,6 +60,6 @@ chmod 1777 /tmp/portico-skeleton/tmp
 mknod -m 0600 /tmp/portico-skeleton/dev/console c 5 1
 mknod -m 0666 /tmp/portico-skeleton/dev/null c 1 3
 pacman -Q > /output/systemd-rootfs-packages.txt
-systemd --version > /output/systemd-version.txt
+/usr/lib/systemd/systemd --version > /output/systemd-version.txt
 bsdtar --format=newc -cf - -C / bin etc home lib lib64 root sbin usr var portico controller portico-systemd-init portico-systemd-fixture.sh portico-systemd-isolated-fixture portico-isolated-fixture portico-fixture-state.sha256 portico-fixture-package.sha256 -C /tmp/portico-skeleton dev proc sys tmp run | gzip -1 > /output/systemd-initramfs.cpio.gz
 echo PORTICO_ARCH_SYSTEMD_ROOTFS_BUILT
