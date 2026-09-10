@@ -9,6 +9,9 @@ test "${interfaces[0]}" = /sys/class/net/lo
 sha256sum --check --strict /portico-fixture-package.sha256
 test "$(stat -c '%u:%g:%a' /usr/lib/systemd/user/portico-agent.service)" = 0:0:644
 test ! -e /etc/systemd/user/default.target.wants/portico-agent.service
+systemctl start systemd-user-sessions.service
+test "$(systemctl show --property=ActiveState --value systemd-user-sessions.service)" = active
+test ! -e /run/nologin
 systemctl start systemd-logind.service user@1000.service
 user_command() {
     runuser -u porticofixture -- env XDG_RUNTIME_DIR=/run/user/1000 DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/1000/bus "$@"
