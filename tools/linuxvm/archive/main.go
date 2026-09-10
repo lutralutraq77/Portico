@@ -16,8 +16,8 @@ type entry struct {
 }
 
 func main() {
-	if len(os.Args) != 20 {
-		panic("usage: archive output init cli-test controller-test pki-test adminauth-test wire-test carrier-test control-test boottime-test workload-test clockhealth-test connector-test localfile-test client-test enrollment-test adapter-test issuer-test app")
+	if len(os.Args) != 21 {
+		panic("usage: archive output init cli-test controller-test pki-test adminauth-test wire-test carrier-test control-test boottime-test workload-test clockhealth-test connector-test localfile-test client-test enrollment-test adapter-test issuer-test app localipc-test")
 	}
 	f, e := os.Create(os.Args[1])
 	check(e)
@@ -25,7 +25,7 @@ func main() {
 	entries := []entry{{name: "dev", mode: 0040755}, {name: "proc", mode: 0040755}, {name: "sys", mode: 0040755}, {name: "tmp", mode: 0041777}, {name: "tests", mode: 0040755}, {name: "dev/console", mode: 0020600, major: 5, minor: 1}, {name: "dev/null", mode: 0020666, major: 1, minor: 3}, {name: "dev/urandom", mode: 0020444, major: 1, minor: 9}}
 	entries = append(entries, entry{name: "etc", mode: 0040755}, entry{name: "etc/hosts", mode: 0100644, data: []byte("127.0.0.1 localhost\n::1 localhost\n")})
 	entries = append(entries, entry{name: "dev/pts", mode: 0040755}, entry{name: "dev/tty", mode: 0020666, major: 5})
-	for i, name := range []string{"init", "tests/cli", "tests/controller", "tests/pki", "tests/adminauth", "tests/wire", "tests/carrier", "tests/control", "tests/boottime", "tests/workload", "tests/clockhealth", "tests/connector", "tests/localfile", "tests/client", "tests/enrollment", "tests/adapter", "tests/issuer", "portico"} {
+	for i, name := range []string{"init", "tests/cli", "tests/controller", "tests/pki", "tests/adminauth", "tests/wire", "tests/carrier", "tests/control", "tests/boottime", "tests/workload", "tests/clockhealth", "tests/connector", "tests/localfile", "tests/client", "tests/enrollment", "tests/adapter", "tests/issuer", "portico", "tests/localipc"} {
 		data, e := os.ReadFile(os.Args[i+2])
 		check(e)
 		entries = append(entries, entry{name: name, mode: 0100755, data: data})

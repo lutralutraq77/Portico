@@ -17,4 +17,7 @@ func TestUnsupportedDoesNotRead(t *testing.T) {
 	if err := Create("unused", []byte("fixture")); !errors.Is(err, ErrUnsupported) {
 		t.Fatal("unsupported protected create accepted")
 	}
+	if f, name, err := OpenPrivateParent("unused"); f != nil || name != "" || !errors.Is(err, ErrUnsupported) {
+		t.Fatal("unsupported private parent accepted")
+	}
 }
