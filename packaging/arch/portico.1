@@ -50,6 +50,19 @@ portico \- development access to individually authorized private resources
 .I UUID
 .B --revision
 .I N
+.br
+.B portico agent exec --socket
+.I SOCKET
+.B --resource
+.I UUID
+.B --revision
+.I N
+.B --endpoint
+.I SOCKET
+.B --
+.I /absolute/program
+.B {socket}
+.RI [ arguments ]
 .SH DESCRIPTION
 This development binary uses approved local configuration and pinned private
 services. It is not a supported distribution or a self-configuring installer.
@@ -103,6 +116,20 @@ Connect requires separate application stdin and stdout pipes. It writes resource
 bytes only to stdout. Terminal prompts use the controlling terminal independently
 of those pipes. Catalog writes JSON; enrollment writes fixed status messages.
 Errors are fixed messages on stderr.
+.PP
+Agent exec creates a new private Unix endpoint bound to one exact resource
+ID and revision, then starts the explicitly named local executable. Its parent
+directory must already be owned by the user with mode 0700. A standalone
+{socket} argument is replaced with that endpoint; other arguments remain literal.
+No implicit shell or PATH search is used. The selected application's standard
+input, output and error streams are passed through unchanged.
+.PP
+Success requires the application to exit successfully and every accepted stream
+to finish with successful final RPC status. At least one stream must succeed.
+There are at most six active streams and one pending accept. Application exit
+allows five seconds for active streams to finish. The launcher has a fifteen-minute
+limit including suspend; cancellation closes streams and joins the direct child.
+The local application keeps its normal OS permissions and network access.
 .SH FILES
 Configuration and referenced files require canonical absolute paths, protected
 ownership and permissions, and no symbolic-link components. Shared temporary

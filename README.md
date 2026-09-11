@@ -34,7 +34,7 @@ See [development](docs/development.md), [testing](docs/testing.md) and [Phase 2 
 - [91 specified runtime acceptance cases](ACCEPTANCE_TEST_PLAN.md), [manifest](tests/acceptance/manifest.json), [historical Phase 0 review](PHASE_0_REVIEW.md)
 
 ## Scope and next work
-The [policy API](docs/policy-api.md) and [ADR-005](ADR-005-resource-policy-boundary.md) describe Phase 4. The [Phase 3 integration report](docs/phase-3-integration-report.md) preserves its measured evidence and open hardware/browser/recovery gates. [ADR-004](ADR-004-restricted-issuer-admin-recovery.md) and the [issuer guide](docs/issuer.md) describe those boundaries. Component tests do not demonstrate resource isolation, physical recovery or Mullvad compatibility. AUDIT-01 has Windows/Linux process-crash evidence; the other 90 cases remain planned.
+The [policy API](docs/policy-api.md) and [ADR-005](ADR-005-resource-policy-boundary.md) describe Phase 4. The [Phase 3 integration report](docs/phase-3-integration-report.md) preserves its measured evidence and open hardware/browser/recovery gates. [ADR-004](ADR-004-restricted-issuer-admin-recovery.md) and the [issuer guide](docs/issuer.md) describe those boundaries. Component tests do not demonstrate resource isolation, physical recovery or Mullvad compatibility. Seven complete acceptance cases have executable evidence; 84 remain planned in the canonical manifest.
 
 Go is selected for the initial core foundation. Android integration, browser/device authentication, hardware-key policy and the mature transport adapter remain explicit design gates. See the [domain implementation](docs/controller-domain.md) and [storage decision](ADR-002-controller-storage.md).
 

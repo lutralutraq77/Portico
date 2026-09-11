@@ -1,6 +1,6 @@
 # Security policy
 
-Portico is a development foundation, not a supported access service. No production release exists. The current executable only reports development version/help. Phase 2 domain operations are trusted internal storage methods and are not an authenticated access service.
+Portico is a development foundation, not a supported access service. No production release exists. The current executable includes development Linux enrollment, client, connector and local-agent commands. The [delivery ledger](docs/delivery-status.md) records their tested boundaries and remaining gates; component availability does not establish a supported deployment.
 
 The [security invariants](SECURITY_INVARIANTS.md), [threat model](THREAT_MODEL.md) and [acceptance plan](ACCEPTANCE_TEST_PLAN.md) are mandatory review inputs.
 
@@ -17,4 +17,4 @@ No production secrets in PR jobs. No pull_request_target execution of PR code. R
 Security-critical changes need the related threat/control/test updates. Unknown authorization state must fail closed. Reproduction must use isolated fixtures, not the developer's router, firewall, Mullvad, DNS or production server.
 
 ## Release gate
-Production requires actual runtime acceptance evidence, platform/network qualification, tested recovery/update rollback and independent review. Of 91 runtime acceptance cases, AUDIT-01 has executable Windows/Linux process-crash evidence; the remaining 90 cases are planned. Foundation test results must never be represented as network isolation, certificate authentication or revocation proof.
+Production requires actual runtime acceptance evidence, platform/network qualification, tested recovery/update rollback and independent review. Of 91 runtime acceptance cases, seven have executable scenario evidence and 84 remain planned; the [canonical acceptance plan](ACCEPTANCE_TEST_PLAN.md) identifies them. Foundation test results must never be represented as network isolation, certificate authentication or revocation proof.

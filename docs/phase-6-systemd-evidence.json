@@ -1,0 +1,119 @@
+{
+  "schema": 1,
+  "source_commit": "804d698e550dd2d51e21f748aafd7874462643c9",
+  "status": "passed",
+  "tested_merge": "aae324e5c52aeb8403e33739357d06dbc40e56cd",
+  "source_and_merge_tree": "d6f60f542bbd9c87ae88fbf2258394f391d94926",
+  "hosted": {
+    "quality": {
+      "status": "passed",
+      "windows_job": 103093895982,
+      "run": 34544430132,
+      "ubuntu_job": 103093896308
+    },
+    "arch_service": {
+      "marker": "PORTICO_ARCH_SYSTEMD_PASS",
+      "run": 34544430133,
+      "user_uid": 1000,
+      "enrolled_seconds": 51.55,
+      "status": "passed",
+      "artifact_id": 10178694703,
+      "service_execution": true,
+      "skips": 0,
+      "enrolled_subcases": 4,
+      "job": 103093874604,
+      "failures": 0
+    },
+    "linux": {
+      "top_level_passes": 222,
+      "marker": "PORTICO_LINUX_ALL_PASS",
+      "run": 34544430089,
+      "status": "passed",
+      "artifact_id": 10178827840,
+      "subcase_passes": 1084,
+      "skips": [
+        "TestLocalIPCProcessHelper",
+        "TestSystemdGuestAgentEnrollmentAndRevocation",
+        "TestIssuerProcessFixture"
+      ],
+      "job": 103093885524,
+      "failures": 0
+    },
+    "arch_package": {
+      "job": 103093874398,
+      "status": "passed",
+      "run": 34544430074,
+      "systemd_package": "261.2-1",
+      "artifact_id": 10178504902
+    },
+    "codeql": {
+      "job": 103093874361,
+      "status": "passed",
+      "run": 34544430162
+    },
+    "dependency_review": {
+      "run": 34544430121,
+      "status": "passed"
+    }
+  },
+  "service_environment": {
+    "schema": 1,
+    "source_revision": "aae324e5c52aeb8403e33739357d06dbc40e56cd",
+    "image": "quay.io/archlinux/archlinux@sha256:2685bf92cc6215cc922488ae8e80b4875f4bdf19fef648818b1742517ce27077",
+    "package_sha256": "4fbc076787689827e18a1621854bf1a34270a0aefac0bc9a6f7de78c615f413d",
+    "unit_sha256": "29a26f3c83e42a72d214d3c79b07939d7e9da1229b904c2e98e393508bfe39fc",
+    "binary_sha256": "5746decd2dd46d3a309241bba49a29a5b2e755b3a3b61e47b0f84e617368257f",
+    "controller_test_sha256": "83e2e09d5dc9cb2d7251d67a2885219e46eee50e64b0492ed9f81af408194b04",
+    "qemu_version": "QEMU emulator version 11.1.1",
+    "qemu_sha256": "2aa2409f942b1bcdf47ad695658a25528d38c1e7a0555569256dcfb0bedf8635",
+    "kernel_sha256": "1e6bf9027720c75c3ed0d79171f21b5791ee40ca9795d07c7c6e04dc5ea2ae90",
+    "initramfs_sha256": "a0496b282b57574df7d60cf11c9777b992c063ec8eb263b4cc0541b13260415a",
+    "acceleration": "tcg",
+    "virtual_cpus": 2,
+    "memory_mib": 3072,
+    "network_devices": 0,
+    "host_filesystem_shares": 0
+  },
+  "archive_directory": "work/reports/phase-6-systemd-hosted",
+  "file_sha256": {
+    "arch-artifact.zip": "11b140ea0767639674cdab984bb8c8032b0d81f30789642b9c658c53491bfd4a",
+    "arch-build.log": "b5e059ff3afe88486292acd0312d2adfb5950fac0390eb8c09d1876f3bf3a935",
+    "arch-install.log": "117a49ef17a592f8d0d3d02e2e8a67781752f566a8fbd0a10cb815d602577c6b",
+    "arch-portico": "5746decd2dd46d3a309241bba49a29a5b2e755b3a3b61e47b0f84e617368257f",
+    "arch-portico-agent.service": "29a26f3c83e42a72d214d3c79b07939d7e9da1229b904c2e98e393508bfe39fc",
+    "arch-portico-cli-development-0.6.0.dev.gaae324e5c52a-1-x86_64.pkg.tar.zst": "4fbc076787689827e18a1621854bf1a34270a0aefac0bc9a6f7de78c615f413d",
+    "arch-provenance.json": "b63d962aaea7b903e6c3b7e42180f1ae1f6d430640b799552717a280f0c36064",
+    "arch-qualification.json": "d846f7e3aca0cbb842f1d042506387e5d995dbfb5177102b2cb38d7450f49fb3",
+    "arch-workflow.log": "bda0c07de5f43b69890cc0604b0e1187f7a02e6ede3c05364015ed15ea02ba1d",
+    "codeql-workflow.log": "086c608c8bd7cc9bf478c0211771d46a3c52e21366c0e73708257134a27a9a1b",
+    "environment.json": "fdfc4e714b592e3f960eb6bf29aeddcd86f79ad7ebae6ef1167a7e6604b7d5f1",
+    "linux-artifact.zip": "cc0513944e4d3a41527997360bdf676edc09b9e6129de4c21dd1189665970a09",
+    "linux-runtime-environment.json": "67f206a207d063b69a357ab5b09dd7d67ed7ee633e1cf808e06b46b77b7910d3",
+    "linux-runtime.log": "dbb291704edb6f00a6f9a0daca1f3b40e3c13aaa8cb7eb62eec99bc67af197e4",
+    "linux-workflow.log": "a4ca52aeac3a247446450ff1c4837338deca8a49c10122a0e35a2c8d3b14c04b",
+    "qualification.json": "ea40d31b339abc8ba00cee31db71aa247a6690a70729e2b9a46061fcabf9eb49",
+    "rootfs-build.log": "4c52c7e6f3ec28284ed63c948dcc382c11ff46192d6d8665080b01e8fa204af6",
+    "runtime.log": "84056d37a95d1038f2089d60753913a826430d21c897040b48831bab73176184",
+    "service-workflow.log": "71dc51d6c82c1cb60184f422764664c34a9cdb5b4f64b8e82646cffbe10ba675",
+    "systemd-artifact.zip": "8a52c904e4ec4db9d75fbff23a7adbc9bfdb00b0754fa8e81a4d235d31591c02",
+    "systemd-rootfs-packages.txt": "f2d361e8b7a9eef33bb7098762be4052591a793a85ab9c160a8c6df5329fbe0f",
+    "systemd-version.txt": "1c8f8180c702c7eac0b6de4c29f5233544a8f8e3546044b2899b07c42439e17c",
+    "ubuntu-workflow.log": "456d353945c708ff7957016d6a5fc5fb437d65c9ea5740158918d26c75c06a25",
+    "windows-workflow.log": "60b934cae4cde7e29ae1fe7c224ea172f8067a9534df76dc4d78b36247db36cf"
+  },
+  "local_diagnostic": {
+    "enrolled_subcases": 4,
+    "overlay_initramfs_sha256": "e4a38b12ba56d6dfaa0aba449f950098cd4de6feea6b87777d9f903e69e02777",
+    "scope": "Diagnostic replay with updated fixture scripts and original installed package; clean hosted qualification recorded separately",
+    "log_sha256": "5018e5a18f3b5aecb7ea74290943610d2a4319e7eb28eb27283aeb02b23724e5",
+    "status": "passed",
+    "enrolled_seconds": 102.27,
+    "log": "work/reports/systemd-login-held/runtime.log"
+  },
+  "limitations": [
+    "Source-specific evidence; subsequent application launcher is not included",
+    "Guest-only fixture identity and synthetic synchronization metadata; no production identity or upstream time accuracy claim",
+    "Same UID and host root remain trusted; no desktop login/logout, physical suspend, platform key store or hardware qualification",
+    "Seven canonical acceptance scenarios implemented; 84 planned"
+  ]
+}

@@ -41,6 +41,8 @@ func TestUnsupportedOperationsFailWithoutReflectingInput(t *testing.T) {
 		{"agent", "connect", "--socket", "synthetic-sensitive-input", "--resource", "192.0.2.10:443", "--revision", "1"},
 		{"agent", "connect", "--socket", "synthetic-sensitive-input", "--resource", "59d73719-4dc0-4d8c-898e-aa2f9466a89e", "--revision", "01"},
 		{"agent", "connect", "--socket", "synthetic-sensitive-input", "--resource", "59d73719-4dc0-4d8c-898e-aa2f9466a89e", "--revision", "1", "--prompt"},
+		{"agent", "exec", "--socket", "synthetic-sensitive-input", "--resource", "192.0.2.10:443", "--revision", "1", "--endpoint", "synthetic-sensitive-input", "--", "/usr/bin/curl", "{socket}"},
+		{"agent", "exec", "--socket", "synthetic-sensitive-input", "--resource", "59d73719-4dc0-4d8c-898e-aa2f9466a89e", "--revision", "01", "--endpoint", "synthetic-sensitive-input", "--", "/usr/bin/curl", "{socket}"},
 		{"enroll", "prepare", "--config", "synthetic-sensitive-input", "--secrets-fd", "3", "--prompt"},
 		{"client", "connect", "--config", "synthetic-sensitive-input", "--resource", "59d73719-4dc0-4d8c-898e-aa2f9466a89e", "--revision", "1", "--secrets-fd", "1"},
 	} {
@@ -86,6 +88,7 @@ func TestAgentFailuresDoNotReflectPaths(t *testing.T) {
 		{[]string{"agent", "unlock", "--socket", "synthetic-sensitive-input", "--secrets-fd", "3"}, "Local agent unlock failed.\n"},
 		{[]string{"agent", "lock", "--socket", "synthetic-sensitive-input"}, "Local agent lock failed.\n"},
 		{[]string{"agent", "status", "--socket", "synthetic-sensitive-input"}, "Local agent status failed.\n"},
+		{[]string{"agent", "exec", "--socket", "synthetic-sensitive-input", "--resource", "59d73719-4dc0-4d8c-898e-aa2f9466a89e", "--revision", "1", "--endpoint", "synthetic-sensitive-input", "--", "/usr/bin/curl", "{socket}"}, "Local application launch failed.\n"},
 	} {
 		var out, errout bytes.Buffer
 		if code := cli.Run(test.args, &out, &errout); code != 1 || out.Len() != 0 || errout.String() != test.message {

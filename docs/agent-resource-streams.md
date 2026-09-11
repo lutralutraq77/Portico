@@ -1,5 +1,7 @@
 # Development Linux agent resource streams
 
+The [supervised application launcher](application-launcher.md) exposes this transport to an explicitly selected Unix-socket application and combines its child exit with every accepted stream's final status.
+
 An application can use the explicitly unlocked [local agent](agent-catalog.md) without receiving its private key:
 
 ```text

@@ -1,6 +1,6 @@
 # Contributing
 
-Current scope: Phase 3 PKI/enrollment component work, following the verified and merged Phase 2 controller foundation. Changes must retain the full Windows/Ubuntu quality, CodeQL and dependency-review checks; see docs/phase-3-report.md for current evidence and open gates.
+Current implementation work is Phase 6 Linux/Arch client integration within the full fifteen-phase objective. Changes must retain Windows/Ubuntu quality, isolated Linux runtime, Arch package/service, CodeQL and dependency-review checks; see [the delivery ledger](docs/delivery-status.md) for source-specific evidence and open gates.
 
 Use [development instructions](docs/development.md) and [testing instructions](docs/testing.md). On this development machine keep source, downloads, caches and test output on E:. The supplied scripts configure only their process, not global machine settings.
 
