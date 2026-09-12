@@ -217,9 +217,21 @@ func TestArchGuestApplicationHTTPS(t *testing.T) {
 	t.Logf("encrypted application agent unlock completed in %s", time.Since(unlockStarted))
 	catalog, err := agent.Catalog(ctx, socket)
 	must(t, err)
-	if len(catalog) != 1 || catalog[0].ID != v.resource.ID || catalog[0].Revision != v.resource.Revision {
-		t.Fatal("unlocked application agent lacks its exact resource")
+	// The shared workload fixture retains its original resource as well as
+	// this HTTPS destination. Validate the selected tuple, not catalog size.
+	selected := 0
+	for _, resource := range catalog {
+		if resource.ID == v.resource.ID {
+			selected++
+			if resource.Revision != v.resource.Revision || resource.ConnectorID != v.resource.ConnectorID || resource.Address != v.resource.Address || resource.Port != v.resource.Port || resource.Protocol != v.resource.Protocol {
+				t.Fatal("unlocked application agent changed the selected resource tuple")
+			}
+		}
 	}
+	if selected != 1 {
+		t.Fatalf("unlocked application agent has %d selected entries in %d catalog resources", selected, len(catalog))
+	}
+	t.Logf("unlocked application agent catalog contains its exact resource among %d entries", len(catalog))
 	rootFile := write("application-root.pem", pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: appRoot.Raw}))
 	otherRoot, _ := testfixture.Root(t)
 	otherRootFile := write("untrusted-root.pem", pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: otherRoot.Raw}))
