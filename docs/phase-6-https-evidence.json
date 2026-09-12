@@ -1,0 +1,168 @@
+{
+  "schema": 1,
+  "source_commit": "1c1bd605ab51a4d7c60f168d474a569c3594eaa6",
+  "tested_merge": "f5070b192ac708453b32f4c5f89be9aa30b4b623",
+  "source_and_merge_tree": "107f67bf93a269a18bff22e6991fb794da855dee",
+  "status": "passed",
+  "hosted_runs": [
+    {
+      "id": 34695364947,
+      "name": "Dependency review",
+      "status": "completed",
+      "conclusion": "success",
+      "run_number": 56,
+      "jobs_url": "https://api.github.com/repos/lutralutraq77/Portico/actions/runs/34695364947/jobs",
+      "logs_url": "https://api.github.com/repos/lutralutraq77/Portico/actions/runs/34695364947/logs",
+      "workflow_id": 352389937
+    },
+    {
+      "id": 34695364946,
+      "name": "Arch development package",
+      "status": "completed",
+      "conclusion": "success",
+      "run_number": 32,
+      "jobs_url": "https://api.github.com/repos/lutralutraq77/Portico/actions/runs/34695364946/jobs",
+      "logs_url": "https://api.github.com/repos/lutralutraq77/Portico/actions/runs/34695364946/logs",
+      "workflow_id": 355008156
+    },
+    {
+      "id": 34695364952,
+      "name": "CodeQL",
+      "status": "completed",
+      "conclusion": "success",
+      "run_number": 57,
+      "jobs_url": "https://api.github.com/repos/lutralutraq77/Portico/actions/runs/34695364952/jobs",
+      "logs_url": "https://api.github.com/repos/lutralutraq77/Portico/actions/runs/34695364952/logs",
+      "workflow_id": 352389941
+    },
+    {
+      "id": 34695364944,
+      "name": "Arch user service runtime",
+      "status": "completed",
+      "conclusion": "success",
+      "run_number": 16,
+      "jobs_url": "https://api.github.com/repos/lutralutraq77/Portico/actions/runs/34695364944/jobs",
+      "logs_url": "https://api.github.com/repos/lutralutraq77/Portico/actions/runs/34695364944/logs",
+      "workflow_id": 355346484
+    },
+    {
+      "id": 34695364974,
+      "name": "Repository quality",
+      "status": "completed",
+      "conclusion": "success",
+      "run_number": 113,
+      "jobs_url": "https://api.github.com/repos/lutralutraq77/Portico/actions/runs/34695364974/jobs",
+      "logs_url": "https://api.github.com/repos/lutralutraq77/Portico/actions/runs/34695364974/logs",
+      "workflow_id": 352389864
+    },
+    {
+      "id": 34695364983,
+      "name": "Isolated Linux runtime",
+      "status": "completed",
+      "conclusion": "success",
+      "run_number": 44,
+      "jobs_url": "https://api.github.com/repos/lutralutraq77/Portico/actions/runs/34695364983/jobs",
+      "logs_url": "https://api.github.com/repos/lutralutraq77/Portico/actions/runs/34695364983/logs",
+      "workflow_id": 354879817
+    }
+  ],
+  "linux": {
+    "top_level_passes": 224,
+    "job": 103557813706,
+    "subcase_passes": 1106,
+    "failures": 0,
+    "skips": [
+      "TestLocalIPCProcessHelper",
+      "TestArchGuestApplicationHTTPS",
+      "TestSystemdGuestAgentEnrollmentAndRevocation",
+      "TestIssuerProcessFixture"
+    ],
+    "artifact_id": 10298577731
+  },
+  "service": {
+    "artifact_id": 10298835766,
+    "job": 103557813545,
+    "failures": 0,
+    "seconds": 35.0,
+    "skips": 0,
+    "enrolled_subcases": 4
+  },
+  "https": {
+    "seconds": 23.89,
+    "actual_restricted_issuer_process": true,
+    "failures": 0,
+    "user_uid": 0,
+    "subcases": [
+      "authenticated_https",
+      "wrong_hostname",
+      "untrusted_certificate",
+      "missing_application_authentication",
+      "wrong_resource_revision",
+      "ungranted_resource",
+      "positive_control_after_denials",
+      "revoked_enrollment_has_no_new_destination",
+      "routing_dns_and_forwarding_unchanged"
+    ],
+    "skips": 0
+  },
+  "linux_environment": {
+    "host": "Ubuntu 24.04.5 LTS",
+    "qemu_version": "QEMU emulator version 11.1.1",
+    "qemu_sha256": "2aa2409f942b1bcdf47ad695658a25528d38c1e7a0555569256dcfb0bedf8635",
+    "kernel_sha256": "1e6bf9027720c75c3ed0d79171f21b5791ee40ca9795d07c7c6e04dc5ea2ae90",
+    "initramfs_sha256": "c929c9266ac63dcb53c7e5384fe6e4a6480aed66b090910c71b2a5becc83ff2e",
+    "acceleration": "tcg",
+    "virtual_cpus": 2,
+    "memory_mib": 1536,
+    "network_devices": 0,
+    "host_filesystem_shares": 0,
+    "workload_only": false
+  },
+  "service_environment": {
+    "schema": 1,
+    "source_revision": "f5070b192ac708453b32f4c5f89be9aa30b4b623",
+    "image": "quay.io/archlinux/archlinux@sha256:2685bf92cc6215cc922488ae8e80b4875f4bdf19fef648818b1742517ce27077",
+    "package_sha256": "c4caa178ede00aa5776fdb558de48c9217aee3f33797a937a8135f023c232671",
+    "unit_sha256": "29a26f3c83e42a72d214d3c79b07939d7e9da1229b904c2e98e393508bfe39fc",
+    "binary_sha256": "4a4fb72dee145b5c8ff39620e76c9490ec4094e000fd3ff2bf4a65f4a07d6db7",
+    "controller_test_sha256": "68809fbc852433dba4175d9252145face22e174f2b7d667c255b8a0965eebb44",
+    "qemu_version": "QEMU emulator version 11.1.1",
+    "qemu_sha256": "2aa2409f942b1bcdf47ad695658a25528d38c1e7a0555569256dcfb0bedf8635",
+    "kernel_sha256": "1e6bf9027720c75c3ed0d79171f21b5791ee40ca9795d07c7c6e04dc5ea2ae90",
+    "initramfs_sha256": "1fc0595cc876a4214d739a0f31692762427025a80cfbf62571a12126aa1ef8ec",
+    "acceleration": "tcg",
+    "virtual_cpus": 2,
+    "memory_mib": 3072,
+    "network_devices": 0,
+    "host_filesystem_shares": 0,
+    "issuer_binary_sha256": "e9de6a2cb60551b812ea00da5eb87b0fdb4b87e5f85da9a0fcdc58446cd9b8a2"
+  },
+  "verified_zip_members": {
+    "arch-systemd/f5070b192ac708453b32f4c5f89be9aa30b4b623/controller": "68809fbc852433dba4175d9252145face22e174f2b7d667c255b8a0965eebb44",
+    "arch-package/f5070b192ac708453b32f4c5f89be9aa30b4b623/output/portico-cli-development-0.6.0.dev.gf5070b192ac7-1-x86_64.pkg.tar.zst": "c4caa178ede00aa5776fdb558de48c9217aee3f33797a937a8135f023c232671",
+    "arch-systemd/f5070b192ac708453b32f4c5f89be9aa30b4b623/portico-issuer": "e9de6a2cb60551b812ea00da5eb87b0fdb4b87e5f85da9a0fcdc58446cd9b8a2",
+    "arch-package/f5070b192ac708453b32f4c5f89be9aa30b4b623/portico": "4a4fb72dee145b5c8ff39620e76c9490ec4094e000fd3ff2bf4a65f4a07d6db7",
+    "arch-systemd/f5070b192ac708453b32f4c5f89be9aa30b4b623/systemd-initramfs.cpio.gz": "1fc0595cc876a4214d739a0f31692762427025a80cfbf62571a12126aa1ef8ec",
+    "arch-package/f5070b192ac708453b32f4c5f89be9aa30b4b623/portico-agent.service": "29a26f3c83e42a72d214d3c79b07939d7e9da1229b904c2e98e393508bfe39fc"
+  },
+  "archive_directory": "E:/Portico/work/reports/phase-6-https-1c1",
+  "file_sha256": {
+    "github-status.json": "94f87f378f123fcced4fbbc77bc804d57c6776860464de99a6b49c049d3cd8c1",
+    "linux-artifact.zip": "0269af73261ed75a013516c8f8e4b0dc4b48db6ddfd983833c838422a6dca80e",
+    "linux-environment.json": "1b2502b5de81a210dc2ee1804a55f02d4bff53f7ebdcb78658f871954c6c6f2c",
+    "linux-runtime.log": "67175342e7fa1b77afc55d01fb06794ac09ead06acf529a1e6ef67eb09fe1686",
+    "service-artifact.zip": "4f82c4b7ce4e6ca1693f387fc20f7dff4336e7df84059d8ca756c4ecd4061a16",
+    "service-environment.json": "cc6f1494830d661be40cead3ad8aa8afde8b0ac2842042662301568a26be70bc",
+    "service-qualification.json": "eb6f011575498de203e559520d85aead1c50783ccf9388e3467d16a7ea7d4a41",
+    "service-rootfs-build.log": "a5e8d6fb4fd580c7593028f9e25fede0eefb81641ea0cb6095f4e6819fa6736c",
+    "service-runtime.log": "6e04a9f4750c3be1c49e74888f671474939ffa3304c55eb9046046e5dd7e3e0b",
+    "service-systemd-rootfs-packages.txt": "6a77794881d325df228d63d8486a913a531fcd83692fbe8ae49b806ea10a78d8",
+    "service-systemd-version.txt": "1c8f8180c702c7eac0b6de4c29f5233544a8f8e3546044b2899b07c42439e17c"
+  },
+  "limitations": [
+    "Controlled curl HTTPS application, not Jellyfin, browser bridge or SSH",
+    "Root application fixture is separate from UID1000 installed-service qualification",
+    "Guest positive clock metadata is synthetic; host time-service and physical suspend qualification remain open",
+    "Physical keys/origin/custody and remaining canonical acceptance scenarios remain open"
+  ]
+}
