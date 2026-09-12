@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>Portico · Access inventory</title>
+  <link rel="stylesheet" href="/admin.css">
+  <script src="/admin.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#content">Skip to inventory</a>
+  <header class="topbar">
+    <a class="brand" href="/admin" aria-label="Portico home"><span class="brand-mark" aria-hidden="true">P</span>PORTICO</a>
+    <span class="private-label">Private administration</span>
+  </header>
+  <div class="shell">
+    <nav aria-label="Administration">
+      <p class="nav-label">Access inventory</p>
+      <a href="#users" data-section="users"><span aria-hidden="true">01</span>Users</a>
+      <a href="#devices" data-section="devices"><span aria-hidden="true">02</span>Devices</a>
+      <a href="#resources" data-section="resources"><span aria-hidden="true">03</span>Resources</a>
+      <a href="#connectors" data-section="connectors"><span aria-hidden="true">04</span>Connectors</a>
+      <a href="#enrollments" data-section="enrollments"><span aria-hidden="true">05</span>Enrollments</a>
+      <a href="#certificates" data-section="certificates"><span aria-hidden="true">06</span>Certificates</a>
+      <p class="nav-foot">Access begins with an explicit grant.</p>
+    </nav>
+    <main id="content" tabindex="-1">
+      <div class="page-heading">
+        <div><p class="eyebrow">Access inventory</p><h1 id="page-title">Users</h1><p id="page-description">People registered in this deployment.</p></div>
+        <button id="refresh" type="button">Refresh</button>
+      </div>
+      <aside class="notice" aria-label="Inventory scope"><strong>Configuration is only part of access.</strong><p>An enabled record still needs current grants, hosting permission, a valid identity and an online policy decision.</p></aside>
+      <section class="inventory" aria-labelledby="page-title" aria-busy="true">
+        <div class="inventory-heading"><p id="page-summary">Loading inventory…</p><p id="revision"></p></div>
+        <p id="feedback" role="status" aria-live="polite" aria-atomic="true">Loading users…</p>
+        <div id="records"></div>
+        <div class="pagination" aria-label="Inventory pagination"><button id="previous" type="button" disabled>Previous page</button><span id="page-number">Page 1</span><button id="next" type="button" disabled>Next page</button></div>
+      </section>
+      <p class="footnote">Inventory shows metadata only. Invitation secrets, private keys and authentication responses are never included.</p>
+      <noscript><p class="notice">JavaScript is required to load inventory from the private administrator service.</p></noscript>
+    </main>
+  </div>
+</body>
+</html>
