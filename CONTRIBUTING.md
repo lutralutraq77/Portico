@@ -1,6 +1,6 @@
 # Contributing
 
-Current implementation work is Phase 6 Linux/Arch client integration within the full fifteen-phase objective. Changes must retain Windows/Ubuntu quality, isolated Linux runtime, Arch package/service, CodeQL and dependency-review checks; see [the delivery ledger](docs/delivery-status.md) for source-specific evidence and open gates.
+Current implementation work is to finish Phases 6 and 7, then wait for the owner's approval before Phase 8. Changes must retain Windows/Ubuntu quality, isolated Linux runtime, Arch package/service, CodeQL and dependency-review checks; see [the delivery ledger](docs/delivery-status.md) for source-specific evidence and open gates.
 
 Use [development instructions](docs/development.md) and [testing instructions](docs/testing.md). On this development machine keep source, downloads, caches and test output on E:. The supplied scripts configure only their process, not global machine settings.
 

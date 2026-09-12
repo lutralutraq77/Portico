@@ -132,4 +132,10 @@ PORTICO_ISOLATED_VM=1 PORTICO_SYSTEMD_FIXTURE=1 /controller -test.v -test.timeou
 kill -0 "$session_keeper"
 sha256sum --check --strict /portico-fixture-package.sha256
 echo PORTICO_ARCH_SERVICE_ENROLLED_IDENTITY_PASS
+cleanup_session
+trap - EXIT
+# Real application integration runs separately as root in this disposable guest;
+# it does not claim the preceding UID1000 installed-service qualification.
+PORTICO_ISOLATED_VM=1 PORTICO_SYSTEMD_FIXTURE=1 /controller -test.v -test.timeout=600s '-test.run=^TestArchGuestApplicationHTTPS$'
+echo PORTICO_ARCH_APPLICATION_HTTPS_PASS
 echo PORTICO_ARCH_SYSTEMD_PASS

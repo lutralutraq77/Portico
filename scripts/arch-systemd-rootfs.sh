@@ -11,6 +11,8 @@ printf '%s  /usr/bin/portico\n' "$PORTICO_BINARY_SHA256" | sha256sum --check --s
 printf '%s  /usr/lib/systemd/user/portico-agent.service\n' "$PORTICO_UNIT_SHA256" | sha256sum --check --strict
 test -x /usr/lib/systemd/systemd
 test -x /usr/bin/bsdtar
+test -x /usr/bin/curl
+test -x /usr/bin/openssl
 groupadd --gid 1000 porticofixture
 groupadd --gid 1001 porticoother
 useradd --uid 1000 --gid 1000 --create-home --shell /bin/bash porticofixture
@@ -32,6 +34,7 @@ printf '127.0.0.1 localhost\n::1 localhost\n' > /etc/hosts
 install -m 0755 /scripts/arch-systemd-guest.sh /portico-systemd-fixture.sh
 install -m 0755 /scripts/arch-systemd-init.sh /portico-systemd-init
 install -m 0755 /controller-input /controller
+install -m 0755 /issuer-input /portico-issuer
 ln -s usr/bin/portico /portico
 cat > /etc/systemd/system/portico-fixture.target <<'UNIT'
 [Unit]
@@ -48,7 +51,7 @@ After=basic.target
 Type=oneshot
 ExecStart=/usr/bin/bash /portico-systemd-fixture.sh
 ExecStopPost=/usr/bin/systemctl --no-block poweroff
-TimeoutStartSec=720s
+TimeoutStartSec=1300s
 StandardOutput=tty
 StandardError=tty
 TTYPath=/dev/console
@@ -61,5 +64,5 @@ mknod -m 0600 /tmp/portico-skeleton/dev/console c 5 1
 mknod -m 0666 /tmp/portico-skeleton/dev/null c 1 3
 pacman -Q > /output/systemd-rootfs-packages.txt
 /usr/lib/systemd/systemd --version > /output/systemd-version.txt
-bsdtar --format=newc -cf - -C / bin etc home lib lib64 root sbin usr var portico controller portico-systemd-init portico-systemd-fixture.sh portico-systemd-isolated-fixture portico-isolated-fixture portico-fixture-state.sha256 portico-fixture-package.sha256 -C /tmp/portico-skeleton dev proc sys tmp run | gzip -1 > /output/systemd-initramfs.cpio.gz
+bsdtar --format=newc -cf - -C / bin etc home lib lib64 root sbin usr var portico controller portico-issuer portico-systemd-init portico-systemd-fixture.sh portico-systemd-isolated-fixture portico-isolated-fixture portico-fixture-state.sha256 portico-fixture-package.sha256 -C /tmp/portico-skeleton dev proc sys tmp run | gzip -1 > /output/systemd-initramfs.cpio.gz
 echo PORTICO_ARCH_SYSTEMD_ROOTFS_BUILT

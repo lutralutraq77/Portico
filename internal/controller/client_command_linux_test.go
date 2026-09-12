@@ -49,9 +49,16 @@ func guestStartApplicationWithFiles(t *testing.T, files []*os.File, args ...stri
 }
 
 func guestStartConfiguredApplication(t *testing.T, files []*os.File, process *syscall.SysProcAttr, args ...string) *guestApplication {
+	return guestStartApplicationLifetime(t, 2*time.Minute, files, process, args...)
+}
+
+func guestStartApplicationLifetime(t *testing.T, lifetime time.Duration, files []*os.File, process *syscall.SysProcAttr, args ...string) *guestApplication {
 	t.Helper()
 	requireWorkloadGuest(t)
-	root, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
+	if lifetime <= 0 || lifetime > 10*time.Minute {
+		t.Fatal("invalid application fixture lifetime")
+	}
+	root, cancel := context.WithTimeout(context.Background(), lifetime)
 	v := &guestApplication{command: exec.CommandContext(root, "/portico", args...), done: make(chan struct{})}
 	v.command.ExtraFiles = files
 	v.command.SysProcAttr = process
