@@ -1,0 +1,31 @@
+# Phase 5 workload forwarding progress
+
+The development workload runtime now carries application bytes through actual carrier TLS/gRPC, inner mutual TLS, online controller policy and an exact destination TCP socket. Source 809c0df4f2a2f18c49eb74db4381f85c3f314c21 passed full local Windows, hosted Windows/Ubuntu and isolated Linux checks. Follow-up 8ecad6de55dfb6ebe17334686bdbbfbf84b87dd7 tightens policy ordering between hosting snapshots and authorization responses and passed focused Windows/Linux checks. Phase 5 and the fifteen-phase objective remain incomplete. [Draft PR 4](https://github.com/lutralutraq77/Portico/pull/4) retains the implementation; the [runtime contract](workload-runtime.md) and [machine-readable evidence](phase-5-workload-evidence.json) describe its boundaries.
+
+## Implemented and observed
+
+The client checks the actual connector certificate before sending a resource ID/revision. The connector authenticates the actual device leaf, matches an independently approved local tuple against current hosting, authorizes before dialing and activates before forwarding. There is no destination override in an open request. Native elapsed clocks anchor leases to request start; renewal cannot extend the original absolute end, change identity/tuple/sequence or revive an expired session. Hosting and authorization revisions cannot regress across successive responses.
+
+Each session owns both handles, bounded forwarding/framing workers, independent expiry supervision and a bounded receipt record. Cancellation closes blocked work. A receipt follows worker completion, including the carrier's explicit Done signal; a held completion signal produces no premature receipt. Unknown sessions and join timeouts cannot be acknowledged. A report remains authenticated testimony from the connector, not independent proof against a compromised connector.
+
+The guest tests use 192.0.2.10/32 on the NIC-less Linux guest's loopback. They observe exact payload counts, zero accepted connections at the fixture destination for mismatched/disabled authority, no application bytes on activation denial, renewal beyond the first lease, revocation, delayed replies and graceful half-close. They also hold carrier completion to verify receipt ordering. No host destination route/listener or LAN dial is required.
+
+The full 809c0df run observed destination closure plus receipt 437 ms after revocation, and closure 1.839 seconds after the deliberately withheld renewal began. The focused 8ecad6d run observed 442 ms and 1.923 seconds respectively. These isolated measurements do not resolve Q05 or qualify hostile scheduling, physical suspend, deployed network isolation, every expiry boundary or every full acceptance case.
+
+## Verification
+
+On 809c0df, [hosted Windows/Ubuntu quality](https://github.com/lutralutraq77/Portico/actions/runs/34173551487), [CodeQL](https://github.com/lutralutraq77/Portico/actions/runs/34173551521) and [dependency review](https://github.com/lutralutraq77/Portico/actions/runs/34173551484) passed. Both quality matrix jobs completed their full check scripts and evidence uploads. Ordinary hosted/Windows runs explicitly skip the guest-only TCP cases; the separate Linux guest log supplies that evidence.
+
+The complete Linux run passed 120 top-level tests, 425 subtests and 36 seeds across seven fuzz targets, with one intentional subprocess-helper skip. It used Linux 6.18.35-0-virt under QEMU 11.1.0 TCG, no NIC and no host filesystem shares. The log is archived under work/reports/phase-5-workload-809c0df; its SHA-256 is 3A8262434B06635F16D54AEAE1499B0D8EB7EF4332353FD84E6BC1CFEBC9E504. The guest run is not race instrumented.
+
+The local Windows full check on 809c0df passed without skip flags: both Go modules' unit/race tests, seven bounded fuzz targets, vet/static analysis, application/issuer/tool dependency scans, vulnerability and secret scanner positive controls, workflow/documentation checks, development builds, reproducibility and SBOM/provenance checks. Workload framing fuzzing executed 65,579 inputs. The archived full-check log SHA-256 is 4C659CF82E4A7076E347C534A6C4C3A8420FC55453328CF35CEC22BB105A7556. Related coverage, build and SBOM artifacts have a separate archived hash manifest.
+
+The 8ecad6d follow-up passed Windows workload race tests, vet and static analysis. Its focused Linux run passed 19 top-level tests, 49 subtests and two fuzz seeds, without skips, and emitted the distinct PORTICO_LINUX_WORKLOAD_PASS marker. Its archived log SHA-256 is 6D4B4D72BB0E525D640D77CC6F75D774301B2CDE66BDF612BFE0480CB1D2F58D. A separate package-level vulnerability scan of workload/controller/control found no affected imported packages; one advisory remains in required modules outside those imports. This focused run is not a second full-suite result. New documentation/source heads require their own hosted result.
+
+Two development failures are retained: the original complete guest controller run exceeded the old 300-second process timeout, and the first half-close test exposed truncation of final TLS shutdown bytes. The harness now allows 600 seconds without changing session deadlines. Bounded DATA/FIN/ACK messages inside inner TLS now confirm consumption before graceful carrier closure; simultaneous FIN, unconsumed data, malformed frames and worker joins have race tests. The corrected full and focused guest runs passed.
+
+## Remaining completion gates
+
+Supported service/client composition, production OS clock-health providers, process restart and physical suspend/hibernate, complete hostile-load/socket/packet scenarios and independent workload egress enforcement remain required. Fixture uncertainty values are not deployed clock-health evidence. The main CLI remains help/version only; unchanged development binary output is not a usable connector release.
+
+The canonical manifest remains 91 complete scenarios: AUDIT-01 implemented and 90 planned. Hardware-key models and the private administrator hostname remain undecided. Administrator/browser recovery, Linux/Arch and Windows clients, Android, dashboard, network/Mullvad/DNS, SSH CA, signed updates and independent review remain within the fifteen-phase objective. All project, temporary and evidence storage on this machine remains on E:.

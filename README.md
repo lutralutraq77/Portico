@@ -2,9 +2,13 @@
 
 Self-hosted, resource-oriented private access: identity → policy → resource → connector → destination.
 
-**Current state: Phase 4 policy software implemented; full delivery remains in progress.** Exact resource authorization, separate private TLS APIs and hardware-approved immutable previews extend the real issuer, enrollment and recovery components. The main CLI still exposes only help/version; the development issuer command permits loopback only. Physical security keys, the private sign-in origin, connector/client applications and production recovery remain unqualified. The [delivery ledger](docs/delivery-status.md) tracks all fifteen phases.
+**Current state: development Linux client and connector commands are under qualification; full delivery remains in progress.** Exact policy, real issuer, enrollment and recovery components support authenticated workload forwarding with request-start leases and joined-worker closure receipts. The [connector command](docs/connector-configuration.md) uses protected files, native clock health and signal-driven shutdown. The [Phase 6 client command](docs/client-configuration.md) adds protected device identity, fresh catalog selection and process-owned application pipes. Controller/carrier endpoints and the development issuer listener remain restricted to loopback. [Isolation evidence](docs/phase-5-isolation-report.md) covers CONN-01 and CONN-03; [lifecycle evidence](docs/phase-5-lifecycle-report.md) adds connector revocation/restart/replay and independent stream endings. Physical security keys, the private sign-in origin, supported installed applications and production recovery remain unqualified. The [delivery ledger](docs/delivery-status.md) tracks all fifteen phases.
 
 The project and all generated development storage on this machine are in **E:\Portico**.
+
+[Client verification](docs/phase-6-client-report.md) records the protected identity/catalog/pipe implementation, complete Windows and isolated Linux runs, five real application-process sessions and retained diagnostic failures. Supported application and platform delivery remains open.
+
+[Overload verification](docs/phase-5-overload-report.md) adds PROTO-05 and fixes carrier termination while application delivery or destination writes are backpressured. [Hostile protocol verification](docs/phase-5-protocol-report.md) adds PROTO-04: malformed CSR, HTTPS, gRPC and inner-TLS inputs plus actual HTTP/2 resets with an independent live workload. The canonical manifest now links seven complete executable scenarios; 84 remain planned.
 
 ## Build and verify
 From PowerShell 7 in the repository:
@@ -30,7 +34,7 @@ See [development](docs/development.md), [testing](docs/testing.md) and [Phase 2 
 - [91 specified runtime acceptance cases](ACCEPTANCE_TEST_PLAN.md), [manifest](tests/acceptance/manifest.json), [historical Phase 0 review](PHASE_0_REVIEW.md)
 
 ## Scope and next work
-The [policy API](docs/policy-api.md) and [ADR-005](ADR-005-resource-policy-boundary.md) describe Phase 4. The [Phase 3 integration report](docs/phase-3-integration-report.md) preserves its measured evidence and open hardware/browser/recovery gates. [ADR-004](ADR-004-restricted-issuer-admin-recovery.md) and the [issuer guide](docs/issuer.md) describe those boundaries. Component tests do not demonstrate resource isolation, physical recovery or Mullvad compatibility. AUDIT-01 has Windows/Linux process-crash evidence; the other 90 cases remain planned.
+The [policy API](docs/policy-api.md) and [ADR-005](ADR-005-resource-policy-boundary.md) describe Phase 4. The [Phase 3 integration report](docs/phase-3-integration-report.md) preserves its measured evidence and open hardware/browser/recovery gates. [ADR-004](ADR-004-restricted-issuer-admin-recovery.md) and the [issuer guide](docs/issuer.md) describe those boundaries. Component tests do not demonstrate resource isolation, physical recovery or Mullvad compatibility. Seven complete acceptance cases have executable evidence; 84 remain planned in the canonical manifest.
 
 Go is selected for the initial core foundation. Android integration, browser/device authentication, hardware-key policy and the mature transport adapter remain explicit design gates. See the [domain implementation](docs/controller-domain.md) and [storage decision](ADR-002-controller-storage.md).
 

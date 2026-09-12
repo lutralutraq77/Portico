@@ -1,0 +1,130 @@
+{
+  "schema": 1,
+  "phase": 6,
+  "date": "2026-09-10",
+  "source_commit": "0b2995d2dce4a3ac2bdd82cab8bea543e2771fb5",
+  "source_files": [
+    {
+      "path": "internal/cli/client_identity.go",
+      "sha256": "e79b7b34db73c37c5aa44da1016b53f3f6d9df996bb62deef097aedcc3724171"
+    },
+    {
+      "path": "internal/cli/run.go",
+      "sha256": "63b2adc9c0b99cafde693d6144851f0c83f046a2280471ee28d798395a967817"
+    },
+    {
+      "path": "internal/cli/run_test.go",
+      "sha256": "3084fd1d199c08ac553ccb09ad6df3e45da0b803cf6c8aa13eba4cd836d9d503"
+    },
+    {
+      "path": "internal/client/config.go",
+      "sha256": "a8acbc8f19d1c5b266250545bad0590c950ab56d1471fc270d8b081329481c18"
+    },
+    {
+      "path": "internal/client/encrypted_config_test.go",
+      "sha256": "9a7edb4e2b8b716373a6d65e5160b0cf9c2ecd0ce91b1780dd0b9a618d35e580"
+    },
+    {
+      "path": "internal/controller/client_command_linux_test.go",
+      "sha256": "c7c59483497075cd5fa83e9c7513950ecd4edc57d271ea66b90b650ea00f681a"
+    },
+    {
+      "path": "internal/controller/connector_policy_test.go",
+      "sha256": "845ad6f7f6aa6266e54959e07a172f1692cd2591e9ed90de8d0ed59e60b3b2c8"
+    },
+    {
+      "path": "internal/controller/encrypted_client_command_linux_test.go",
+      "sha256": "31aec717c9268556d3afe72754df0641921918549e7058cf1019c2f7e12ebef3"
+    },
+    {
+      "path": "internal/controller/enrollment_http_test.go",
+      "sha256": "c9c1b9130f39e3a16817e744928d7336ba1f20a7860235759036730e2c4c98ed"
+    },
+    {
+      "path": "internal/enrollment/config.go",
+      "sha256": "9bbec666254086efba7c19effea537758cf3cc3277b74e9eb0182cf8ac42b13c"
+    }
+  ],
+  "scope": "Linux encrypted enrollment identity loading for catalog and resource access, strict configuration modes, separate inherited secret/application pipes, and guarded process revocation.",
+  "native_race": {
+    "passed": true,
+    "client_seconds": 7.909,
+    "cli_seconds": 7.86,
+    "log_sha256": "df3bac067d28891d21985f977f48c001ccbca79809b7894606a779601b4943d5",
+    "scope": "Complete client and CLI packages on native Windows; Linux-only execution excluded."
+  },
+  "linux_focused": {
+    "passed": true,
+    "complete_suite": false,
+    "race_instrumented": false,
+    "top_level_tests_passed": 2,
+    "subcases_passed": 14,
+    "failures": 0,
+    "skips": 0,
+    "scenario_seconds": 145.23,
+    "marker": "PORTICO_LINUX_ENCRYPTED_CLIENT_FOCUSED_PASS",
+    "archive": "work/reports/phase-6-encrypted-client-final",
+    "log_sha256": "3d3d251fa89afe3ead88e8482aa6b178fc57007bcaa705368e82cccab3002bba",
+    "init_sha256": "d9b6494a1f57396c758f9a0a89410e47726e7374e1df795c97ae6461b618b3d4",
+    "application_sha256": "144e427b907e4fe8cd9333d20a8c5749f625503fedc1a630cc1396a5a6c7cc52",
+    "initramfs_sha256": "7e8980e919ac2e35606fd5b4f903783e006b482a807fb666eaecbe30d836e1cd",
+    "kernel_sha256": "1e6bf9027720c75c3ed0d79171f21b5791ee40ca9795d07c7c6e04dc5ea2ae90",
+    "qemu_version": "11.1.0",
+    "network_devices": 0,
+    "host_filesystem_shares": 0,
+    "clock_fixture": "Synthetic 20ms connector health and disposable guest synchronization metadata; real CLI uses native provider."
+  },
+  "prior_local_failure": {
+    "log_sha256": "70a7a8726c5632d7bcaaa9850b9e77de89db733a5d57a0cfafb1e41fdb8fda4a",
+    "behavioral_subcases_passed": 9,
+    "qualified": false,
+    "reason": "Final test signature count omitted earlier fixture issuance. Corrected to count one additional signature and rerun."
+  },
+  "hosted": {
+    "quality_run": 34484666114,
+    "windows_job": 102895799648,
+    "ubuntu_job": 102895799230,
+    "quality": "passed",
+    "guest_run": 34484666008,
+    "guest_job": 102895800459,
+    "guest": "passed",
+    "codeql_run": 34484666148,
+    "codeql": "passed",
+    "dependency_run": 34484666145,
+    "dependency": "passed",
+    "job_102895799230_log_sha256": "b5ebf7d42268ed683d7f28a288258414ee00bae1c64779b917b3c5a8c6e0e768",
+    "job_102895799648_log_sha256": "4a2e284e1dceebeadca7efaa3033b410b4a4e24da49acc4775bfeaae48c0ce8a",
+    "job_102895799246_log_sha256": "7324a728dba5c0931364a52c6f63d5ef8dfabe07aaf9e1bba945df6cb0e2e39a",
+    "all_passed": true,
+    "checkout_merge": "591973628b1c95672304f71d5625acd01b671478",
+    "identical_tree": "234cd741a33e8f73ce53805d98e13b28af561516",
+    "top_level_tests_passed": 194,
+    "subcases_passed": 908,
+    "failures": 0,
+    "helper_skips": 1,
+    "scenario_seconds": 86.62,
+    "marker": "PORTICO_LINUX_ALL_PASS",
+    "artifact_id": 10155648756,
+    "zip_sha256": "131b38d70e4c31151b1c50513e199fb9d655e2ec9f2cf91f15ad4ed3c694f6b2",
+    "runtime_log_sha256": "d4d4799567c2b29c35c37634ef67deb385dad1921e6f12c88eb4d9f115dbf750",
+    "environment_sha256": "1f7c71f08890108a49e67e61f105a4cecc5b9f2b22f8ae2a0b8bd24d4caa61a4",
+    "qemu_version": "11.1.1",
+    "network_devices": 0,
+    "host_filesystem_shares": 0,
+    "archive": "work/reports/phase-6-encrypted-client-final/hosted-guest",
+    "guest_job_log_sha256": "ccc2c3d1b22f0fb426eb9029ba7f2dc06477245e9c11a1e1bf7b39bf45bf868f"
+  },
+  "acceptance": {
+    "total": 91,
+    "implemented": 7,
+    "planned": 84,
+    "newly_promoted": []
+  },
+  "remaining": [
+    "Interactive launcher and desktop unlocking",
+    "Arch packaging and installed services",
+    "Platform key custody and enforced IPC isolation",
+    "Physical hardware, time/suspend and real platform qualification",
+    "Remaining fifteen-phase scope and independent audit"
+  ]
+}

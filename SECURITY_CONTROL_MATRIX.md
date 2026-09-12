@@ -1,5 +1,7 @@
 # Security-critical mechanism register
 
+The development [application launcher](docs/application-launcher.md) adds a TB-01 mechanism against TH-18/20: protected exact-resource Unix transport, kernel peer-UID checks, six admitted streams, explicit local executable selection and joined child/stream completion. Focused Linux component tests cover binary transfer, half-close, late failure, cancellation/reaping, overload and existing-entry rejection. Same-UID processes remain trusted. This evidence does not complete PLATFORM-02 or qualify a browser bridge.
+
 Status: proposed controls, not implemented proofs. Each row names the threat, mechanism, trusted enforcement component, failure behavior, recovery and proving tests. Related residual risks are in [threat model](THREAT_MODEL.md). The detailed design documents own semantics; this table cannot weaken them.
 
 | Control | Threat addressed | Mechanism | Trusted component | Failure mode / behavior | Recovery path | Required proving tests |

@@ -1,0 +1,28 @@
+[Unit]
+Description=Portico development per-user agent (starts locked)
+StartLimitIntervalSec=60
+StartLimitBurst=3
+
+[Service]
+Type=exec
+ExecStart=/usr/bin/portico agent daemon --config "%h/.config/portico/client.json" --socket "%t/portico-agent/agent.sock"
+RuntimeDirectory=portico-agent
+RuntimeDirectoryMode=0700
+RuntimeDirectoryPreserve=no
+UMask=0077
+NoNewPrivileges=yes
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+LimitCORE=0
+LimitNOFILE=256
+TasksMax=128
+MemoryMax=1G
+StandardInput=null
+StandardOutput=journal
+StandardError=journal
+Restart=on-failure
+RestartSec=5s
+TimeoutStopSec=100s
+KillMode=control-group
+
+[Install]
+WantedBy=default.target

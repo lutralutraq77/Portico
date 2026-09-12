@@ -1,0 +1,80 @@
+{
+  "schema": 1,
+  "source_commit": "ddf9cbe0047cd4e3cf7ac33d7647c34f88361100",
+  "verified_on": "2026-09-10",
+  "status": "passed",
+  "tested_merge": "215320a18dcc00700b3db1d741410a0b415a6659",
+  "source_and_merge_tree": "fc573cd959acb725a7b2690e3a9d55f8c4d98123",
+  "hosted": {
+    "quality_run": 34495063740,
+    "ubuntu_job": 102931293056,
+    "windows_job": 102931292717,
+    "linux_runtime_run": 34495063749,
+    "linux_runtime_job": 102931292710,
+    "codeql_run": 34495063722,
+    "codeql_job": 102931292241,
+    "dependency_review_run": 34495063731,
+    "arch_run": 34495063715,
+    "arch_job": 102931292123,
+    "top_level_passes": 200,
+    "subcase_passes": 964,
+    "failures": 0,
+    "skips": [
+      "TestLocalIPCProcessHelper",
+      "TestIssuerProcessFixture"
+    ],
+    "ipc_subcases": 24,
+    "ipc_path_suite_seconds": 0.11,
+    "ipc_peer_suite_seconds": 0.13,
+    "artifact_id": 10160078844,
+    "artifact_zip_sha256": "fbe3ea7263c2b4b217d05ad802a01271cb7c80bd67ce308023c1a18af81ad60c",
+    "archive_directory": "work/reports/phase-6-localipc-hosted",
+    "runtime_log_sha256": "d8bd24ec7a7aa5944c6525e3d3d5bc1bf99915ac61b6e03e90c6b3b801a94996",
+    "environment_sha256": "870aad5eb202e9d52935f6ba58ca8569df039bd2ce1c5a8ff394baf981d9d295",
+    "ubuntu_log_sha256": "4dd88d465ebf47730d200fcdbeedf6084e787ec56b37e9cbbbbca9c9ffe9747a",
+    "windows_log_sha256": "434ab6344841315d3aff3c53a776d35c5b19bdc0dc64060300e9589679317d01",
+    "codeql_log_sha256": "cc16507dde3988cb1225ea7c2efbfe43cdf4d68471327d31c6ba631d6f726cad",
+    "arch_log_sha256": "e0a0d094388719241ab182899c4ddd8ba181c41c0c1a01989239c79c5a518691",
+    "arch_artifact_id": 10159436796,
+    "arch_artifact_zip_sha256": "7da558a6e086d6cc5689c5815af6a1b7be4fc02e34f54ab07e54ba1ef289213e",
+    "arch_package_sha256": "64a3096f782af754cc517b856a852271b0d79cec69cc612e8c60053714c52d5a",
+    "marker": "PORTICO_LINUX_ALL_PASS"
+  },
+  "local_focused": {
+    "status": "passed",
+    "top_level_passes": 11,
+    "subcase_passes": 42,
+    "failures": 0,
+    "skips": [
+      "TestLocalIPCProcessHelper"
+    ],
+    "scope": [
+      "localfile",
+      "localipc"
+    ],
+    "ipc_subcases": 24,
+    "log": "work/reports/phase-6-localipc/runtime.log",
+    "sha256": "6dc1d76dd09bd9f02bb5a920801e061575290681ea86ab1e9eebfd5eb8d50932",
+    "initramfs_sha256": "1710b5f16da42c13e02f330b33ca09f325685138dfbe09aedd58fcbd4d2ae78c",
+    "marker": "PORTICO_LINUX_LOCALIPC_FOCUSED_PASS"
+  },
+  "native": {
+    "status": "passed",
+    "checks": [
+      "Windows fallback race",
+      "Linux vet",
+      "Linux staticcheck",
+      "pinned generated code comparison",
+      "documentation and whitespace",
+      "PowerShell harness syntax"
+    ],
+    "log": "work/reports/localipc-native-checks.log",
+    "sha256": "f95f1021c4069ee118351f3a47ba095c18be801653f72a8a184708a184974697"
+  },
+  "limitations": [
+    "Transport component only; this source predates the agent protocol/commands",
+    "Host root and same effective UID are trusted",
+    "No browser origin, desktop integration, platform keystore or physical suspend qualification",
+    "Acceptance remains seven implemented and 84 planned scenarios"
+  ]
+}

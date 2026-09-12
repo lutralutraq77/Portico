@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"portico.local/portico/internal/adminauth"
+	"portico.local/portico/internal/control"
 	"portico.local/portico/internal/pki"
 	"portico.local/portico/internal/wire"
 )
@@ -92,7 +93,38 @@ func (p *PolicyEngine) NewHTTPServer(c PolicyHTTPConfig) (*PolicyHTTPServer, err
 				deny()
 				return
 			}
-			result, e = p.Catalog(r.Context(), conn)
+			var resources []ResourceAccess
+			resources, e = p.Catalog(r.Context(), conn)
+			result = control.CatalogSnapshot{Version: control.Version, Resources: resources}
+		case c.Profile == pki.Device && r.URL.Path == "/api/v1/device/check-connector":
+			var request ConnectorCheck
+			if wire.Decode(body, &request) != nil {
+				deny()
+				return
+			}
+			result, e = p.CheckConnector(r.Context(), conn, request)
+		case c.Profile == pki.Connector && r.URL.Path == "/api/v1/connector/hosting":
+			var request struct{}
+			if wire.Decode(body, &request) != nil {
+				deny()
+				return
+			}
+			result, e = p.Hosting(r.Context(), conn)
+		case c.Profile == pki.Connector && r.URL.Path == "/api/v1/connector/cancellations":
+			var request CancellationRequest
+			if wire.Decode(body, &request) != nil {
+				deny()
+				return
+			}
+			result, e = p.Cancellations(r.Context(), conn, request)
+		case c.Profile == pki.Connector && r.URL.Path == "/api/v1/connector/acknowledge-cancellation":
+			var request CancellationAck
+			if wire.Decode(body, &request) != nil {
+				deny()
+				return
+			}
+			e = p.AcknowledgeCancellation(r.Context(), conn, request)
+			result = struct{}{}
 		case c.Profile == pki.Connector && r.URL.Path == "/api/v1/connector/authorize":
 			var request AuthorizeRequest
 			if wire.Decode(body, &request) != nil {

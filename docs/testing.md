@@ -4,7 +4,7 @@ Run scripts/check.ps1 for the complete repository check suite across the applica
 
 Foundation and domain checks:
 - Unit tests reject unsupported commands and avoid reflecting secret-like arguments.
-- JSON output explicitly identifies a Phase 4 development binary; output errors return failure.
+- JSON output explicitly identifies a Phase 6 development binary; output errors return failure.
 - Bounded CLI fuzzing checks arbitrary command input.
 - Race detector and go vet run against actual Go packages.
 - Documentation checker validates required files, local links, references, the preserved brief and all 91 specified runtime case IDs and executable references for implemented cases.
@@ -19,7 +19,7 @@ Reports are generated under work/reports. CI uploads only redacted JSON and cove
 
 SkipScanners or SkipRace are explicit convenience options and do not constitute a complete repository validation. Report skipped checks honestly.
 
-AUDIT-01 among the [91 runtime acceptance cases](../ACCEPTANCE_TEST_PLAN.md) has a real process-crash test. The remaining 90 stay planned. The manifest links implemented tests and is never a permanent passing report. Phase 3 adds X.509/TLS, durable enrollment/renewal, real step-ca/process/bypass tests, signed virtual WebAuthn assertions, atomic administrative mutation and anchored encrypted recovery tests; see [its integration report](phase-3-integration-report.md). Full browser/platform/physical issuer and administrator custody, policy, Docker, Mullvad and hardware-key scenarios remain pending.
+Seven of the [91 runtime acceptance cases](../ACCEPTANCE_TEST_PLAN.md) have complete executable scenarios: AUDIT-01 process crashes, CONN-01 two-connector hosting/socket isolation, CONN-03 cross-connector control scope, CONN-04 active revocation/restart/replay, PROTO-03 independent stream lifecycles, PROTO-04 malformed inputs and actual HTTP/2 resets, and PROTO-05 backpressure/quotas/reconnects. The remaining 84 stay planned. The [isolation report](phase-5-isolation-report.md) [lifecycle report](phase-5-lifecycle-report.md) [overload report](phase-5-overload-report.md) and [hostile protocol report](phase-5-protocol-report.md) record exact runs; socket/process cases require separate guarded VM evidence. Linux-only process tests are excluded on Windows, and guest guards skip these scenarios on ordinary hosts. The manifest links implemented tests and is never a permanent passing report. Phase 3 adds X.509/TLS, durable enrollment/renewal, real step-ca/process/bypass tests, signed virtual WebAuthn assertions, atomic administrative mutation and anchored encrypted recovery tests; see [its integration report](phase-3-integration-report.md). Full browser/platform/physical issuer and administrator custody, policy, Docker, Mullvad and hardware-key scenarios remain pending.
 
 The [Phase 2 report](phase-2-report.md) records what actually ran locally versus CI that is merely configured.
 

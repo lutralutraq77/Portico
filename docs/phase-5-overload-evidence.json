@@ -1,0 +1,114 @@
+{
+  "schema": 1,
+  "phase": 5,
+  "date": "2026-09-08",
+  "full_verification_source": "7c7230fe0912c94d4491c81436b1ecf24b8e379b",
+  "final_test_source": "19059b3cb9720ce31f97332ef1d69b3e11ac94f6",
+  "runtime_code_changed": true,
+  "runtime_change": "Client and server supervisors observe the independent terminal carrier signal during backpressure",
+  "final_source_delta": "Linux-only overload test additionally records and caps waiting binds; runtime and tools unchanged",
+  "final_test_file_sha256": "2DA9D7FDFAD087F3FEBB3F833DBD3E397D59E6C58A82F925C6F95BA6D4080DC4",
+  "full_source_file_hashes": [
+    {
+      "file": "internal/workload/client.go",
+      "sha256": "E7F2D7DD2311AFFFAEA4CB34038A25970104239CB82516D1596C5C09ABCB08B2"
+    },
+    {
+      "file": "internal/workload/session.go",
+      "sha256": "338DB0DAC70F92A76F7C6C26BF03A79A52653ACC7E6904AB3693EBA2D53D35E9"
+    },
+    {
+      "file": "internal/workload/runtime_test.go",
+      "sha256": "67271C81C6AF507869C9199396C20A492F864758BB0F77271016FE05F531022A"
+    },
+    {
+      "file": "internal/controller/workload_test.go",
+      "sha256": "F3596363090373BCA43D9873E3FC9684BB1AA265BC20D012F2BB3E6520B4E645"
+    },
+    {
+      "file": "internal/controller/workload_overload_linux_test.go",
+      "sha256": "447DC584F61BC0E3461B510279C46EEBF1F148E5638192AB4A9886378957D08D"
+    }
+  ],
+  "canonical_cases_added": [
+    "PROTO-05"
+  ],
+  "canonical_acceptance": {
+    "total": 91,
+    "implemented": 6,
+    "planned": 85
+  },
+  "windows_full_check": {
+    "source_commit": "7c7230fe0912c94d4491c81436b1ecf24b8e379b",
+    "status": "passed",
+    "skip_flags": [],
+    "GOMAXPROCS": 2,
+    "workload_fuzz_executions": 103564,
+    "sha256": "4A769654089F8AF7EF0BD271D6F6FB0737D41E96281E57C0CC11D27D4A93BD51"
+  },
+  "linux_full": {
+    "source_commit": "7c7230fe0912c94d4491c81436b1ecf24b8e379b",
+    "scope": "full",
+    "top_level_tests": 145,
+    "subtests": 501,
+    "fuzz_targets": 7,
+    "seeds": 36,
+    "skips": 1,
+    "failures": 0,
+    "sha256": "F58D57BE26D8A4FE4B28E3D183C8425FB153AA1362BC6C49CADB9376BD8B34A8",
+    "status": "passed",
+    "marker": "PORTICO_LINUX_ALL_PASS"
+  },
+  "linux_focused_full_source": {
+    "source_commit": "7c7230fe0912c94d4491c81436b1ecf24b8e379b",
+    "scope": "focused",
+    "top_level_tests": 42,
+    "subtests": 116,
+    "fuzz_targets": 1,
+    "seeds": 2,
+    "skips": 0,
+    "failures": 0,
+    "sha256": "69126212581D815EFF2A00441A7C498D4ACC526DD55FEA746D3D581D152AE726"
+  },
+  "linux_focused_final_test": {
+    "source_commit": "19059b3cb9720ce31f97332ef1d69b3e11ac94f6",
+    "scope": "focused",
+    "status": "passed",
+    "top_level_tests": 42,
+    "subtests": 116,
+    "fuzz_targets": 1,
+    "seeds": 2,
+    "skips": 0,
+    "failures": 0,
+    "sha256": "B94BD1654018977352D90BCFDF804DC67C4371046E12CB85257D1B185C4F88C5"
+  },
+  "retained_failures": [
+    {
+      "directory": "work/reports/phase-5-overload-initial",
+      "reason": "Carrier termination did not unblock server forwarding; separate pre-fix regression failed for both client and server",
+      "guest_log_sha256": "E72414115EF94606840AD7A1DFCA666224B7C4F2C909B0238FB0F99689A542BB",
+      "unit_regression_log_sha256": "239B12AEED616317245706166840C8FD77817CCD4BA8EE7A0E5417192D03A149"
+    },
+    {
+      "directory": "work/reports/phase-5-overload-fixed-small-window",
+      "reason": "Runtime closure fixed; artificially reduced TCP receive window prolonged the fixture drain of previously queued bytes",
+      "guest_log_sha256": "C05463707B8CF03F490891D82FC7130868A5A86CFB9FB262575636C5777EAA70"
+    }
+  ],
+  "guest": {
+    "kernel": "6.18.35-0-virt",
+    "qemu": "11.1.0 TCG",
+    "network_interfaces": "loopback only",
+    "host_filesystem_shares": false,
+    "race_instrumented": false
+  },
+  "qualification_limits": {
+    "Q05_accepted": false,
+    "physical_suspend_qualified": false,
+    "upstream_time_accuracy_qualified": false,
+    "independent_egress_qualified": false,
+    "phase_5_complete": false,
+    "fifteen_phase_objective_complete": false,
+    "final_pr_head_hosted_status": "tracked separately in draft PR 4"
+  }
+}
