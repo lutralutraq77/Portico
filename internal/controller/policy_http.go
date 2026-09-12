@@ -70,9 +70,24 @@ func (p *PolicyEngine) NewHTTPServer(c PolicyHTTPConfig) (*PolicyHTTPServer, err
 		w.Header().Set("Cache-Control", "no-store")
 		w.Header().Set("Content-Type", "application/json")
 		w.Header().Set("X-Content-Type-Options", "nosniff")
+		if c.Profile == pki.Administrator {
+			w.Header().Set("Content-Security-Policy", dashboardCSP)
+			w.Header().Set("Referrer-Policy", "no-referrer")
+			w.Header().Set("X-Frame-Options", "DENY")
+		}
 		deny := func() { w.WriteHeader(http.StatusForbidden); _, _ = io.WriteString(w, `{"error":"request rejected"}`) }
 		conn, ok := r.Context().Value(policyConnKey{}).(*tls.Conn)
-		if !ok || r.Host != c.Host || r.URL.RawQuery != "" || r.Header.Get("Content-Encoding") != "" || r.Method != http.MethodPost || r.Header.Get("Content-Type") != "application/json" {
+		if !ok || r.Host != c.Host || r.URL.RawQuery != "" || r.URL.ForceQuery || r.URL.RawPath != "" || r.Header.Get("Content-Encoding") != "" {
+			deny()
+			return
+		}
+		if r.Method == http.MethodGet {
+			if c.Profile != pki.Administrator || p.store.serveDashboardAsset(w, r, conn, c) != nil {
+				deny()
+			}
+			return
+		}
+		if r.Method != http.MethodPost || r.Header.Get("Content-Type") != "application/json" {
 			deny()
 			return
 		}

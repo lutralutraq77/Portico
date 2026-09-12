@@ -1,0 +1,127 @@
+{
+  "schema": 1,
+  "source_commit": "a967c62609d50a6f9a813c74b2337a7a2371113d",
+  "tested_merge": "526a614a9f2cecbea7a4add8635a99911a7f0f14",
+  "source_and_merge_tree": "52c823aea4af5f9a3dd578107b9c4d73e8f5669c",
+  "status": "passed",
+  "hosted_runs": [
+    {
+      "name": "Dependency review",
+      "id": 34554633161,
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "Arch development package",
+      "id": 34554633171,
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "Isolated Linux runtime",
+      "id": 34554633138,
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "Repository quality",
+      "id": 34554633140,
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "CodeQL",
+      "id": 34554633139,
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "Arch user service runtime",
+      "id": 34554633174,
+      "status": "completed",
+      "conclusion": "success"
+    }
+  ],
+  "linux": {
+    "failures": 0,
+    "skips": [
+      "TestLocalIPCProcessHelper",
+      "TestSystemdGuestAgentEnrollmentAndRevocation",
+      "TestIssuerProcessFixture"
+    ],
+    "artifact_id": 10182321320,
+    "top_level_passes": 228,
+    "job": 103124554603,
+    "subcase_passes": 1106,
+    "inventory_tests": [
+      "TestDashboardInventoryPagesAndCurrentResource",
+      "TestDashboardInventoryRedactsBeforeSerialization",
+      "TestDashboardInventoryProfileIsolationAndEmergency",
+      "TestDashboardInventoryRejectsHostileRequestsAndLiveRevocation"
+    ]
+  },
+  "service": {
+    "seconds": 40.6,
+    "artifact_id": 10182258578,
+    "skips": 0,
+    "failures": 0,
+    "job": 103124554602,
+    "enrolled_subcases": 4
+  },
+  "linux_environment": {
+    "host": "Ubuntu 24.04.5 LTS",
+    "qemu_version": "QEMU emulator version 11.1.1",
+    "qemu_sha256": "2aa2409f942b1bcdf47ad695658a25528d38c1e7a0555569256dcfb0bedf8635",
+    "kernel_sha256": "1e6bf9027720c75c3ed0d79171f21b5791ee40ca9795d07c7c6e04dc5ea2ae90",
+    "initramfs_sha256": "4ec6257b7727d6d024d2a4f5331e5d3658f19a0d75e1cc35747b16dc7a754399",
+    "acceleration": "tcg",
+    "virtual_cpus": 2,
+    "memory_mib": 1536,
+    "network_devices": 0,
+    "host_filesystem_shares": 0,
+    "workload_only": false
+  },
+  "service_environment": {
+    "schema": 1,
+    "source_revision": "526a614a9f2cecbea7a4add8635a99911a7f0f14",
+    "image": "quay.io/archlinux/archlinux@sha256:2685bf92cc6215cc922488ae8e80b4875f4bdf19fef648818b1742517ce27077",
+    "package_sha256": "a8cc6b81aa0502a36b5820d70ff9f91849dbb1d0ff561c8251836983907cab31",
+    "unit_sha256": "29a26f3c83e42a72d214d3c79b07939d7e9da1229b904c2e98e393508bfe39fc",
+    "binary_sha256": "4a4fb72dee145b5c8ff39620e76c9490ec4094e000fd3ff2bf4a65f4a07d6db7",
+    "controller_test_sha256": "81a729d381a352b2f01c0bea25788dc0e6db785c8b3e11ce34073623d09fe9c1",
+    "qemu_version": "QEMU emulator version 11.1.1",
+    "qemu_sha256": "2aa2409f942b1bcdf47ad695658a25528d38c1e7a0555569256dcfb0bedf8635",
+    "kernel_sha256": "1e6bf9027720c75c3ed0d79171f21b5791ee40ca9795d07c7c6e04dc5ea2ae90",
+    "initramfs_sha256": "f187a9cac50335619e8fa6ea124cd22c1a3a4e8f83bfe24da64ab7f17b20ceea",
+    "acceleration": "tcg",
+    "virtual_cpus": 2,
+    "memory_mib": 3072,
+    "network_devices": 0,
+    "host_filesystem_shares": 0
+  },
+  "verified_zip_members": {
+    "arch-systemd/526a614a9f2cecbea7a4add8635a99911a7f0f14/controller": "81a729d381a352b2f01c0bea25788dc0e6db785c8b3e11ce34073623d09fe9c1",
+    "arch-package/526a614a9f2cecbea7a4add8635a99911a7f0f14/output/portico-cli-development-0.6.0.dev.g526a614a9f2c-1-x86_64.pkg.tar.zst": "a8cc6b81aa0502a36b5820d70ff9f91849dbb1d0ff561c8251836983907cab31",
+    "arch-systemd/526a614a9f2cecbea7a4add8635a99911a7f0f14/systemd-initramfs.cpio.gz": "f187a9cac50335619e8fa6ea124cd22c1a3a4e8f83bfe24da64ab7f17b20ceea",
+    "arch-package/526a614a9f2cecbea7a4add8635a99911a7f0f14/portico-agent.service": "29a26f3c83e42a72d214d3c79b07939d7e9da1229b904c2e98e393508bfe39fc",
+    "arch-package/526a614a9f2cecbea7a4add8635a99911a7f0f14/portico": "4a4fb72dee145b5c8ff39620e76c9490ec4094e000fd3ff2bf4a65f4a07d6db7"
+  },
+  "archive_directory": "E:/Portico/work/reports/phase-7-inventory-hosted",
+  "file_sha256": {
+    "github-status.json": "b82d336a344710ce8a055b1a9b5ee26a0a5fa62d872aa47f6e1ba3f80330862a",
+    "linux-artifact.zip": "c867c857dd498f9348080fb3584d8567bdaff9c9aea72cb42a5543007f6265c4",
+    "linux-environment.json": "a49890e499c82a5789518ba8d2cd576288589ae9e8d37f9cf13f1e6870f6caaa",
+    "linux-runtime.log": "68bcc632da15947eadf99a0acd4fa589e0643b84f1be07b0b76911be1de89d9c",
+    "service-artifact.zip": "79fe331b785459345224a336d448bd5d8b5d256dcf0ebcd7f9b5c364388036f2",
+    "service-environment.json": "51bedd81dd5fe282c0c914a4a185f08370b50c39e3fd75153b58b2f7e829b6c9",
+    "service-packages.txt": "4253b6dfd6a344b41d0cca524c3a6d18489ac9b8514eee0a1b910baaa71e610b",
+    "service-qualification.json": "92f036e006764d3c57b81802d973a96d0d4bb03a20d09c56585d2513139a9c83",
+    "service-runtime.log": "3229dbc6d1281186a6c41b8f035fe9fb19cd0cc0c27fa8af7fcbba5531010d39",
+    "service-version.txt": "1c8f8180c702c7eac0b6de4c29f5233544a8f8e3546044b2899b07c42439e17c"
+  },
+  "limitations": [
+    "Bounded administrator metadata component, not completed Phase 7 dashboard/browser/bootstrap qualification",
+    "Separate Phase 6 real curl/issuer fixture is not included in this source",
+    "Physical keys/origin/custody/suspend and remaining canonical acceptance scenarios remain open"
+  ]
+}
