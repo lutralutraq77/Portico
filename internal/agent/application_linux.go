@@ -21,7 +21,14 @@ const applicationStreams = 6
 // This is a local launcher, not a sandbox for the selected executable.
 func RunApplication(ctx context.Context, a Application) error {
 	args, err := a.arguments()
-	if err != nil || ctx == nil || ctx.Err() != nil {
+	if err != nil {
+		return ErrRejected
+	}
+	return runApplication(ctx, a, args, nil)
+}
+
+func runApplication(ctx context.Context, a Application, args, environment []string) error {
+	if ctx == nil || ctx.Err() != nil {
 		return ErrRejected
 	}
 	w, err := newWindow()
@@ -36,6 +43,7 @@ func RunApplication(ctx context.Context, a Application) error {
 	}
 	defer l.Close()
 	cmd := exec.CommandContext(ctx, args[0], args[1:]...)
+	cmd.Env = environment
 	if a.Stdin != nil {
 		cmd.Stdin = a.Stdin
 	}
