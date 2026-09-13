@@ -1,26 +1,7 @@
 {
-  "schema": 1,
+  "schema": 2,
   "status": "component_checks_passed_with_recorded_regression_failure",
   "source_base_commit": "c3cbc130deb9b7b785933b864909b10a3b84657e",
-  "source_files_sha256": {
-    "internal/controller/authentication.go": "4b8827b6cc538f4761a8f5d03ada6790a4733a80dd45e3f54678ae2ced14443d",
-    "internal/controller/enrollment.go": "5ec3e132b37feab79a98a3f443e87a20d4bc43b27f27a312ed6486e550989877",
-    "internal/controller/policy.go": "c39363bef65a18b4b1a1ad1d401971680694db008891d0e1ae15c5cf53c34b0c",
-    "internal/controller/policy_read.go": "3d611478b324b03c6098a0e5fea7c7ab0ea15800d80447b1b16ec5be6c93d3a9",
-    "internal/controller/policy_http.go": "909c66f3be1fde2e0015bba275e8b4f9b4891096cf52e2b569931a403f464b17",
-    "internal/controller/dashboard.go": "16659ffb0837064d49b4a84a9f3df8fe54221ff5da57281b7ebfe9d81ce625d3",
-    "internal/controller/dashboard_access.go": "72fb43f141eb10c7fedc8f264056e48fd65f38a5126ca79b6af71644679101f2",
-    "internal/controller/dashboard_access_test.go": "909c64f1632ac7182c0df4d15fb16b6a1c0f7bef39a21b3216ceee9d3b324055",
-    "internal/controller/dashboard_access_inventory_test.go": "b5029a9c92f5f2206edf139e4ad14a382774f1e438e3689e505f2db07138dece",
-    "internal/controller/dashboard_test.go": "94770f22ae2aedb381798de1a8dfb8d1515764ccccac92259f4d40185550adfc",
-    "internal/controller/dashboard_assets.go": "67979c8b13e990672aae99bd84c83405497a03772f054c5d31f48500a1afdb83",
-    "internal/controller/dashboard_assets_test.go": "c06fdb6b5f02a53bda8fab7790be39b24c2624ad30fca81a76d10b074c19c28b",
-    "internal/controller/dashboard_browser_test.go": "aca1eba573a7db3a960767d0e04733585d2e3b95639b95b1d170f12c0a2c5275",
-    "internal/controller/dashboard/index.html": "4b629fa6d1a26cd9bfa381b5b7854efdcab2683a2cdb516574fc189f7025d144",
-    "internal/controller/dashboard/admin.css": "3129ccaee8e0463f7f584d7e62acbd8d54a7b6c6d5496b797d8706e774d32a68",
-    "internal/controller/dashboard/admin.js": "0829df92adb43e3d3dc1b7d6f7ae9b77f7d76abc51dcec4097c4cb753c42f704",
-    "scripts/test-dashboard-browser.cjs": "0b218e792c0f6bd427d089cde0864e80aea3ce5ba1dd7236618868538b1f06a8"
-  },
   "native_race": {
     "failures": [
       {
@@ -75,28 +56,147 @@
     "Combined source c3cbc130 failed HTTPS positive control; see phase-7-combined-failure-evidence.json.",
     "First stage diagnostic on source1c1bd60 reproduced eight repeated post-authentication failures plus an earlier pre-destination rejection; source overlay and all logs retained. Backend ConnectReady returned failure; deeper client/workload diagnostic remains pending."
   ],
-  "artifacts_sha256": {
-    "dashboard-access-browser-final/desktop-access.png": "9e2eae9e8d878d382eb150ddf6ddd89ae0f7da0b0a04ddbbb1286673c4be8202",
-    "dashboard-access-browser-final/desktop-resources.png": "3c25d1a97d89ba4642e969e6dc3a2a640c4ddc1653418348b0dd025316bad919",
-    "dashboard-access-browser-final/mobile-access-dark.png": "966a96ecc7dd10159fb49301fa28743ec0d4f4b80897cf60173207591e27b5ff",
-    "dashboard-access-browser-final/mobile-access.png": "e093ab0fd098ab8abd0f68aa07e80282d9fb8401ab8952d04d1b744e1b831124",
-    "dashboard-access-browser-final/mobile-dark.png": "edf6a4fd536db7ef0358fc15842a807c21fb2c0c93baa24502bb625b34a9fbb7",
-    "dashboard-access-browser-final/mobile-resources.png": "adbd0baad506dc9a47276b91ddd0bfe565dbac1f72f1403bb47ca09d8121fb62",
-    "dashboard-access-browser-final/result.json": "1ede95a48e45dcbe692b5cd81f3dce84b288c3e5b99ebeca0184072854fa799c",
-    "dashboard-access-browser-final/revoked.png": "d8bcb4ed63fd86cea35b8a0658a516fc3b21f798fa844fd026c1d6c51d50719a",
-    "dashboard-access-browser-final.log": "1463f37ffbc1ace7072c96017e87df1c026a3ecb581b8094d49892d6ccfe12c5",
-    "dashboard-access-browser-mobile.log": "a7fab17090582ffe0791649b6ae67aaa6b5133b8e05195ec90a40713718ac424",
-    "dashboard-access-controller-race.jsonl": "304ebdc365fa974746aeb504168e2bd29fcfb6cd7ae656680fb3497ad3f88c20",
-    "dashboard-access-cancellation-recheck.log": "14bcdcecf43f7672aeefb2c23e96bfabf03e2a7929e02643140ec8d8a739b864",
-    "dashboard-access-inventory-race.log": "d7a27143165359bb5758297933eb6599225a612f707345dda72e52660c8cce42",
-    "dashboard-access-native-race.log": "ceb37e3743c9908cce521916b3df4e238582923b405d4456c8d8972348573025",
-    "dashboard-access-docs.json": "5ce27a73e66e4cb87a8c2b05452c32e6a26fe084ea61095de69ebe4d0e9594c7",
-    "dashboard-access-gitleaks.json": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570"
-  },
   "limitations": [
     "Inspection grants no capability and does not prove possession, connector online status or application authentication.",
     "Current dashboard source has not yet completed hosted qualification.",
     "Physical keys, native administrator bridge, complete management/bootstrap and full Phases6/7 remain open.",
     "Canonical acceptance remains7implemented/84planned/91total."
-  ]
+  ],
+  "source_files": [
+    {
+      "path": "internal/controller/authentication.go",
+      "sha256": "4b8827b6cc538f4761a8f5d03ada6790a4733a80dd45e3f54678ae2ced14443d"
+    },
+    {
+      "path": "internal/controller/enrollment.go",
+      "sha256": "5ec3e132b37feab79a98a3f443e87a20d4bc43b27f27a312ed6486e550989877"
+    },
+    {
+      "path": "internal/controller/policy.go",
+      "sha256": "c39363bef65a18b4b1a1ad1d401971680694db008891d0e1ae15c5cf53c34b0c"
+    },
+    {
+      "path": "internal/controller/policy_read.go",
+      "sha256": "3d611478b324b03c6098a0e5fea7c7ab0ea15800d80447b1b16ec5be6c93d3a9"
+    },
+    {
+      "path": "internal/controller/policy_http.go",
+      "sha256": "909c66f3be1fde2e0015bba275e8b4f9b4891096cf52e2b569931a403f464b17"
+    },
+    {
+      "path": "internal/controller/dashboard.go",
+      "sha256": "16659ffb0837064d49b4a84a9f3df8fe54221ff5da57281b7ebfe9d81ce625d3"
+    },
+    {
+      "path": "internal/controller/dashboard_access.go",
+      "sha256": "72fb43f141eb10c7fedc8f264056e48fd65f38a5126ca79b6af71644679101f2"
+    },
+    {
+      "path": "internal/controller/dashboard_access_test.go",
+      "sha256": "909c64f1632ac7182c0df4d15fb16b6a1c0f7bef39a21b3216ceee9d3b324055"
+    },
+    {
+      "path": "internal/controller/dashboard_access_inventory_test.go",
+      "sha256": "b5029a9c92f5f2206edf139e4ad14a382774f1e438e3689e505f2db07138dece"
+    },
+    {
+      "path": "internal/controller/dashboard_test.go",
+      "sha256": "94770f22ae2aedb381798de1a8dfb8d1515764ccccac92259f4d40185550adfc"
+    },
+    {
+      "path": "internal/controller/dashboard_assets.go",
+      "sha256": "67979c8b13e990672aae99bd84c83405497a03772f054c5d31f48500a1afdb83"
+    },
+    {
+      "path": "internal/controller/dashboard_assets_test.go",
+      "sha256": "c06fdb6b5f02a53bda8fab7790be39b24c2624ad30fca81a76d10b074c19c28b"
+    },
+    {
+      "path": "internal/controller/dashboard_browser_test.go",
+      "sha256": "aca1eba573a7db3a960767d0e04733585d2e3b95639b95b1d170f12c0a2c5275"
+    },
+    {
+      "path": "internal/controller/dashboard/index.html",
+      "sha256": "4b629fa6d1a26cd9bfa381b5b7854efdcab2683a2cdb516574fc189f7025d144"
+    },
+    {
+      "path": "internal/controller/dashboard/admin.css",
+      "sha256": "3129ccaee8e0463f7f584d7e62acbd8d54a7b6c6d5496b797d8706e774d32a68"
+    },
+    {
+      "path": "internal/controller/dashboard/admin.js",
+      "sha256": "0829df92adb43e3d3dc1b7d6f7ae9b77f7d76abc51dcec4097c4cb753c42f704"
+    },
+    {
+      "path": "scripts/test-dashboard-browser.cjs",
+      "sha256": "0b218e792c0f6bd427d089cde0864e80aea3ce5ba1dd7236618868538b1f06a8"
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "dashboard-access-browser-final/desktop-access.png",
+      "sha256": "9e2eae9e8d878d382eb150ddf6ddd89ae0f7da0b0a04ddbbb1286673c4be8202"
+    },
+    {
+      "path": "dashboard-access-browser-final/desktop-resources.png",
+      "sha256": "3c25d1a97d89ba4642e969e6dc3a2a640c4ddc1653418348b0dd025316bad919"
+    },
+    {
+      "path": "dashboard-access-browser-final/mobile-access-dark.png",
+      "sha256": "966a96ecc7dd10159fb49301fa28743ec0d4f4b80897cf60173207591e27b5ff"
+    },
+    {
+      "path": "dashboard-access-browser-final/mobile-access.png",
+      "sha256": "e093ab0fd098ab8abd0f68aa07e80282d9fb8401ab8952d04d1b744e1b831124"
+    },
+    {
+      "path": "dashboard-access-browser-final/mobile-dark.png",
+      "sha256": "edf6a4fd536db7ef0358fc15842a807c21fb2c0c93baa24502bb625b34a9fbb7"
+    },
+    {
+      "path": "dashboard-access-browser-final/mobile-resources.png",
+      "sha256": "adbd0baad506dc9a47276b91ddd0bfe565dbac1f72f1403bb47ca09d8121fb62"
+    },
+    {
+      "path": "dashboard-access-browser-final/result.json",
+      "sha256": "1ede95a48e45dcbe692b5cd81f3dce84b288c3e5b99ebeca0184072854fa799c"
+    },
+    {
+      "path": "dashboard-access-browser-final/revoked.png",
+      "sha256": "d8bcb4ed63fd86cea35b8a0658a516fc3b21f798fa844fd026c1d6c51d50719a"
+    },
+    {
+      "path": "dashboard-access-browser-final.log",
+      "sha256": "1463f37ffbc1ace7072c96017e87df1c026a3ecb581b8094d49892d6ccfe12c5"
+    },
+    {
+      "path": "dashboard-access-browser-mobile.log",
+      "sha256": "a7fab17090582ffe0791649b6ae67aaa6b5133b8e05195ec90a40713718ac424"
+    },
+    {
+      "path": "dashboard-access-controller-race.jsonl",
+      "sha256": "304ebdc365fa974746aeb504168e2bd29fcfb6cd7ae656680fb3497ad3f88c20"
+    },
+    {
+      "path": "dashboard-access-cancellation-recheck.log",
+      "sha256": "14bcdcecf43f7672aeefb2c23e96bfabf03e2a7929e02643140ec8d8a739b864"
+    },
+    {
+      "path": "dashboard-access-inventory-race.log",
+      "sha256": "d7a27143165359bb5758297933eb6599225a612f707345dda72e52660c8cce42"
+    },
+    {
+      "path": "dashboard-access-native-race.log",
+      "sha256": "ceb37e3743c9908cce521916b3df4e238582923b405d4456c8d8972348573025"
+    },
+    {
+      "path": "dashboard-access-docs.json",
+      "sha256": "5ce27a73e66e4cb87a8c2b05452c32e6a26fe084ea61095de69ebe4d0e9594c7"
+    },
+    {
+      "path": "dashboard-access-gitleaks.json",
+      "sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570"
+    }
+  ],
+  "formatting_note": "Schema2 preserves every original path and SHA-256 value. Path/value entries avoid generic API-key false positives from path-named JSON properties; no scanner allowlist was added. The earlier passing source scan preceded this evidence file; hosted7c62900 correctly exposed13 false positives in its original representation."
 }
