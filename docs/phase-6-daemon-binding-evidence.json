@@ -1,0 +1,92 @@
+{
+  "schema": 1,
+  "source_base_commit": "c703ddc86b2d46f11d0e2d7e324c063a53b8d2bb",
+  "scope": "Positive daemon transfer fixture waits for fresh connector admission; production code and deadlines unchanged",
+  "status": "Local uninstrumented Linux and static checks passed; hosted qualification pending",
+  "top_pass": 1,
+  "subcase_pass": 17,
+  "failures": 0,
+  "skips": 0,
+  "seconds": 211.23,
+  "environment": {
+    "base_commit": "c703ddc86b2d46f11d0e2d7e324c063a53b8d2bb",
+    "source_files": [
+      {
+        "path": "internal/workload/stream.go",
+        "sha256": "d120a6d30fb9dc5f1228304a0117d03ebef703f7ee26222658a520db554e5b8d"
+      },
+      {
+        "path": "internal/workload/client.go",
+        "sha256": "0d5b85f9beec0b2b4bf010ac01baa56074018dc3ed3f7f745e1db6d99082dbbf"
+      },
+      {
+        "path": "internal/workload/completion_test.go",
+        "sha256": "78f70a9713b9602ec4538f31953f4135878d3f7399df4acac9b8e80dabcd2a8b"
+      },
+      {
+        "path": "internal/client/stream.go",
+        "sha256": "6e937edc231d761283d055717e8a0f27905fcfc96d969a3f3332f5f494f13e24"
+      },
+      {
+        "path": "internal/controller/client_command_linux_test.go",
+        "sha256": "d280abaeac185988f9dba95c5ca58d9868ec8bb793560bbd48a288c15a4e62b2"
+      },
+      {
+        "path": "internal/agent/daemon_linux_test.go",
+        "sha256": "1d43e1f25675f2a61bd412f9f914e32b4d4e020b5ce3f38764eb546133a808d8"
+      },
+      {
+        "path": "internal/controller/encrypted_client_command_linux_test.go",
+        "sha256": "74e059ca501382deb00921b09de040f5755c7b691b0f147c5489ebe2fb6448a0"
+      }
+    ],
+    "artifacts": [
+      {
+        "path": "init",
+        "sha256": "bf333f54401a64713786c5e59c3c1614ff3eff97f97ea7f6de38b6ed90410a74"
+      },
+      {
+        "path": "workload",
+        "sha256": "f0680134ed6720dc2b24699928df968c82e286e73d9b7b8281238cae15acbb54"
+      },
+      {
+        "path": "controller",
+        "sha256": "c61b3a820fe04e36c8018bd71bee1fd02c8c4667770be8346e8b500e416ada89"
+      },
+      {
+        "path": "agent",
+        "sha256": "aa9d9785b6d3d47c8f269b2bc876a5496ffbfb2532aaa4a6a7d9b483cce98495"
+      },
+      {
+        "path": "portico",
+        "sha256": "ffd9b5cbcc60a35a3a58ad5c030dacf71838d6fa80f441c58a1a0398d9bdea9a"
+      },
+      {
+        "path": "initramfs.cpio.gz",
+        "sha256": "39c5575816e014187cbe4c74a89eb32be9a6e26beee7d511a928793135aad45e"
+      }
+    ],
+    "kernel_sha256": "1E6BF9027720C75C3ED0D79171F21B5791EE40CA9795D07C7C6E04DC5EA2AE90",
+    "qemu": "QEMU emulator version 11.1.0 (v11.1.0-12130-ge470268ff4)",
+    "network_devices": 0,
+    "host_filesystem_shares": 0,
+    "memory_mib": 2048,
+    "virtual_cpus": 2,
+    "production_overlay": false
+  },
+  "artifacts": [
+    {
+      "sha256": "37ca6258273fffa4b5a99f60ecdef6eb0d30428809662e60f5994f593fde9f6b",
+      "path": "E:/Portico/work/reports/daemon-fresh-binding-linux/runtime/runtime.log"
+    },
+    {
+      "sha256": "b46ffcd3645d195327883c7e3e088bf860fce0763536e3c2a427dbff744b528f",
+      "path": "E:/Portico/work/reports/daemon-fresh-binding-linux/runtime/environment.json"
+    },
+    {
+      "sha256": "3c41d38cdc21aef9a2522a4782a5880407d0ee9d16ac94acad5cef5938f1d258",
+      "path": "E:/Portico/work/reports/fresh-binding-static.log"
+    }
+  ],
+  "historical_failures": "Both c703ddc and b1be43a full Linux runs failed the transfer after re-unlock before a second destination. An instrumented old-source diagnostic passed. These do not establish a single root cause; separate post-authentication HTTPS failure remains open."
+}
