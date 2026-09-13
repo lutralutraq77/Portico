@@ -119,7 +119,7 @@ func forward(ctx context.Context, remote *workload.Conn, input Input, output Out
 	}
 	ack, cancel := context.WithTimeout(ctx, drain)
 	defer cancel()
-	if remote.WaitWriteAcknowledged(ack) != nil {
+	if remote.WaitFinished(ack) != nil {
 		return ErrConnection
 	}
 	return nil

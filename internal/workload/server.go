@@ -286,7 +286,7 @@ func (s *Server) Serve(ctx context.Context, raw net.Conn) error {
 		return ErrDenied
 	}
 	_ = raw.SetDeadline(time.Time{})
-	payload := newPayload(x.ctx, x.inner, raw)
+	payload, acknowledgeForwarding := newServerPayload(x.ctx, x.inner, raw)
 	x.work.Add(1)
 	go func() { defer x.work.Done(); <-payload.Done(); x.stop() }()
 	x.work.Add(1)
@@ -303,6 +303,7 @@ func (s *Server) Serve(ctx context.Context, raw net.Conn) error {
 	if first != nil || second != nil {
 		return ErrDenied
 	}
+	acknowledgeForwarding()
 	op, cancel = context.WithTimeout(x.ctx, s.config.OperationTimeout)
 	defer cancel()
 	return payload.waitAcknowledged(op)

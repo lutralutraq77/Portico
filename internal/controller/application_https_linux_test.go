@@ -74,6 +74,7 @@ func TestArchGuestApplicationHTTPS(t *testing.T) {
 	applicationSecret := NewID()
 	var requests, authenticated atomic.Int64
 	var metadataInvalid atomic.Bool
+	var shutdownInvalid atomic.Bool
 	destination := func(c net.Conn) {
 		_ = c.SetDeadline(time.Now().Add(15 * time.Second))
 		secure := tls.Server(c, &tls.Config{MinVersion: tls.VersionTLS13, Certificates: []tls.Certificate{appIdentity}})
@@ -95,6 +96,22 @@ func TestArchGuestApplicationHTTPS(t *testing.T) {
 		authenticated.Add(1)
 		_, _ = fmt.Fprintf(secure, "HTTP/1.1 200 OK\r\nContent-Type: application/octet-stream\r\nContent-Length: %d\r\nConnection: close\r\n\r\n", len(payload))
 		_, _ = secure.Write(payload)
+		// Keep the positive destination open through both TLS close-notify
+		// and the client's TCP FIN. Closing it immediately after the response
+		// can reset the connector's final write/half-close. Those failures
+		// remain failures; the positive fixture must finish both directions.
+		if secure.CloseWrite() != nil {
+			shutdownInvalid.Store(true)
+			return
+		}
+		var trailing [1]byte
+		if n, err := secure.Read(trailing[:]); n != 0 || err != io.EOF {
+			shutdownInvalid.Store(true)
+			return
+		}
+		if n, err := c.Read(trailing[:]); n != 0 || err != io.EOF {
+			shutdownInvalid.Store(true)
+		}
 	}
 	v := newWorkloadFixtureWithCarrier(t, destination, func(c *carrier.Config) { c.PairTimeout = 10 * time.Second })
 	f := v.carrier.policy.device.f
@@ -251,6 +268,15 @@ func TestArchGuestApplicationHTTPS(t *testing.T) {
 		{"ungranted_resource", "localhost", rootFile, NewID(), 1, true, false, 0, 0},
 		{"positive_control_after_denials", "localhost", rootFile, v.resource.ID, v.resource.Revision, true, true, 1, 1},
 	}
+	// The final-ACK regression depended on pump ordering. Keep independent
+	// real application attempts after the denials; each still acquires fresh
+	// authority and must deliver exact bytes, final status and closure receipts.
+	positive := cases[len(cases)-1]
+	for repeat := 0; repeat < 12; repeat++ {
+		attempt := positive
+		attempt.name = fmt.Sprintf("positive_control_repeat_%02d", repeat)
+		cases = append(cases, attempt)
+	}
 	check := func(t *testing.T, test curlCase) {
 		t.Helper()
 		before, beforeHTTP, beforeAuth := v.connections.Load(), requests.Load(), authenticated.Load()
@@ -288,6 +314,9 @@ func TestArchGuestApplicationHTTPS(t *testing.T) {
 			t.Fatal("curl output did not match authenticated application response")
 		}
 		carrierEventually(t, func() bool { return v.closed.Load() == v.connections.Load() })
+		if shutdownInvalid.Load() {
+			t.Fatal("positive destination did not finish TLS and TCP without trailing data")
+		}
 		must(t, f.s.db.QueryRow("SELECT count(*) FROM authorized_sessions").Scan(&afterSessions))
 		if v.connections.Load()-before != test.connections || requests.Load()-beforeHTTP != test.http || metadataInvalid.Load() {
 			t.Fatalf("destination/HTTP counts=%d/%d want=%d/%d; invalid Host/SNI=%t", v.connections.Load()-before, requests.Load()-beforeHTTP, test.connections, test.http, metadataInvalid.Load())
