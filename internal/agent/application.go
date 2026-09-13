@@ -23,6 +23,12 @@ type Application struct {
 }
 
 func (a Application) arguments() ([]string, error) {
+	return a.commandArguments(true)
+}
+
+// The SSH adapter delivers its endpoint through a private child environment.
+// Ordinary exec invocations still require a standalone socket placeholder.
+func (a Application) commandArguments(requireSocket bool) ([]string, error) {
 	canonical := func(path string) bool {
 		return len(path) > 1 && len(path) <= 4096 && filepath.IsAbs(path) && filepath.Clean(path) == path && !strings.ContainsRune(path, 0)
 	}
@@ -35,7 +41,7 @@ func (a Application) arguments() ([]string, error) {
 		if strings.ContainsRune(arg, 0) {
 			return nil, ErrRejected
 		}
-		if i > 0 && arg == "{socket}" {
+		if requireSocket && i > 0 && arg == "{socket}" {
 			arg, replaced = a.Endpoint, true
 		}
 		bytes += len(arg)
@@ -44,7 +50,7 @@ func (a Application) arguments() ([]string, error) {
 		}
 		args[i] = arg
 	}
-	if !replaced {
+	if requireSocket && !replaced {
 		return nil, ErrRejected
 	}
 	return args, nil

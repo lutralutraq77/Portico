@@ -2,7 +2,7 @@
   "schema": 1,
   "source_base_commit": "c703ddc86b2d46f11d0e2d7e324c063a53b8d2bb",
   "scope": "Positive daemon transfer fixture waits for fresh connector admission; production code and deadlines unchanged",
-  "status": "Local uninstrumented Linux and static checks passed; hosted qualification pending",
+  "status": "Local uninstrumented Linux/static checks and all six hosted PR workflows passed on 30974c8 and 5afced8; see phase-6-fresh-binding-hosted-evidence.json",
   "top_pass": 1,
   "subcase_pass": 17,
   "failures": 0,

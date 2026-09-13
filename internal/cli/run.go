@@ -16,6 +16,7 @@ import (
 	"portico.local/portico/internal/clockhealth"
 	"portico.local/portico/internal/connector"
 	"portico.local/portico/internal/control"
+	"portico.local/portico/internal/localipc"
 	"portico.local/portico/internal/pki"
 )
 
@@ -31,7 +32,7 @@ type Info struct {
 	DevelopmentOnly bool   `json:"development_only"`
 }
 
-const usage = "Usage: portico version [--json]\n       portico connector run --config /absolute/path/config.json\n       portico client catalog --config /absolute/path/config.json [--secrets-fd 3 | --prompt]\n       portico client connect --config /absolute/path/config.json --resource UUID --revision N [--secrets-fd 3 | --prompt]\n       portico agent run --config /absolute/path/config.json --socket /private/path/agent.sock (--secrets-fd 3 | --prompt)\n       portico agent daemon --config /absolute/path/config.json --socket /private/path/agent.sock\n       portico agent unlock --socket /private/path/agent.sock (--secrets-fd 3 | --prompt)\n       portico agent lock|status --socket /private/path/agent.sock\n       portico agent catalog --socket /private/path/agent.sock\n       portico agent connect --socket /private/path/agent.sock --resource UUID --revision N\n       portico agent exec --socket /private/path/agent.sock --resource UUID --revision N --endpoint /private/path/app.sock -- /absolute/program {socket} [arguments]\n       portico enroll prepare|redeem|activate --config /absolute/path/config.json (--secrets-fd 3 | --prompt)\n       portico help\nPhase 6 development only; Linux client and connector use loopback control/carrier services. Connect requires application stdin/stdout pipes. Enrollment and version 2 client identities require an explicit secret source: inherited pipe 3, or hidden foreground terminal input with --prompt.\n"
+const usage = "Usage: portico version [--json]\n       portico connector run --config /absolute/path/config.json\n       portico client catalog --config /absolute/path/config.json [--secrets-fd 3 | --prompt]\n       portico client connect --config /absolute/path/config.json --resource UUID --revision N [--secrets-fd 3 | --prompt]\n       portico agent run --config /absolute/path/config.json --socket /private/path/agent.sock (--secrets-fd 3 | --prompt)\n       portico agent daemon --config /absolute/path/config.json --socket /private/path/agent.sock\n       portico agent unlock --socket /private/path/agent.sock (--secrets-fd 3 | --prompt)\n       portico agent lock|status --socket /private/path/agent.sock\n       portico agent catalog --socket /private/path/agent.sock\n       portico agent connect --socket /private/path/agent.sock --resource UUID --revision N\n       portico agent exec --socket /private/path/agent.sock --resource UUID --revision N --endpoint /private/path/app.sock -- /absolute/program {socket} [arguments]\n       portico agent ssh --socket /private/path/agent.sock --resource UUID --revision N --endpoint /private/path/app.sock --host HOST --user USER --known-hosts /private/path/known_hosts --identity /private/path/id_ed25519 -- [remote command]\n       portico enroll prepare|redeem|activate --config /absolute/path/config.json (--secrets-fd 3 | --prompt)\n       portico help\nPhase 6 development only; Linux client and connector use loopback control/carrier services. Connect requires application stdin/stdout pipes. Enrollment and version 2 client identities require an explicit secret source: inherited pipe 3, or hidden foreground terminal input with --prompt.\n"
 
 // Run handles a bounded command surface. Arguments are never echoed on errors,
 // because future invocations may accidentally contain enrollment material.
@@ -127,6 +128,26 @@ func RunInputContext(ctx context.Context, args []string, stdin *os.File, stdout,
 			Version   int                      `json:"version"`
 			Resources []control.ResourceAccess `json:"resources"`
 		}{1, resources}) != nil {
+			return 1
+		}
+		return 0
+	case len(args) == 2 && args[0] == "agent" && args[1] == "fdpass":
+		out, ok := stdout.(*os.File)
+		if !ok || localipc.PassDescriptor(ctx, os.Getenv("PORTICO_SSH_ENDPOINT"), out) != nil {
+			_, _ = io.WriteString(stderr, "Local descriptor delivery failed.\n")
+			return 1
+		}
+		return 0
+	case len(args) >= 19 && args[0] == "agent" && args[1] == "ssh" && args[2] == "--socket" && args[4] == "--resource" && args[6] == "--revision" && args[8] == "--endpoint" && args[10] == "--host" && args[12] == "--user" && args[14] == "--known-hosts" && args[16] == "--identity" && args[18] == "--":
+		revision, err := strconv.ParseInt(args[7], 10, 64)
+		if err != nil || revision < 1 || strconv.FormatInt(revision, 10) != args[7] || !pki.ValidID(args[5]) {
+			_, _ = io.WriteString(stderr, "Unsupported command or arguments. Use portico help.\n")
+			return 2
+		}
+		out, outOK := stdout.(*os.File)
+		errout, errOK := stderr.(*os.File)
+		if !outOK || !errOK || agent.RunSSH(ctx, agent.SSH{AgentSocket: args[3], Endpoint: args[9], ResourceID: args[5], Revision: revision, Host: args[11], User: args[13], KnownHosts: args[15], Identity: args[17], Command: args[19:], Stdin: stdin, Stdout: out, Stderr: errout}) != nil {
+			_, _ = io.WriteString(stderr, "Local SSH application failed.\n")
 			return 1
 		}
 		return 0

@@ -1,0 +1,214 @@
+{
+  "schema": 1,
+  "scope": "Fresh daemon binding fixture and existing audit/security component; all six PR workflows passed on each recorded source",
+  "sources": [
+    {
+      "head": "30974c80315956c465ac84ce5396ba6054be7fd8",
+      "merge": "9d957e79abcb1f7b566df93134bb6f613fa3bdbe",
+      "tree": "73d994406d93a84f2095bdc035e90a3934089a12",
+      "workflows": [
+        {
+          "id": 34764123860,
+          "name": "Dependency review",
+          "conclusion": "success",
+          "html_url": "https://github.com/lutralutraq77/Portico/actions/runs/34764123860"
+        },
+        {
+          "id": 34764123878,
+          "name": "Arch development package",
+          "conclusion": "success",
+          "html_url": "https://github.com/lutralutraq77/Portico/actions/runs/34764123878"
+        },
+        {
+          "id": 34764123868,
+          "name": "CodeQL",
+          "conclusion": "success",
+          "html_url": "https://github.com/lutralutraq77/Portico/actions/runs/34764123868"
+        },
+        {
+          "id": 34764123881,
+          "name": "Arch user service runtime",
+          "conclusion": "success",
+          "html_url": "https://github.com/lutralutraq77/Portico/actions/runs/34764123881"
+        },
+        {
+          "id": 34764123861,
+          "name": "Repository quality",
+          "conclusion": "success",
+          "html_url": "https://github.com/lutralutraq77/Portico/actions/runs/34764123861"
+        },
+        {
+          "id": 34764123874,
+          "name": "Isolated Linux runtime",
+          "conclusion": "success",
+          "html_url": "https://github.com/lutralutraq77/Portico/actions/runs/34764123874"
+        }
+      ],
+      "linux": {
+        "skipped": 4,
+        "top_pass": 229,
+        "failed": 0,
+        "subcase_pass": 1108
+      },
+      "installed_service": {
+        "seconds": 51.98,
+        "failed": 0,
+        "passed": 4
+      },
+      "https": {
+        "seconds": 42.97,
+        "failed": 0,
+        "passed": 21
+      },
+      "artifacts": [
+        {
+          "path": "E:/Portico/work/reports/final-ack-hosted/30974c8-linux.zip",
+          "sha256": "0ca1ba994e11180c72f38a8b47c57c2cb957df1cda144f9d4044c620767d21a3"
+        },
+        {
+          "path": "E:/Portico/work/reports/final-ack-hosted/30974c8-linux-runtime.log",
+          "sha256": "442f4be7ff8814fd5facd5bbc9845ecf1772588d056256493cb35f5d10abb9bf"
+        },
+        {
+          "path": "E:/Portico/work/reports/final-ack-hosted/30974c8-linux-runtime-environment.json",
+          "sha256": "5727fd70794a56ffdceed353b60592d5111b0e06c6f054aa29dac0f07a12a9d9"
+        },
+        {
+          "path": "E:/Portico/work/reports/final-ack-hosted/30974c8-service.zip",
+          "sha256": "e917bd84e2a010a7bdde95f1c85fdf5f1851ba12acd9abd6da123a6dd437b732"
+        },
+        {
+          "path": "E:/Portico/work/reports/final-ack-hosted/30974c8-service-runtime.log",
+          "sha256": "6a438e5c3b344fbb3d9c1e776d666c76a7ea784f7460f397b43306ec90f78cb3"
+        },
+        {
+          "path": "E:/Portico/work/reports/final-ack-hosted/30974c8-service-environment.json",
+          "sha256": "32ad9262e85d1d49145d0142fb18138749e459575b606d0ecc0c7a6fff97907c"
+        }
+      ],
+      "published_artifacts": [
+        {
+          "id": 10319689977,
+          "name": "isolated-linux-runtime",
+          "size_in_bytes": 54121,
+          "digest": "sha256:0ca1ba994e11180c72f38a8b47c57c2cb957df1cda144f9d4044c620767d21a3"
+        },
+        {
+          "id": 10319049920,
+          "name": "arch-user-service-runtime",
+          "size_in_bytes": 452282394,
+          "digest": "sha256:e917bd84e2a010a7bdde95f1c85fdf5f1851ba12acd9abd6da123a6dd437b732"
+        }
+      ]
+    },
+    {
+      "head": "5afced85b79628c9863f455c40f131ed5e032fe5",
+      "merge": "4a2910a0eb8fc6f88ce40922361396ac4e4ec549",
+      "tree": "aa3b7570bb40025b1b0bf6e80c8b00a5ad9d430e",
+      "workflows": [
+        {
+          "id": 34764155185,
+          "name": "Dependency review",
+          "conclusion": "success",
+          "html_url": "https://github.com/lutralutraq77/Portico/actions/runs/34764155185"
+        },
+        {
+          "id": 34764155200,
+          "name": "Arch development package",
+          "conclusion": "success",
+          "html_url": "https://github.com/lutralutraq77/Portico/actions/runs/34764155200"
+        },
+        {
+          "id": 34764155181,
+          "name": "CodeQL",
+          "conclusion": "success",
+          "html_url": "https://github.com/lutralutraq77/Portico/actions/runs/34764155181"
+        },
+        {
+          "id": 34764155187,
+          "name": "Arch user service runtime",
+          "conclusion": "success",
+          "html_url": "https://github.com/lutralutraq77/Portico/actions/runs/34764155187"
+        },
+        {
+          "id": 34764155188,
+          "name": "Repository quality",
+          "conclusion": "success",
+          "html_url": "https://github.com/lutralutraq77/Portico/actions/runs/34764155188"
+        },
+        {
+          "id": 34764155196,
+          "name": "Isolated Linux runtime",
+          "conclusion": "success",
+          "html_url": "https://github.com/lutralutraq77/Portico/actions/runs/34764155196"
+        }
+      ],
+      "linux": {
+        "skipped": 4,
+        "top_pass": 247,
+        "failed": 0,
+        "subcase_pass": 1149
+      },
+      "installed_service": {
+        "seconds": 46.06,
+        "failed": 0,
+        "passed": 4
+      },
+      "https": {
+        "seconds": 39.07,
+        "failed": 0,
+        "passed": 21
+      },
+      "artifacts": [
+        {
+          "path": "E:/Portico/work/reports/final-ack-hosted/5afced8-linux.zip",
+          "sha256": "bc820f2db9fb468a82c6b1f2d4351b1d714aa77b20944048557f3ac06d412010"
+        },
+        {
+          "path": "E:/Portico/work/reports/final-ack-hosted/5afced8-linux-runtime.log",
+          "sha256": "03078f0aa8ce39ec0640b8d6cddc500d88185b9f8e80383b879add2648e07dc4"
+        },
+        {
+          "path": "E:/Portico/work/reports/final-ack-hosted/5afced8-linux-runtime-environment.json",
+          "sha256": "562e508d2dc0149ac234937b55920058519ded37421a1c5b2e5ce7104b4f5f51"
+        },
+        {
+          "path": "E:/Portico/work/reports/final-ack-hosted/5afced8-service.zip",
+          "sha256": "87c172087a8cbff102b630b3b22eb4e1b80aaeb6287d48ef83ffea80b05092c8"
+        },
+        {
+          "path": "E:/Portico/work/reports/final-ack-hosted/5afced8-service-runtime.log",
+          "sha256": "cefeb5147bad92ae6cad919a191a30d02a53ec38a607c8d81d0ff660d15ad3e4"
+        },
+        {
+          "path": "E:/Portico/work/reports/final-ack-hosted/5afced8-service-environment.json",
+          "sha256": "b3bf2dacdcb943314922a22735964b98ea69649c95783527edd885eacbacdd98"
+        }
+      ],
+      "published_artifacts": [
+        {
+          "id": 10320615226,
+          "name": "isolated-linux-runtime",
+          "size_in_bytes": 54820,
+          "digest": "sha256:bc820f2db9fb468a82c6b1f2d4351b1d714aa77b20944048557f3ac06d412010"
+        },
+        {
+          "id": 10320205316,
+          "name": "arch-user-service-runtime",
+          "size_in_bytes": 452580275,
+          "digest": "sha256:87c172087a8cbff102b630b3b22eb4e1b80aaeb6287d48ef83ffea80b05092c8"
+        }
+      ]
+    }
+  ],
+  "canonical_acceptance": {
+    "planned": 84,
+    "implemented": 7,
+    "total": 91
+  },
+  "limitations": [
+    "These sources precede the new SSH adapter work.",
+    "Historical intermittent authenticated HTTPS failures remain preserved; a passing run does not establish their cause.",
+    "Neither Phase 6 nor Phase 7 is complete."
+  ]
+}

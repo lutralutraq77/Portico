@@ -140,13 +140,14 @@ func TestOutputFailuresAreReported(t *testing.T) {
 }
 
 func FuzzCommandSurface(f *testing.F) {
+	f.Add("agent", "fdpass")
 	for _, s := range []string{"serve", "version", "help", "--json", "", "\x00"} {
 		f.Add(s, s)
 	}
 	f.Fuzz(func(t *testing.T, first, second string) {
 		var out, errout bytes.Buffer
 		code := cli.Run([]string{first, second}, &out, &errout)
-		if code != 0 && code != 2 {
+		if code != 0 && code != 2 && !(code == 1 && first == "agent" && second == "fdpass") {
 			t.Fatalf("unexpected exit %d", code)
 		}
 		if out.Len() > 2048 || errout.Len() > 2048 {
