@@ -15,6 +15,7 @@ const dashboardPageLimit = 50
 // revision returned with its first page; changing authority requires a refresh.
 type DashboardRequest struct {
 	Section        string
+	Profile        string
 	After          string
 	Limit          int
 	PolicyRevision int64
@@ -59,8 +60,23 @@ type DashboardEnrollment struct {
 }
 type DashboardCertificate struct {
 	ID, IssuerID, PrincipalID, Profile string
+	PrincipalName, Fingerprint         string
 	NotBefore, NotAfter                time.Time
 	Revoked                            bool
+}
+
+type DashboardGrant struct {
+	ID, UserID, UserName, DeviceID, DeviceName, ResourceID, ResourceName string
+	Revision                                                             int64
+	Enabled                                                              bool
+	From, Until                                                          time.Time
+}
+
+type DashboardHosting struct {
+	ID, ConnectorID, ConnectorName, ResourceID, ResourceName string
+	Revision                                                 int64
+	Enabled                                                  bool
+	From, Until                                              time.Time
 }
 
 // DashboardInventory is a metadata-only read, authenticated from the real TLS
@@ -69,7 +85,8 @@ type DashboardCertificate struct {
 // preview and hardware-approval handlers.
 func (s *Store) DashboardInventory(ctx context.Context, conn *tls.Conn, trust *pki.Trust, request DashboardRequest) (DashboardPage, error) {
 	if request.Limit < 1 || request.Limit > dashboardPageLimit || request.PolicyRevision < 0 ||
-		(request.After != "" && (!validID(request.After) || request.PolicyRevision == 0)) {
+		(request.After != "" && (!validID(request.After) || request.PolicyRevision == 0)) ||
+		(request.Profile != "" && (request.Section != "certificates" || (request.Profile != "device" && request.Profile != "connector"))) {
 		return DashboardPage{}, ErrInvalid
 	}
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
@@ -128,11 +145,35 @@ func (s *Store) DashboardInventory(ctx context.Context, conn *tls.Conn, trust *p
 				return v, v.ID, e
 			})
 		case "certificates":
-			result.Items, result.Next, err = dashboardRows(tx, request, "SELECT id,issuer_id,COALESCE(device_id,connector_id),profile,not_before,not_after,revoked FROM certificates WHERE id>? ORDER BY id LIMIT ?", func(rows *sql.Rows) (DashboardCertificate, string, error) {
+			query := "SELECT c.id,c.issuer_id,COALESCE(c.device_id,c.connector_id),c.profile,COALESCE(d.name,k.name),c.leaf_sha256,c.not_before,c.not_after,c.revoked FROM certificates c LEFT JOIN devices d ON d.id=c.device_id LEFT JOIN connectors k ON k.id=c.connector_id WHERE c.id>?"
+			// Profile is validated above and selects fixed SQL text, never input SQL.
+			if request.Profile == "device" {
+				query += " AND c.profile='device'"
+			} else if request.Profile == "connector" {
+				query += " AND c.profile='connector'"
+			}
+			query += " ORDER BY c.id LIMIT ?"
+			result.Items, result.Next, err = dashboardRows(tx, request, query, func(rows *sql.Rows) (DashboardCertificate, string, error) {
 				var v DashboardCertificate
 				var before, after int64
-				e := rows.Scan(&v.ID, &v.IssuerID, &v.PrincipalID, &v.Profile, &before, &after, &v.Revoked)
+				e := rows.Scan(&v.ID, &v.IssuerID, &v.PrincipalID, &v.Profile, &v.PrincipalName, &v.Fingerprint, &before, &after, &v.Revoked)
 				v.NotBefore, v.NotAfter = time.Unix(0, before).UTC(), time.Unix(0, after).UTC()
+				return v, v.ID, e
+			})
+		case "grants":
+			result.Items, result.Next, err = dashboardRows(tx, request, "SELECT g.id,g.user_id,u.name,g.device_id,d.name,g.resource_id,r.name,g.revision,g.enabled,g.valid_from,g.valid_until FROM grants g JOIN users u ON u.id=g.user_id JOIN devices d ON d.id=g.device_id JOIN resources r ON r.id=g.resource_id AND r.revision=g.revision WHERE g.id>? ORDER BY g.id LIMIT ?", func(rows *sql.Rows) (DashboardGrant, string, error) {
+				var v DashboardGrant
+				var from, until int64
+				e := rows.Scan(&v.ID, &v.UserID, &v.UserName, &v.DeviceID, &v.DeviceName, &v.ResourceID, &v.ResourceName, &v.Revision, &v.Enabled, &from, &until)
+				v.From, v.Until = time.Unix(0, from).UTC(), time.Unix(0, until).UTC()
+				return v, v.ID, e
+			})
+		case "hosting":
+			result.Items, result.Next, err = dashboardRows(tx, request, "SELECT h.id,h.connector_id,k.name,h.resource_id,r.name,h.revision,h.enabled,h.valid_from,h.valid_until FROM host_bindings h JOIN connectors k ON k.id=h.connector_id JOIN resources r ON r.id=h.resource_id AND r.revision=h.revision WHERE h.id>? ORDER BY h.id LIMIT ?", func(rows *sql.Rows) (DashboardHosting, string, error) {
+				var v DashboardHosting
+				var from, until int64
+				e := rows.Scan(&v.ID, &v.ConnectorID, &v.ConnectorName, &v.ResourceID, &v.ResourceName, &v.Revision, &v.Enabled, &from, &until)
+				v.From, v.Until = time.Unix(0, from).UTC(), time.Unix(0, until).UTC()
 				return v, v.ID, e
 			})
 		default:

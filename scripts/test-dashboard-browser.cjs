@@ -67,6 +67,72 @@ const iterator = lines[Symbol.asyncIterator]();
       assert.equal(await page.locator("thead th[scope=col]").count() > 0, true);
     }
     checked("all six sections and accessible table headings");
+    await page.locator('nav a[data-section="access"]').click(); await ready();
+    const chooseIdentities = async () => {
+      await page.getByLabel("Device certificate", { exact: true }).selectOption(config.DeviceCertificateID);
+      await page.getByLabel("Connector certificate", { exact: true }).selectOption(config.ConnectorCertificateID);
+      await page.getByLabel("Resource", { exact: true }).selectOption(config.ResourceID);
+    };
+    await chooseIdentities();
+    await page.getByRole("button", { name: "Check effective access", exact: true }).click(); await ready();
+    assert.equal(await page.locator("#access-result").getAttribute("data-allowed"), "true");
+    assert.match(await page.locator("#access-result").innerText(), /192\.168\.50\.10:8096 \/ TCP/);
+    await page.screenshot({ path: path.join(config.Report, "desktop-access.png"), fullPage: true });
+    checked("effective access uses exact registered identities and controller policy snapshot");
+    await page.setViewportSize({ width: 360, height: 800 });
+    const mobileAccess = await page.evaluate(() => ({
+      overflow: document.documentElement.scrollWidth > innerWidth,
+      controls: [...document.querySelectorAll("#records select, #records button")].map((control) => {
+        const rect = control.getBoundingClientRect();
+        return { left: rect.left, right: rect.right, width: rect.width, height: rect.height };
+      })
+    }));
+    assert.equal(mobileAccess.overflow, false);
+    assert.equal(mobileAccess.controls.length >= 10, true);
+    assert.equal(mobileAccess.controls.every((rect) => rect.left >= 0 && rect.right <= 360 && rect.width >= 48 && rect.height >= 48), true);
+    assert.equal(await page.getByLabel("Device certificate", { exact: true }).inputValue(), config.DeviceCertificateID);
+    await page.screenshot({ path: path.join(config.Report, "mobile-access.png"), fullPage: true });
+    await page.emulateMedia({ colorScheme: "dark" });
+    await page.screenshot({ path: path.join(config.Report, "mobile-access-dark.png"), fullPage: true });
+    await page.emulateMedia({ colorScheme: "light" });
+    await page.setViewportSize({ width: 1440, height: 1050 });
+    checked("360px access selectors, fingerprints and allowed result reflow with 48px controls in light and dark schemes");
+    await page.getByLabel("Connector certificate", { exact: true }).selectOption("");
+    assert.equal(await page.locator("#access-result").innerText(), "");
+    assert.equal(await page.locator("#access-result").getAttribute("data-allowed"), null);
+    assert.match(await page.locator("#feedback").innerText(), /Selection changed/);
+    assert.equal(await page.locator("#page-summary").innerText(), "Selection has not been checked");
+    await chooseIdentities();
+    assert.equal(await page.locator("#access-result").innerText(), "");
+    checked("changing selected identity clears the previous permission and status until a new check");
+    const accessEndpoint = `${config.Origin}/api/v1/admin/dashboard/access`;
+    await page.route(accessEndpoint, async (route) => {
+      const response = await route.fetch();
+      const altered = await response.json();
+      assert.equal(altered.Allowed, true);
+      altered.Resource.Address = "192.0.2.99";
+      await route.fulfill({ response, json: altered });
+    });
+    await page.getByRole("button", { name: "Check effective access", exact: true }).click();
+    await page.waitForFunction(() => document.querySelector("#feedback").dataset.error === "true");
+    assert.equal(await page.locator("#records").innerText(), "");
+    await page.unroute(accessEndpoint);
+    await page.locator("#refresh").click(); await ready(); await chooseIdentities();
+    checked("mismatched destination in an inspection response is rejected and clears prior state");
+    process.stdout.write("PORTICO_BROWSER_DISABLE_GRANT\n");
+    assert.equal((await iterator.next()).value, "grant_disabled");
+    await page.getByRole("button", { name: "Check effective access", exact: true }).click();
+    await page.waitForFunction(() => document.querySelector("#feedback").dataset.error === "true");
+    assert.equal(await page.locator("#access-result").count(), 0);
+    await page.locator("#refresh").click(); await ready(); await chooseIdentities();
+    await page.getByRole("button", { name: "Check effective access", exact: true }).click(); await ready();
+    assert.equal(await page.locator("#access-result").getAttribute("data-allowed"), "false");
+    checked("policy change rejects stale access snapshot, clears old result and shows fresh denial");
+    for (const view of ["grants", "hosting"]) {
+      await page.locator(`#access-views a[data-view="${view}"]`).click(); await ready();
+      assert.equal(await page.locator("tbody tr").count() > 0, true);
+    }
+    checked("separate device grant and connector hosting inventory");
     await page.setViewportSize({ width: 360, height: 800 });
     await page.locator('nav a[data-section="resources"]').click(); await ready();
     const mobile = await page.evaluate(() => ({

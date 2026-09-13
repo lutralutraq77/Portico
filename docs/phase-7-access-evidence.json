@@ -1,0 +1,102 @@
+{
+  "schema": 1,
+  "status": "component_checks_passed_with_recorded_regression_failure",
+  "source_base_commit": "c3cbc130deb9b7b785933b864909b10a3b84657e",
+  "source_files_sha256": {
+    "internal/controller/authentication.go": "4b8827b6cc538f4761a8f5d03ada6790a4733a80dd45e3f54678ae2ced14443d",
+    "internal/controller/enrollment.go": "5ec3e132b37feab79a98a3f443e87a20d4bc43b27f27a312ed6486e550989877",
+    "internal/controller/policy.go": "c39363bef65a18b4b1a1ad1d401971680694db008891d0e1ae15c5cf53c34b0c",
+    "internal/controller/policy_read.go": "3d611478b324b03c6098a0e5fea7c7ab0ea15800d80447b1b16ec5be6c93d3a9",
+    "internal/controller/policy_http.go": "909c66f3be1fde2e0015bba275e8b4f9b4891096cf52e2b569931a403f464b17",
+    "internal/controller/dashboard.go": "16659ffb0837064d49b4a84a9f3df8fe54221ff5da57281b7ebfe9d81ce625d3",
+    "internal/controller/dashboard_access.go": "72fb43f141eb10c7fedc8f264056e48fd65f38a5126ca79b6af71644679101f2",
+    "internal/controller/dashboard_access_test.go": "909c64f1632ac7182c0df4d15fb16b6a1c0f7bef39a21b3216ceee9d3b324055",
+    "internal/controller/dashboard_access_inventory_test.go": "b5029a9c92f5f2206edf139e4ad14a382774f1e438e3689e505f2db07138dece",
+    "internal/controller/dashboard_test.go": "94770f22ae2aedb381798de1a8dfb8d1515764ccccac92259f4d40185550adfc",
+    "internal/controller/dashboard_assets.go": "67979c8b13e990672aae99bd84c83405497a03772f054c5d31f48500a1afdb83",
+    "internal/controller/dashboard_assets_test.go": "c06fdb6b5f02a53bda8fab7790be39b24c2624ad30fca81a76d10b074c19c28b",
+    "internal/controller/dashboard_browser_test.go": "aca1eba573a7db3a960767d0e04733585d2e3b95639b95b1d170f12c0a2c5275",
+    "internal/controller/dashboard/index.html": "4b629fa6d1a26cd9bfa381b5b7854efdcab2683a2cdb516574fc189f7025d144",
+    "internal/controller/dashboard/admin.css": "3129ccaee8e0463f7f584d7e62acbd8d54a7b6c6d5496b797d8706e774d32a68",
+    "internal/controller/dashboard/admin.js": "0829df92adb43e3d3dc1b7d6f7ae9b77f7d76abc51dcec4097c4cb753c42f704",
+    "scripts/test-dashboard-browser.cjs": "0b218e792c0f6bd427d089cde0864e80aea3ce5ba1dd7236618868538b1f06a8"
+  },
+  "native_race": {
+    "failures": [
+      {
+        "Test": "TestCancellationSelectionCannotBeStarvedByUnknownReceipts",
+        "Elapsed": 40.08
+      }
+    ],
+    "note": "All new access and metadata cases passed. Existing cancellation long-poll failed with generic control rejection in full suite; unchanged focused race rerun passed three attempts (9.22s,9.20s,8.71s), total33.757s. Timing sensitivity is unresolved; the original failed suite is retained. Browser assets changed after this suite compiled; final browser validation below covers those edits.",
+    "skips": 16,
+    "dashboard_and_shared_reader_top_level_passes": 14,
+    "status": "failed",
+    "top_level_passes": 103,
+    "seconds": 504.693,
+    "subcase_passes": 384
+  },
+  "browser": {
+    "screenshots_reviewed": [
+      "desktop-access.png",
+      "mobile-access.png",
+      "mobile-access-dark.png"
+    ],
+    "playwright": "1.62.1",
+    "artifact_directory": "E:/Portico/work/reports/dashboard-access-browser-final",
+    "limitations": [
+      "Ephemeral software identity; no physical security-key or platform custody qualification.",
+      "Browser automation presents the client identity through Playwright's TLS proxy; upstream TLS validates the isolated root via process-only NODE_EXTRA_CA_CERTS."
+    ],
+    "checks": [
+      "authenticated real TLS inventory, bounded first page and CSP",
+      "forward and backward revision-bound pagination",
+      "hostile metadata rendered as text without execution",
+      "keyboard navigation and skip link",
+      "all six sections and accessible table headings",
+      "effective access uses exact registered identities and controller policy snapshot",
+      "360px access selectors, fingerprints and allowed result reflow with 48px controls in light and dark schemes",
+      "changing selected identity clears the previous permission and status until a new check",
+      "mismatched destination in an inspection response is rejected and clears prior state",
+      "policy change rejects stale access snapshot, clears old result and shows fresh denial",
+      "separate device grant and connector hosting inventory",
+      "360px mobile reflow, 48px navigation targets and dark scheme",
+      "no cookies, persistent browser storage, third-party requests or script errors",
+      "network failure clears records and refresh recovers",
+      "live administrator revocation clears inventory and denies private assets"
+    ],
+    "status": "passed",
+    "seconds": 21.92,
+    "browser": "152.0.4191.66"
+  },
+  "static_analysis": "Native and Linux go vet/staticcheck passed; JavaScript syntax and whitespace passed; documentation105Markdown/17required/91cases/0errors; gitleaks1.98MB/0leaks.",
+  "historical_failures": [
+    "Metadata test initially omitted historical fixture certificates from expected counts; corrected and passed in full native run.",
+    "Combined source c3cbc130 failed HTTPS positive control; see phase-7-combined-failure-evidence.json.",
+    "First stage diagnostic on source1c1bd60 reproduced eight repeated post-authentication failures plus an earlier pre-destination rejection; source overlay and all logs retained. Backend ConnectReady returned failure; deeper client/workload diagnostic remains pending."
+  ],
+  "artifacts_sha256": {
+    "dashboard-access-browser-final/desktop-access.png": "9e2eae9e8d878d382eb150ddf6ddd89ae0f7da0b0a04ddbbb1286673c4be8202",
+    "dashboard-access-browser-final/desktop-resources.png": "3c25d1a97d89ba4642e969e6dc3a2a640c4ddc1653418348b0dd025316bad919",
+    "dashboard-access-browser-final/mobile-access-dark.png": "966a96ecc7dd10159fb49301fa28743ec0d4f4b80897cf60173207591e27b5ff",
+    "dashboard-access-browser-final/mobile-access.png": "e093ab0fd098ab8abd0f68aa07e80282d9fb8401ab8952d04d1b744e1b831124",
+    "dashboard-access-browser-final/mobile-dark.png": "edf6a4fd536db7ef0358fc15842a807c21fb2c0c93baa24502bb625b34a9fbb7",
+    "dashboard-access-browser-final/mobile-resources.png": "adbd0baad506dc9a47276b91ddd0bfe565dbac1f72f1403bb47ca09d8121fb62",
+    "dashboard-access-browser-final/result.json": "1ede95a48e45dcbe692b5cd81f3dce84b288c3e5b99ebeca0184072854fa799c",
+    "dashboard-access-browser-final/revoked.png": "d8bcb4ed63fd86cea35b8a0658a516fc3b21f798fa844fd026c1d6c51d50719a",
+    "dashboard-access-browser-final.log": "1463f37ffbc1ace7072c96017e87df1c026a3ecb581b8094d49892d6ccfe12c5",
+    "dashboard-access-browser-mobile.log": "a7fab17090582ffe0791649b6ae67aaa6b5133b8e05195ec90a40713718ac424",
+    "dashboard-access-controller-race.jsonl": "304ebdc365fa974746aeb504168e2bd29fcfb6cd7ae656680fb3497ad3f88c20",
+    "dashboard-access-cancellation-recheck.log": "14bcdcecf43f7672aeefb2c23e96bfabf03e2a7929e02643140ec8d8a739b864",
+    "dashboard-access-inventory-race.log": "d7a27143165359bb5758297933eb6599225a612f707345dda72e52660c8cce42",
+    "dashboard-access-native-race.log": "ceb37e3743c9908cce521916b3df4e238582923b405d4456c8d8972348573025",
+    "dashboard-access-docs.json": "5ce27a73e66e4cb87a8c2b05452c32e6a26fe084ea61095de69ebe4d0e9594c7",
+    "dashboard-access-gitleaks.json": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570"
+  },
+  "limitations": [
+    "Inspection grants no capability and does not prove possession, connector online status or application authentication.",
+    "Current dashboard source has not yet completed hosted qualification.",
+    "Physical keys, native administrator bridge, complete management/bootstrap and full Phases6/7 remain open.",
+    "Canonical acceptance remains7implemented/84planned/91total."
+  ]
+}

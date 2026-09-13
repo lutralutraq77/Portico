@@ -56,7 +56,8 @@ func TestDashboardBrowser(t *testing.T) {
 	root, rootKey := testfixture.Root(t)
 	serverKey := newKey(t)
 	leaf := testfixture.Certificate(t, &x509.Certificate{SerialNumber: big.NewInt(2), DNSNames: []string{"admin.portico.test"}, NotBefore: time.Now().Add(-time.Hour), NotAfter: time.Now().Add(time.Hour), KeyUsage: x509.KeyUsageDigitalSignature, ExtKeyUsage: []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth}}, root, &serverKey.PublicKey, rootKey)
-	server, err := policyFixtureFor(t, a.f).engine.NewHTTPServer(PolicyHTTPConfig{Profile: pki.Administrator, Host: host, ServerIdentity: tls.Certificate{Certificate: [][]byte{leaf.Raw}, PrivateKey: serverKey}, AdministratorTrust: a.trust, AdministratorVerifier: verifier})
+	policy := policyFixtureFor(t, a.f)
+	server, err := policy.engine.NewHTTPServer(PolicyHTTPConfig{Profile: pki.Administrator, Host: host, ServerIdentity: tls.Certificate{Certificate: [][]byte{leaf.Raw}, PrivateKey: serverKey}, AdministratorTrust: a.trust, AdministratorVerifier: verifier})
 	must(t, err)
 	done := make(chan error, 1)
 	go func() { done <- server.Serve(ln) }()
@@ -101,11 +102,14 @@ func TestDashboardBrowser(t *testing.T) {
 	must(t, os.WriteFile(rootPath, pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: root.Raw}), 0600))
 	privateDER, err := x509.MarshalPKCS8PrivateKey(a.identity.PrivateKey)
 	must(t, err)
-	config := struct{ Origin, Proxy, Certificate, Key, Browser, Report string }{
+	config := struct{ Origin, Proxy, Certificate, Key, Browser, Report, DeviceCertificateID, ConnectorCertificateID, ResourceID string }{
 		Origin: origin, Proxy: proxy.URL, Browser: browser, Report: report,
+		ResourceID:  a.f.f.resource.ID,
 		Certificate: string(pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: a.identity.Certificate[0]})),
 		Key:         string(pem.EncodeToMemory(&pem.Block{Type: "PRIVATE KEY", Bytes: privateDER})),
 	}
+	must(t, a.f.f.s.db.QueryRow("SELECT id FROM certificates WHERE leaf_sha256=?", pki.Hash(policy.deviceLeaf)).Scan(&config.DeviceCertificateID))
+	must(t, a.f.f.s.db.QueryRow("SELECT id FROM certificates WHERE leaf_sha256=?", pki.Hash(policy.connectorLeaf)).Scan(&config.ConnectorCertificateID))
 	testContext, cancel := context.WithTimeout(context.Background(), 90*time.Second)
 	defer cancel()
 	command := exec.CommandContext(testContext, node, filepath.Join("..", "..", "scripts", "test-dashboard-browser.cjs"))
@@ -123,6 +127,13 @@ func TestDashboardBrowser(t *testing.T) {
 	for scanner.Scan() {
 		line := scanner.Text()
 		switch line {
+		case "PORTICO_BROWSER_DISABLE_GRANT":
+			must(t, a.f.f.s.Update(ctx, a.f.f.actor, func(tx *Tx) error { return tx.Disable("grant", a.f.f.grant.ID) }))
+			if _, err := policy.engine.Authorize(ctx, policy.connectorConn, policy.request()); err == nil {
+				t.Fatal("browser fixture grant removal did not deny real authorization")
+			}
+			_, err = fmt.Fprintln(in, "grant_disabled")
+			must(t, err)
 		case "PORTICO_BROWSER_REVOKE":
 			must(t, a.f.f.s.Update(ctx, a.f.f.actor, func(tx *Tx) error { return tx.Disable("device", a.f.f.device.ID) }))
 			revoked = true

@@ -144,6 +144,8 @@ func TestDashboardInventoryRejectsHostileRequestsAndLiveRevocation(t *testing.T)
 		`{"Section":"users","Limit":0}`, `{"Section":"users","Limit":51}`, `{"Section":"users","Limit":-1}`,
 		`{"Section":"admin_factors","Limit":2}`, `{"Section":"users; DROP TABLE users","Limit":2}`,
 		`{"Section":"users","Limit":2,"IncludeSecrets":true}`, `{"Section":"users","Limit":2,"section":"enrollments"}`,
+		`{"Section":"users","Limit":2,"Profile":"device"}`, `{"Section":"certificates","Limit":2,"Profile":"administrator"}`,
+		`{"Section":"certificates","Limit":2,"Profile":"device' OR 1=1 --"}`,
 		`{"Section":"users","Limit":2,"After":"' OR 1=1 --","PolicyRevision":1}`,
 		`{"Section":"users","Limit":2,"After":"` + NewID() + `"}`, `{"Section":"users","Limit":2,"PolicyRevision":-1}`,
 		`null`, valid + `{}`,

@@ -14,30 +14,9 @@ type peer struct {
 }
 
 func (t *Tx) peer(trust *pki.Trust, der []byte, pending bool) (peer, error) {
-	var v peer
-	if e := t.trustBound(trust); e != nil {
-		return v, e
-	}
-	var principal string
-	e := t.tx.QueryRowContext(t.ctx, `SELECT coalesce(c.device_id,c.connector_id),c.id,e.id,e.state FROM certificates c JOIN enrollments e ON e.certificate_id=c.id WHERE c.leaf_sha256=? AND c.issuer_id=? AND c.profile=? AND c.revoked=0 AND c.not_before<=? AND c.not_after>? AND e.state IN ('issued','active')`, pki.Hash(der), trust.IssuerID(), string(trust.Profile()), t.now.UnixNano(), t.now.UnixNano()).Scan(&principal, &v.certificateID, &v.enrollmentID, &v.state)
-	if e != nil || (!pending && v.state != "active") {
-		return v, t.fail(ErrDenied)
-	}
-	v.credential, e = trust.Verify(der, principal, t.now)
-	if e != nil {
-		return v, t.fail(ErrDenied)
-	}
-	if e = t.enrollmentAuthority(trust.IssuerID(), principal, trust.Profile(), v.credential.NotAfter); e != nil {
-		return v, e
-	}
-	if v.state == "issued" {
-		enrollment, e := t.enrollment(v.enrollmentID)
-		if e != nil {
-			return v, e
-		}
-		if e := t.renewalSource(enrollment); e != nil {
-			return v, e
-		}
+	v, err := t.readPolicy().peer(trust, der, pending)
+	if err != nil {
+		return v, t.fail(err)
 	}
 	return v, nil
 }

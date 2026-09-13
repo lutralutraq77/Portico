@@ -169,6 +169,13 @@ func (p *PolicyEngine) NewHTTPServer(c PolicyHTTPConfig) (*PolicyHTTPServer, err
 				return
 			}
 			result, e = p.store.DashboardInventory(r.Context(), conn, c.AdministratorTrust, request)
+		case c.Profile == pki.Administrator && r.URL.Path == "/api/v1/admin/dashboard/access":
+			var request AccessInspectionRequest
+			if wire.Decode(body, &request) != nil {
+				deny()
+				return
+			}
+			result, e = p.InspectAccess(r.Context(), conn, c.AdministratorTrust, request)
 		case c.Profile == pki.Administrator && r.URL.Path == "/api/v1/admin/policy/preview":
 			var request PolicyDraft
 			if wire.Decode(body, &request) != nil {
