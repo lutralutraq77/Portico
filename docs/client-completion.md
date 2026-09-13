@@ -1,5 +1,7 @@
 # Client completion and daemon readiness
 
+The subsequent [final-response drain correction](fin-drain.md) records the two hosted Linux failures on 9f441b0/dcf8002 and moves the drain deadline to peer FIN. It supersedes the qualification wording below while preserving this change's original evidence.
+
 Two independently reproduced races are corrected. Full hosted qualification of this change remains pending. Phases 6 and 7 are not complete.
 
 ## Final client read

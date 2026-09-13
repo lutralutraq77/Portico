@@ -28,7 +28,7 @@ type payloadConn struct {
 	writeMu                               sync.Mutex
 	mu                                    sync.Mutex
 	writeClosed, readClosed, acknowledged bool
-	ack, ackSent, done                    chan struct{}
+	ack, ackSent, done, fin               chan struct{}
 	ackNeeded                             chan struct{}
 	ackAfterOwn                           bool
 	forwarded                             chan struct{}
@@ -70,7 +70,7 @@ func newServerPayload(parent context.Context, inner, raw net.Conn) (*payloadConn
 func startPayload(parent context.Context, inner, raw net.Conn, ackAfterOwn bool, forwarded <-chan struct{}) *payloadConn {
 	ctx, cancel := context.WithCancel(parent)
 	r, w := io.Pipe()
-	c := &payloadConn{Conn: inner, raw: raw, ctx: ctx, cancel: cancel, reader: r, writer: w, ack: make(chan struct{}), ackSent: make(chan struct{}), done: make(chan struct{}), ackNeeded: make(chan struct{}, 1), ackAfterOwn: ackAfterOwn}
+	c := &payloadConn{Conn: inner, raw: raw, ctx: ctx, cancel: cancel, reader: r, writer: w, ack: make(chan struct{}), ackSent: make(chan struct{}), done: make(chan struct{}), fin: make(chan struct{}), ackNeeded: make(chan struct{}, 1), ackAfterOwn: ackAfterOwn}
 	stop := context.AfterFunc(ctx, func() { _ = c.Close() })
 	var workers sync.WaitGroup
 	workers.Add(2)
@@ -241,6 +241,7 @@ func (c *payloadConn) receive() {
 			}
 			c.mu.Lock()
 			c.readClosed = true
+			close(c.fin)
 			c.mu.Unlock()
 			_ = c.writer.Close()
 			c.ackNeeded <- struct{}{}

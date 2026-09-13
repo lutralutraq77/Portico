@@ -307,7 +307,7 @@ func TestWorkloadGuestConfiguredClientCommand(t *testing.T) {
 		})
 	}
 	for _, consume := range []bool{true, false} {
-		name := "final_response_after_input_eof_and_carrier_close"
+		name := "final_response_after_input_eof_before_completion"
 		if !consume {
 			name = "final_response_drain_deadline"
 		}
@@ -327,7 +327,15 @@ func TestWorkloadGuestConfiguredClientCommand(t *testing.T) {
 			must(t, e)
 			must(t, p.input.Close())
 			sessions++
-			closed(t) // Peer FIN/ACK and closure receipt while stdout remains unread.
+			// The destination has produced its final response and closed. The
+			// client still owns an unread final chunk larger than stdout's
+			// capacity; its final ACK must wait for successful local delivery.
+			carrierEventually(t, func() bool { return v.closed.Load() == sessions })
+			var receipts int64
+			must(t, v.carrier.policy.device.f.s.db.QueryRow("SELECT count(*) FROM session_closure_receipts").Scan(&receipts))
+			if receipts != sessions-1 {
+				t.Fatal("connector completion preceded local final-response delivery")
+			}
 			select {
 			case <-p.done:
 				t.Fatalf("client abandoned buffered final response: %v %q", p.err, p.logs.String())
@@ -340,6 +348,7 @@ func TestWorkloadGuestConfiguredClientCommand(t *testing.T) {
 					t.Fatal("final response drain ignored its five-second deadline")
 				}
 				p.ended(t, false, "Client resource connection failed.\n")
+				closed(t)
 				return
 			}
 			must(t, p.output.SetReadDeadline(time.Now().Add(5*time.Second)))
@@ -349,7 +358,8 @@ func TestWorkloadGuestConfiguredClientCommand(t *testing.T) {
 				t.Fatalf("final response bytes=%d want=%d", len(got), responseSize)
 			}
 			p.ended(t, true, "")
-			t.Logf("request=%d response=%d pipe_capacity=%d; receipt before application drain, exact bytes and successful exit", len(request), responseSize, pipeSize)
+			closed(t)
+			t.Logf("request=%d response=%d pipe_capacity=%d; completion after application drain, exact bytes and successful exit", len(request), responseSize, pipeSize)
 		})
 	}
 	for _, signal := range []syscall.Signal{syscall.SIGTERM, syscall.SIGKILL} {
