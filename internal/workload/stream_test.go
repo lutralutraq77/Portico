@@ -54,7 +54,7 @@ func (c *delayedACKConn) Close() error {
 func TestFinalAcknowledgmentSurvivesConnectorClosure(t *testing.T) {
 	a, b := net.Pipe()
 	gate := &delayedACKConn{Conn: b, reached: make(chan struct{}), release: make(chan struct{}), closed: make(chan struct{}), done: make(chan struct{})}
-	client := newClientPayload(context.Background(), a, a)
+	client := startPayload(context.Background(), a, a, true, nil)
 	connector := newPayload(context.Background(), gate, gate)
 	var release sync.Once
 	unblock := func() { release.Do(func() { close(gate.release) }) }
@@ -172,7 +172,7 @@ func TestConnectorAcknowledgmentRequiresSuccessfulForwarding(t *testing.T) {
 	for _, success := range []bool{false, true} {
 		t.Run(map[bool]string{false: "forwarding_failed", true: "forwarding_finished"}[success], func(t *testing.T) {
 			a, b := net.Pipe()
-			client := newClientPayload(context.Background(), a, a)
+			client := startPayload(context.Background(), a, a, true, nil)
 			connector, acknowledge := newServerPayload(context.Background(), b, b)
 			t.Cleanup(func() {
 				_ = client.Close()
@@ -210,10 +210,12 @@ func TestConnectorAcknowledgmentRequiresSuccessfulForwarding(t *testing.T) {
 	}
 }
 
+// Framing-only fixtures have no local copy workers to join. Completion tests
+// use newClientPayload and exercise its additional application handoff gate.
 func payloadPair(t *testing.T) (*payloadConn, *payloadConn) {
 	t.Helper()
 	a, b := net.Pipe()
-	left := newClientPayload(context.Background(), a, a)
+	left := startPayload(context.Background(), a, a, true, nil)
 	right := newPayload(context.Background(), b, b)
 	t.Cleanup(func() {
 		_ = left.Close()

@@ -20,7 +20,7 @@ The project has fifteen phases, numbered 0 through 14. The active objective is t
 | 13: updates | Development build/SBOM provenance exists | Authenticated releases, TUF/signing custodians, metadata expiry/rollback protection, compatibility/staged install/recovery drills |
 | 14: audit/hardening | Seven complete executable scenarios: AUDIT-01, CONN-01, CONN-03, CONN-04, PROTO-03, PROTO-04 and PROTO-05; other component tests provide partial evidence | All 91 full acceptance scenarios, manual threat-model/custom-code review, independent review and resolution of all critical/high findings |
 
-The current [forwarding-completion changes](final-ack-investigation.md) fix demonstrated acknowledgment ordering and premature-completion regressions. Native race/static checks passed; the latest local Arch run passed 18 of 21 cases but failed three before destination access with a connector health rejection. Current-source hosted qualification is pending, and earlier hosted results must not be relabeled as its evidence.
+The current [client completion and daemon readiness changes](client-completion.md) fix independently reproduced final-read and startup races. Native workload/client/agent race checks passed 35 top-level tests and 121 subcases. Ten isolated Linux restart tests passed with an injected permission-setting delay. Full hosted qualification of these changes is pending. Dashboard source 592536d passed all six hosted workflows, including 241 top-level Linux tests, 1,146 subcases, four installed-service cases and 21 HTTPS cases; those earlier results do not qualify the new code. Main 159e1c0's live-transfer and HTTPS failures remain recorded and require source-specific resolution.
 
 ## Evidence rules
 

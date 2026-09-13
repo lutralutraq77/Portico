@@ -1,0 +1,93 @@
+{
+  "source": "592536d3636871a19db26ec19e18efd7b58a4110",
+  "tested_merge": "ba815a6c422a9671520138abf55f774c9e8ed48a",
+  "tree": "8594ede55b696b2ad26695fefeeb14c4bd05659e",
+  "overall": "passed",
+  "workflows": [
+    {
+      "name": "Dependency review",
+      "conclusion": "success",
+      "id": 34757890719,
+      "url": "https://github.com/lutralutraq77/Portico/actions/runs/34757890719"
+    },
+    {
+      "name": "Arch development package",
+      "conclusion": "success",
+      "id": 34757890688,
+      "url": "https://github.com/lutralutraq77/Portico/actions/runs/34757890688"
+    },
+    {
+      "name": "CodeQL",
+      "conclusion": "success",
+      "id": 34757890749,
+      "url": "https://github.com/lutralutraq77/Portico/actions/runs/34757890749"
+    },
+    {
+      "name": "Arch user service runtime",
+      "conclusion": "success",
+      "id": 34757890685,
+      "url": "https://github.com/lutralutraq77/Portico/actions/runs/34757890685"
+    },
+    {
+      "name": "Repository quality",
+      "conclusion": "success",
+      "id": 34757890676,
+      "url": "https://github.com/lutralutraq77/Portico/actions/runs/34757890676"
+    },
+    {
+      "name": "Isolated Linux runtime",
+      "conclusion": "success",
+      "id": 34757890714,
+      "url": "https://github.com/lutralutraq77/Portico/actions/runs/34757890714"
+    }
+  ],
+  "runtime": {
+    "linux": {
+      "subcase_pass": 1146,
+      "top_pass": 241,
+      "skip": 4,
+      "fail": 0
+    },
+    "arch": {
+      "fail": 0,
+      "https_cases_pass": 21,
+      "installed_cases_pass": 4,
+      "https_seconds": 42.88,
+      "skip": 0
+    }
+  },
+  "artifacts": [
+    {
+      "sha256": "9adab9cd42a84eca1742b4755c1e86105aa57bd4cb98ba7fcfdb4f1761066ee9",
+      "path": "592-service.zip"
+    },
+    {
+      "sha256": "1dab3aa0cfd66a25ff5c0834953016e21b97c71f7f7b87567d6dbee178003f56",
+      "path": "592-linux.zip"
+    },
+    {
+      "sha256": "7c4ae6672823623f88a3eec3776459719d3ad494a8de8afef91eed3855a496c6",
+      "path": "592-service-log.log"
+    },
+    {
+      "sha256": "d8caed8086e3600f43f5be1fc3d173b2ca56dc95ef91f69433435caff236fa0a",
+      "path": "592-linux-log.log"
+    },
+    {
+      "sha256": "471ba3c8e67ad4c1c899f403413a23a87aa87ebdcc85429bfb8791e693a1f984",
+      "path": "592-service-environment.json"
+    },
+    {
+      "sha256": "79d4f032ec0534ab8e7ae60c4e6f541481debb400d4a5e73c5ff3907c9e11f2a",
+      "path": "592-linux-environment.json"
+    },
+    {
+      "sha256": "05afb04103066a655098a759a2d96699a360b3eeaa66c4fa2ab780b415705090",
+      "path": "dashboard-592536d-runs-current.json"
+    },
+    {
+      "sha256": "2256a01538dbe9efe2ada131a70932b7dbc27a6f9f4e77d0577765c3da81a34f",
+      "path": "592-pr5.json"
+    }
+  ]
+}

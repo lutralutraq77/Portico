@@ -31,6 +31,8 @@ type payloadConn struct {
 	ack, ackSent, done                    chan struct{}
 	ackNeeded                             chan struct{}
 	ackAfterOwn                           bool
+	forwarded                             chan struct{}
+	forwardingOnce                        sync.Once
 	once                                  sync.Once
 }
 
@@ -42,7 +44,19 @@ func newPayload(parent context.Context, inner, raw net.Conn) *payloadConn {
 // client before the client acknowledges the connector's FIN; otherwise closing
 // an asynchronous carrier can discard an ACK still queued in the other pump.
 func newClientPayload(parent context.Context, inner, raw net.Conn) *payloadConn {
-	return startPayload(parent, inner, raw, true, nil)
+	forwarded := make(chan struct{})
+	c := startPayload(parent, inner, raw, true, forwarded)
+	c.forwarded = forwarded
+	return c
+}
+
+// The caller joins its local copy workers before allowing graceful remote
+// closure. Reading a frame from the pipe does not mean Conn.Read has returned
+// or that its caller has delivered the final chunk to the local output.
+func (c *payloadConn) forwardingFinished() {
+	if c.forwarded != nil {
+		c.forwardingOnce.Do(func() { close(c.forwarded) })
+	}
 }
 
 // The connector may acknowledge consumed input only after its forwarding

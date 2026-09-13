@@ -224,45 +224,64 @@ func TestGuestAgentDaemonRestartsLocked(t *testing.T) {
 	config := []byte(`{"version":2,"enrollment_config_file":"/fixture/not-provisioned.json"}`)
 	testfixture.Must(t, os.WriteFile(configuration, config, 0600))
 	for range 2 {
-		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-		cmd := exec.CommandContext(ctx, "/portico", "agent", "daemon", "--config", configuration, "--socket", path)
-		var out, stderr bytes.Buffer
-		cmd.Stdout, cmd.Stderr = &out, &stderr
-		testfixture.Must(t, cmd.Start())
-		joined := make(chan error, 1)
-		go func() { joined <- cmd.Wait() }()
-		deadline := time.Now().Add(3 * time.Second)
-		for {
-			if _, err := os.Lstat(path); err == nil {
-				break
-			}
-			if time.Now().After(deadline) {
+		func() {
+			ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+			defer cancel()
+			cmd := exec.CommandContext(ctx, "/portico", "agent", "daemon", "--config", configuration, "--socket", path)
+			var out, stderr bytes.Buffer
+			cmd.Stdout, cmd.Stderr = &out, &stderr
+			testfixture.Must(t, cmd.Start())
+			joined := make(chan error, 1)
+			go func() { joined <- cmd.Wait() }()
+			exited := false
+			defer func() {
 				cancel()
-				<-joined
-				t.Fatal("daemon startup failed")
+				if !exited {
+					<-joined
+				}
+			}()
+			// Allow cold process startup in the software-emulated guest. Each
+			// status request still uses the production RPC deadline and checks.
+			startup, finishStartup := context.WithTimeout(ctx, 10*time.Second)
+			defer finishStartup()
+			var state string
+			var err error
+			for {
+				// Bind creates the pathname before Listen applies the required
+				// 0600 mode and Serve starts handling requests. Existence alone
+				// is not readiness; retain strict client checks on every attempt.
+				state, err = Status(startup, path)
+				if err == nil {
+					break
+				}
+				select {
+				case <-joined:
+					exited = true
+					t.Fatal("daemon exited before readiness")
+				case <-startup.Done():
+					t.Fatal("daemon startup failed")
+				case <-time.After(time.Millisecond):
+				}
 			}
-			time.Sleep(time.Millisecond)
-		}
-		state, err := Status(ctx, path)
-		testfixture.Must(t, err)
-		if state != "locked" {
+			finishStartup()
+			if state != "locked" {
+				t.Fatal("restart restored unlocked state")
+			}
+			testfixture.Must(t, cmd.Process.Signal(syscall.SIGTERM))
+			err = <-joined
+			exited = true
 			cancel()
-			<-joined
-			t.Fatal("restart restored unlocked state")
-		}
-		testfixture.Must(t, cmd.Process.Signal(syscall.SIGTERM))
-		err = <-joined
-		cancel()
-		if err != nil || out.String() != "Local agent daemon stopped.\n" || stderr.Len() != 0 {
-			t.Fatalf("daemon shutdown: %v %q %q", err, out.String(), stderr.String())
-		}
-		if _, err := os.Lstat(path); !os.IsNotExist(err) {
-			t.Fatal("daemon retained socket")
-		}
-		got, err := os.ReadFile(configuration)
-		testfixture.Must(t, err)
-		if !bytes.Equal(got, config) {
-			t.Fatal("daemon rewrote public configuration")
-		}
+			if err != nil || out.String() != "Local agent daemon stopped.\n" || stderr.Len() != 0 {
+				t.Fatalf("daemon shutdown: %v %q %q", err, out.String(), stderr.String())
+			}
+			if _, err := os.Lstat(path); !os.IsNotExist(err) {
+				t.Fatal("daemon retained socket")
+			}
+			got, err := os.ReadFile(configuration)
+			testfixture.Must(t, err)
+			if !bytes.Equal(got, config) {
+				t.Fatal("daemon rewrote public configuration")
+			}
+		}()
 	}
 }

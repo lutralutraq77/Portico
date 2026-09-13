@@ -432,6 +432,9 @@ func TestWorkloadGuestHalfCloseAndRenewal(t *testing.T) {
 	must(t, c.CloseWrite())
 	_, e := io.ReadAll(c)
 	must(t, e)
+	completion, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	must(t, c.WaitFinished(completion))
 	select {
 	case e := <-served:
 		must(t, e)

@@ -304,9 +304,15 @@ func (x *Conn) WaitWriteAcknowledged(ctx context.Context) error {
 // WaitFinished joins connector-initiated transport closure after both FIN
 // directions and our final ACK. Waiting for our own FIN ACK alone would let
 // the caller cancel a carrier while its outgoing ACK was still queued.
+// Call only after joining successful local input and output forwarding. This
+// releases the final ACK so the connector cannot close during the last Read.
 // Completion records consumed bytes only; it cannot renew or revive authority.
 func (x *Conn) WaitFinished(ctx context.Context) error {
-	if ctx == nil || x.payload == nil || x.done == nil || x.payload.waitAcknowledged(ctx) != nil {
+	if ctx == nil || ctx.Err() != nil || x.payload == nil || x.done == nil || !x.ReadFinished() {
+		return ErrDenied
+	}
+	x.payload.forwardingFinished()
+	if x.payload.waitAcknowledged(ctx) != nil {
 		return ErrDenied
 	}
 	select {

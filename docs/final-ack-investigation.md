@@ -1,5 +1,7 @@
 # Final acknowledgment and forwarding completion
 
+The subsequent [client completion and daemon readiness correction](client-completion.md) adds a client-side application handoff barrier after reproducing graceful connector closure during the final read. It supersedes the current-source qualification wording below; all earlier results remain historical evidence.
+
 The shutdown changes have passed native regression and static checks. Full current-source qualification is pending. The latest local Arch run passed 18 of 21 cases, then failed three positive controls before any destination connection. The [current evidence](phase-6-final-ack-evidence.json) records the exact source, successful checks and failed guest run. Phases 6 and 7 remain incomplete.
 
 Two problems were identified. First, the connector could close its asynchronous carrier while its acknowledgment of the client's FIN was still queued. The client now acknowledges the connector FIN only after receiving acknowledgment of its own FIN. `Conn.WaitFinished` joins connector-initiated closure and requires both validated FIN directions and the client's outgoing acknowledgment.
