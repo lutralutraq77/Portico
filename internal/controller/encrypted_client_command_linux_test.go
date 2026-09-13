@@ -372,7 +372,35 @@ func testEncryptedClientEnrollmentAndRevocation(t *testing.T, prompt, agentResou
 	transfer := func(t *testing.T) *guestApplication {
 		t.Helper()
 		beforeConnections, beforeBytes := v.connections.Load(), v.received.Load()
-		bindOnCatalog.Store(true)
+		if agentResource {
+			// Unlock has already completed for agent calls. An old Waiting=1
+			// snapshot can be at the end of the connector client's three-second
+			// open attempt, even though the relay allows ten seconds to pair.
+			// Observe a new admission before starting this positive subprocess.
+			// This fixture wait changes no client open or authority deadline.
+			beforeAdmission := v.carrier.admitted.Load()
+			startConnectorOnce.Do(func() { close(startConnector) })
+			deadline := time.NewTimer(8 * time.Second)
+			tick := time.NewTicker(5 * time.Millisecond)
+			defer deadline.Stop()
+			defer tick.Stop()
+			for v.carrier.admitted.Load() <= beforeAdmission || v.carrier.relay.Stats().Waiting != 1 {
+				select {
+				case err := <-connectorDone:
+					connectorDone <- err // Preserve the parent's cleanup join.
+					t.Fatalf("connector ended before fresh transfer binding: %v", err)
+				case <-deadline.C:
+					t.Fatal("connector did not establish a fresh transfer binding")
+				case <-tick.C:
+				}
+			}
+			bindingObserved.Store(time.Now().UnixNano())
+			bindOnCatalog.Store(false)
+		} else {
+			// The direct client still needs its binding after the production
+			// password KDF, at its first controller request.
+			bindOnCatalog.Store(true)
+		}
 		p := startResource(t, v.resource.ID, v.resource.Revision)
 		payload := []byte{'e', 'n', 'c', 'r', 'y', 'p', 't', 'e', 'd', 0, 0xff, '\n'}
 		must(t, p.input.SetWriteDeadline(time.Now().Add(90*time.Second)))

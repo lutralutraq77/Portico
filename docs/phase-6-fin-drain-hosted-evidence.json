@@ -1,0 +1,233 @@
+{
+  "schema": 1,
+  "scope": "Hosted FIN-drain and audit/security sources; both overall runs failed",
+  "sources": [
+    {
+      "artifacts": [
+        {
+          "sha256": "436e2b7a7434595aa03894a87655a1cff1a90dd1b577573874055e474358cc40",
+          "path": "E:/Portico/work/reports/final-ack-hosted/c703ddc-linux.zip"
+        },
+        {
+          "sha256": "ee6ec044f44fd377834ce97704dc0eddfb7a3fccd90a458f72777e5e676ffcdc",
+          "path": "E:/Portico/work/reports/final-ack-hosted/c703ddc-linux-runtime.log"
+        },
+        {
+          "sha256": "95a79f59398325048b043ce8d04afd6fb9e83e4243e8a37b0e5b84b6e4c9b120",
+          "path": "E:/Portico/work/reports/final-ack-hosted/c703ddc-linux-runtime-environment.json"
+        }
+      ],
+      "workflows": [
+        {
+          "id": 34761304792,
+          "name": "Arch user service runtime",
+          "status": "completed",
+          "conclusion": "failure",
+          "html_url": "https://github.com/lutralutraq77/Portico/actions/runs/34761304792"
+        },
+        {
+          "id": 34761304698,
+          "name": "Repository quality",
+          "status": "completed",
+          "conclusion": "success",
+          "html_url": "https://github.com/lutralutraq77/Portico/actions/runs/34761304698"
+        },
+        {
+          "id": 34761304765,
+          "name": "Isolated Linux runtime",
+          "status": "completed",
+          "conclusion": "failure",
+          "html_url": "https://github.com/lutralutraq77/Portico/actions/runs/34761304765"
+        },
+        {
+          "id": 34761304737,
+          "name": "CodeQL",
+          "status": "completed",
+          "conclusion": "success",
+          "html_url": "https://github.com/lutralutraq77/Portico/actions/runs/34761304737"
+        },
+        {
+          "id": 34761304700,
+          "name": "Dependency review",
+          "status": "completed",
+          "conclusion": "success",
+          "html_url": "https://github.com/lutralutraq77/Portico/actions/runs/34761304700"
+        },
+        {
+          "id": 34761304702,
+          "name": "Arch development package",
+          "status": "completed",
+          "conclusion": "success",
+          "html_url": "https://github.com/lutralutraq77/Portico/actions/runs/34761304702"
+        }
+      ],
+      "tree": "f9b2d77be153c1b908923117291553abc058d5cd",
+      "merge": "5e121f892d04352303f180e18f6a14e7658b2220",
+      "linux": {
+        "skip": 4,
+        "sub_pass": 1107,
+        "failure": "TestWorkloadGuestDaemonEnrollmentAndRevocation/transfer_then_revoke_enrollment",
+        "fin_drain": "All eleven configured-client subcases passed, including exact large final response, blocked-output deadline, signals and revocation.",
+        "sub_fail": 1,
+        "observed": "New transfer after explicit re-unlock failed before a second destination connection or session authorization. Earlier transfer/manual lock passed; connector health returned nil.",
+        "top_fail": 1,
+        "top_pass": 228
+      },
+      "name": "c703ddc",
+      "head": "c703ddc86b2d46f11d0e2d7e324c063a53b8d2bb"
+    },
+    {
+      "artifacts": [
+        {
+          "sha256": "353fa8d038ce71ebfe79902f3e9342813be0f745c24d4057f73437d9871b2ad0",
+          "path": "E:/Portico/work/reports/final-ack-hosted/b1be43a-linux.zip"
+        },
+        {
+          "sha256": "527fa8c411d85bab1573cdbbe3f66fdfab49e0536f336038d91855781de717dc",
+          "path": "E:/Portico/work/reports/final-ack-hosted/b1be43a-linux-runtime.log"
+        },
+        {
+          "sha256": "b2f673791dba8d8d7f07b31b161b8b6aa1cd5391d864a4259285c315cfeb861d",
+          "path": "E:/Portico/work/reports/final-ack-hosted/b1be43a-linux-runtime-environment.json"
+        }
+      ],
+      "workflows": [
+        {
+          "id": 34761356835,
+          "name": "Arch user service runtime",
+          "status": "completed",
+          "conclusion": "success",
+          "html_url": "https://github.com/lutralutraq77/Portico/actions/runs/34761356835"
+        },
+        {
+          "id": 34761356899,
+          "name": "Repository quality",
+          "status": "completed",
+          "conclusion": "success",
+          "html_url": "https://github.com/lutralutraq77/Portico/actions/runs/34761356899"
+        },
+        {
+          "id": 34761356827,
+          "name": "Isolated Linux runtime",
+          "status": "completed",
+          "conclusion": "failure",
+          "html_url": "https://github.com/lutralutraq77/Portico/actions/runs/34761356827"
+        },
+        {
+          "id": 34761356844,
+          "name": "Arch development package",
+          "status": "completed",
+          "conclusion": "success",
+          "html_url": "https://github.com/lutralutraq77/Portico/actions/runs/34761356844"
+        },
+        {
+          "id": 34761356847,
+          "name": "CodeQL",
+          "status": "completed",
+          "conclusion": "success",
+          "html_url": "https://github.com/lutralutraq77/Portico/actions/runs/34761356847"
+        },
+        {
+          "id": 34761356865,
+          "name": "Dependency review",
+          "status": "completed",
+          "conclusion": "success",
+          "html_url": "https://github.com/lutralutraq77/Portico/actions/runs/34761356865"
+        }
+      ],
+      "tree": "e85cc7dfd61cdc75bca69783a0b830390fabdc7e",
+      "merge": "b9f9a74278fd70abf7f3bccd1abdf9d621f12c1f",
+      "linux": {
+        "skip": 4,
+        "sub_pass": 1148,
+        "failure": "TestWorkloadGuestDaemonEnrollmentAndRevocation/transfer_then_revoke_enrollment",
+        "fin_drain": "All eleven configured-client subcases passed, including exact large final response, blocked-output deadline, signals and revocation.",
+        "sub_fail": 1,
+        "observed": "New transfer after explicit re-unlock failed before a second destination connection or session authorization. Earlier transfer/manual lock passed; connector health returned nil.",
+        "top_fail": 1,
+        "top_pass": 246
+      },
+      "name": "b1be43a",
+      "head": "b1be43aad5509313eb50b22bff4d269955c897c0"
+    }
+  ],
+  "diagnostics": [
+    {
+      "name": "application-https-c703-diagnostic",
+      "sha256": "24f31a334dec24dcdee504ba2c1cf0d29a585d36aa2d67a6216bebd6185beca2",
+      "path": "E:/Portico/work/reports/application-https-c703-diagnostic/runtime.log",
+      "result": "kernel IO-APIC timer panic before PID1"
+    },
+    {
+      "name": "application-https-c703-diagnostic-reboot",
+      "sha256": "5f84110d42086c4420dc4cf14a4ca3e0fd8caa0bf4821fa8e409bc84d3c58af9",
+      "path": "E:/Portico/work/reports/application-https-c703-diagnostic-reboot/runtime.log",
+      "result": "curl version command killed at five-second fixture deadline before issuer or transfers"
+    },
+    {
+      "sub_pass": 17,
+      "top_pass": 1,
+      "result": "instrumented focused test passed; hosted failure not reproduced",
+      "seconds": 233.1,
+      "name": "daemon re-unlock",
+      "artifacts": [
+        {
+          "sha256": "8343769c1f6f359c93f051ad3a1ef9d49d4e69e9f5671412c9fd9bba93487f0b",
+          "path": "E:/Portico/work/reports/daemon-reunlock-diagnostic/source-manifest.json"
+        },
+        {
+          "sha256": "31608ed9958b15d01c5dfcee2d1e5e7a5660c595ab10adfe153418220fc1ce43",
+          "path": "E:/Portico/work/reports/daemon-reunlock-diagnostic/runtime/runtime.log"
+        },
+        {
+          "sha256": "c4ad74ff4a048ec0ece62ff5bcaa0b29ee61d85e6a9545ae78758182e772412f",
+          "path": "E:/Portico/work/reports/daemon-reunlock-diagnostic/runtime/environment.json"
+        }
+      ]
+    }
+  ],
+  "main_service": {
+    "installed_pass": 4,
+    "failure": "TestArchGuestApplicationHTTPS/positive_control_repeat_09",
+    "https_pass": 20,
+    "result": "failed",
+    "https_fail": 1,
+    "observed": "Destination/HTTP/authenticated counts 1/1/1; launcher failed. Two later positive controls passed. No root cause established.",
+    "artifacts": [
+      {
+        "sha256": "c4c59efd8959380a86e127ac56fd5e16996e17a705acdd19f59e72a361612872",
+        "path": "E:/Portico/work/reports/final-ack-hosted/c703ddc-service.zip"
+      },
+      {
+        "sha256": "df8956e29eb6178dc15bd6aab7bec8e9dabbd65d6f5dc7416b619cfaff72985a",
+        "path": "E:/Portico/work/reports/final-ack-hosted/c703ddc-service-runtime.log"
+      },
+      {
+        "sha256": "7ab938b8c259346e6dedd4999e55361889ce4444177bb6b334ffb72eb0f707f2",
+        "path": "E:/Portico/work/reports/final-ack-hosted/c703ddc-service-environment.json"
+      }
+    ]
+  },
+  "dashboard_service": {
+    "https_seconds": 42.72,
+    "https_fail": 0,
+    "https_pass": 21,
+    "result": "passed",
+    "installed_seconds": 51.74,
+    "installed_pass": 4,
+    "artifacts": [
+      {
+        "sha256": "4d979e1d1f3eec59729412dfa65f349de2b03f3e204f9973720e9ea2eacb77b1",
+        "path": "E:/Portico/work/reports/final-ack-hosted/b1be43a-service.zip"
+      },
+      {
+        "sha256": "5f7e4b1af1a2b74578d9b4711b8cc2afcd4ac341454d95826dc3ef114c65e7e7",
+        "path": "E:/Portico/work/reports/final-ack-hosted/b1be43a-service-runtime.log"
+      },
+      {
+        "sha256": "2867cc48580122efddead4c96a6ebd6bfacdb21264df88c3644caf7c11f98c57",
+        "path": "E:/Portico/work/reports/final-ack-hosted/b1be43a-service-environment.json"
+      }
+    ]
+  }
+}
