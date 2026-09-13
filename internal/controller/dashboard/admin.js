@@ -10,6 +10,8 @@
     certificates: { title: "Certificates", description: "Issued identity fingerprints, expiry and revocation state.", columns: [["Certificate", "ID", "Fingerprint"], ["Principal / profile", "PrincipalName", "Profile"], ["Valid from", "NotBefore"], ["Expires", "NotAfter"], ["Revocation", "Revoked"], ["Issuer", "IssuerID"]], fields: { ID: "string", IssuerID: "string", PrincipalID: "string", PrincipalName: "string", Fingerprint: "string", Profile: "string", NotBefore: "date", NotAfter: "date", Revoked: "boolean" } },
     grants: { title: "Device grants", description: "Stored grants for exact device and resource revisions. Expired or disabled rules do not grant access.", columns: [["User / device", "UserName", "DeviceName"], ["Resource", "ResourceName", "ResourceID"], ["Revision", "Revision"], ["From", "From"], ["Until", "Until"], ["Configuration", "Enabled"]], fields: { ID: "string", UserID: "string", UserName: "string", DeviceID: "string", DeviceName: "string", ResourceID: "string", ResourceName: "string", Revision: "number", Enabled: "boolean", From: "date", Until: "date" } },
     hosting: { title: "Connector hosting", description: "Stored hosting permission for exact connector and resource revisions. Hosting alone gives no device access.", columns: [["Connector", "ConnectorName", "ConnectorID"], ["Resource", "ResourceName", "ResourceID"], ["Revision", "Revision"], ["From", "From"], ["Until", "Until"], ["Configuration", "Enabled"]], fields: { ID: "string", ConnectorID: "string", ConnectorName: "string", ResourceID: "string", ResourceName: "string", Revision: "number", Enabled: "boolean", From: "date", Until: "date" } },
+    audit: { title: "Audit", description: "Recorded changes in sequence order, with actor and target identifiers.", columns: [["Event", "Action", "ID"], ["Occurred", "OccurredAt"], ["Actor", "ActorID"], ["Target", "TargetID"], ["Sequence", "Sequence"], ["Event hash", "Hash"]], fields: { ID: "string", ActorID: "string", CorrelationID: "string", Action: "string", TargetID: "string", PreviousHash: "string", Hash: "string", Sequence: "number", Generation: "number", OccurredAt: "date" }, scopeTitle: "Read the recorded history.", scopeDescription: "Events are shown oldest first. Viewing a page does not export or acknowledge the audit log. An independently retained checkpoint is needed to detect a rewritten history.", loaded: "Audit records loaded in sequence order." },
+    security: { title: "Security", description: "The administrator identity used for this connection and its recorded factor status.", columns: [["Administrator", "UserName", "ID"], ["Device", "DeviceName", "DeviceID"], ["Certificate fingerprint", "CertificateFingerprint"], ["Certificate expires", "CertificateExpiresAt"], ["Enabled factors", "EnabledFactors"], ["Tested enabled factors", "TestedEnabledFactors"], ["Initial registration deadline", "BootstrapUntil"]], fields: { ID: "string", UserName: "string", DeviceID: "string", DeviceName: "string", CertificateFingerprint: "string", CertificateExpiresAt: "date", BootstrapUntil: "date", EnabledFactors: "number", TestedEnabledFactors: "number" }, scopeTitle: "Factor records describe configuration.", scopeDescription: "Counts do not prove separate physical keys or recovery readiness. A registration deadline does not grant permission to add a factor.", loaded: "Current administrator metadata loaded." },
     access: { title: "Inspect access", description: "Check the current policy for an exact pair of identities and a resource revision." }
   };
   const byID = (id) => document.getElementById(id);
@@ -60,12 +62,17 @@
         (requestedRevision && data.PolicyRevision !== requestedRevision) || typeof data.ObservedAt !== "string" || !Number.isFinite(Date.parse(data.ObservedAt)) ||
         !Array.isArray(data.Items) || data.Items.length > 50 || typeof data.Next !== "string" || data.Next.length > 64) return false;
     const fields = sections[requestedSection].fields;
-    return data.Items.every((item) => item && Object.keys(item).length === Object.keys(fields).length && Object.entries(fields).every(([key, type]) => {
+    const validItems = data.Items.every((item) => item && Object.keys(item).length === Object.keys(fields).length && Object.entries(fields).every(([key, type]) => {
       const value = item[key];
       if (type === "date") return typeof value === "string" && value.length < 64 && Number.isFinite(Date.parse(value));
       if (type === "number") return Number.isSafeInteger(value) && value >= 0;
       return typeof value === type && (type !== "string" || value.length <= 4096);
     }));
+    if (!validItems) return false;
+    const hash = (value) => /^[0-9a-f]{64}$/.test(value);
+    if (requestedSection === "security") return data.Items.length === 1 && data.Next === "" && data.Items.every((item) => hash(item.CertificateFingerprint) && item.TestedEnabledFactors <= item.EnabledFactors && Date.parse(item.CertificateExpiresAt) > Date.parse(data.ObservedAt));
+    if (requestedSection === "audit") return (!data.Next || data.Next === data.Items.at(-1)?.ID) && data.Items.every((item, index) => item.Sequence > 0 && item.Generation > 0 && hash(item.Hash) && (item.Sequence === 1 ? item.PreviousHash === "" : hash(item.PreviousHash)) && (index === 0 || (item.Sequence === data.Items[index-1].Sequence + 1 && item.PreviousHash === data.Items[index-1].Hash)));
+    return true;
   }
   function display(item, key) {
     if (key === "Enabled") return item[key] ? "Enabled" : "Disabled";
@@ -100,7 +107,7 @@
     byID("page-summary").textContent = `${data.Items.length} ${data.Items.length === 1 ? "record" : "records"} on this page`;
     byID("revision").textContent = `Policy revision ${data.PolicyRevision}`;
     byID("page-number").textContent = `Page ${pageIndex + 1}`;
-    message(data.Items.length ? `${view.title} loaded. Configuration does not establish effective access.` : `No ${section} to display.`);
+    message(data.Items.length ? (view.loaded || `${view.title} loaded. Configuration does not establish effective access.`) : `No ${section} to display.`);
   }
   async function load() {
     if (section === "access") return loadAccess();
@@ -271,9 +278,11 @@
       if (link.dataset.view === section) link.setAttribute("aria-current", "page");
       else link.removeAttribute("aria-current");
     }
-    document.querySelector(".pagination").hidden = section === "access";
+    document.querySelector(".pagination").hidden = section === "access" || section === "security";
     byID("page-title").textContent = sections[section].title;
     byID("page-description").textContent = sections[section].description;
+    byID("scope-title").textContent = sections[section].scopeTitle || "Configuration is only part of access.";
+    byID("scope-description").textContent = sections[section].scopeDescription || "An enabled record still needs current grants, hosting permission, a valid identity and an online policy decision.";
     document.title = `Portico · ${sections[section].title}`;
     reset(); void load();
   }

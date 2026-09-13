@@ -24,6 +24,8 @@
       <a href="#connectors" data-section="connectors"><span aria-hidden="true">05</span>Connectors</a>
       <a href="#enrollments" data-section="enrollments"><span aria-hidden="true">06</span>Enrollments</a>
       <a href="#certificates" data-section="certificates"><span aria-hidden="true">07</span>Certificates</a>
+      <a href="#audit" data-section="audit"><span aria-hidden="true">08</span>Audit</a>
+      <a href="#security" data-section="security"><span aria-hidden="true">09</span>Security</a>
       <p class="nav-foot">Access begins with an explicit grant.</p>
     </nav>
     <main id="content" tabindex="-1">
@@ -31,7 +33,7 @@
         <div><p class="eyebrow">Access inventory</p><h1 id="page-title">Users</h1><p id="page-description">People registered in this deployment.</p></div>
         <button id="refresh" type="button">Refresh</button>
       </div>
-      <aside class="notice" aria-label="Inventory scope"><strong>Configuration is only part of access.</strong><p>An enabled record still needs current grants, hosting permission, a valid identity and an online policy decision.</p></aside>
+      <aside class="notice" aria-label="Inventory scope"><strong id="scope-title">Configuration is only part of access.</strong><p id="scope-description">An enabled record still needs current grants, hosting permission, a valid identity and an online policy decision.</p></aside>
       <div id="access-views" class="access-views" role="navigation" aria-label="Access views" hidden><a href="#access" data-view="access">Inspect access</a><a href="#grants" data-view="grants">Device grants</a><a href="#hosting" data-view="hosting">Connector hosting</a></div>
       <section class="inventory" aria-labelledby="page-title" aria-busy="true">
         <div class="inventory-heading"><p id="page-summary">Loading inventory…</p><p id="revision"></p></div>

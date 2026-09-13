@@ -52,7 +52,7 @@ h1 { font-size: clamp(32px, 4vw, 44px); line-height: 1.16; letter-spacing: -.035
 table { width: 100%; border-collapse: collapse; text-align: left; font-size: 14px; }
 caption { text-align: left; padding: 12px 24px; color: var(--muted); font-size: 12px; }
 th, td { padding: 18px 24px; border-top: 1px solid var(--outline); vertical-align: top; overflow-wrap: anywhere; max-width: 320px; }
-th { font-weight: 600; color: var(--muted); font-size: 12px; background: var(--surface-high); }
+th { font-weight: 600; color: var(--muted); font-size: 12px; background: var(--surface-high); overflow-wrap: normal; }
 .record-title { font-weight: 650; }
 .record-id { display: block; font: 11px/1.6 ui-monospace, "Cascadia Code", monospace; color: var(--muted); margin-top: 5px; }
 .badge { display: inline-block; border-radius: 8px; padding: 3px 9px; font-size: 12px; background: var(--surface-high); white-space: nowrap; }

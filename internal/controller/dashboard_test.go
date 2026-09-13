@@ -79,7 +79,7 @@ func TestDashboardInventoryRedactsBeforeSerialization(t *testing.T) {
 	must(t, a.f.f.s.db.QueryRow("SELECT token_hash FROM enrollments WHERE id=?", op.TargetID).Scan(&tokenHash))
 	server := servePolicy(t, policyFixtureFor(t, a.f).engine, PolicyHTTPConfig{Profile: pki.Administrator, Host: "admin.portico.test", AdministratorTrust: a.trust, AdministratorVerifier: a.verifier}, a.identity)
 	before := summary(t, a.f.f.s)
-	for _, section := range []string{"users", "devices", "connectors", "resources", "enrollments", "certificates"} {
+	for _, section := range []string{"users", "devices", "connectors", "resources", "enrollments", "certificates", "audit", "security"} {
 		var raw json.RawMessage
 		server.post(t, "/api/v1/admin/dashboard/inventory", DashboardRequest{Section: section, Limit: 50}, &raw)
 		for _, forbidden := range []string{result.InvitationSecret, tokenHash, "InvitationSecret", "token_hash", "TokenHash", "CSR", "PrivateKey", "credential_json", "operation_json", "CertificateDER"} {

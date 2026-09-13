@@ -67,6 +67,66 @@ const iterator = lines[Symbol.asyncIterator]();
       assert.equal(await page.locator("thead th[scope=col]").count() > 0, true);
     }
     checked("all six sections and accessible table headings");
+
+    await page.locator('nav a[data-section="audit"]').click(); await ready();
+    const sequenceValues = async () => (await page.locator('td[data-label="Sequence"]').allTextContents()).map(Number);
+    const firstAudit = await sequenceValues();
+    assert.equal(firstAudit.length, 50);
+    assert.equal(firstAudit.every((value, index) => value === index + 1), true);
+    await page.locator("#next").click(); await ready();
+    const secondAudit = await sequenceValues();
+    assert.equal(secondAudit[0], 51);
+    await page.locator("#previous").click(); await ready();
+    assert.deepEqual(await sequenceValues(), firstAudit);
+    assert.match(await page.locator("#scope-description").innerText(), /does not export or acknowledge/);
+    await page.screenshot({ path: path.join(config.Report, "desktop-audit.png"), fullPage: false });
+    checked("audit history has chronological bounded pages and stable backward navigation");
+    const auditEndpoint = `${config.Origin}/api/v1/admin/dashboard/inventory`;
+    await page.route(auditEndpoint, async (route) => {
+      const response = await route.fetch();
+      const altered = await response.json();
+      altered.Items[0].Sequence++;
+      await route.fulfill({ response, json: altered });
+    });
+    await page.locator("#refresh").click();
+    await page.waitForFunction(() => document.querySelector("#feedback").dataset.error === "true");
+    assert.equal(await page.locator("#records").innerText(), "");
+    await page.unroute(auditEndpoint);
+    await page.locator("#refresh").click(); await ready();
+    checked("inconsistent audit sequence is rejected and prior history is cleared");
+
+    await page.locator('nav a[data-section="security"]').click(); await ready();
+    assert.equal(await page.locator("tbody tr").count(), 1);
+    assert.equal(await page.locator(".pagination").isHidden(), true);
+    assert.equal(await page.locator('td[data-label="Enabled factors"]').innerText(), "0");
+    assert.equal(await page.locator('td[data-label="Tested enabled factors"]').innerText(), "0");
+    assert.match(await page.locator("#scope-description").innerText(), /do not prove separate physical keys/);
+    await page.screenshot({ path: path.join(config.Report, "desktop-security.png"), fullPage: true });
+    const securityEndpoint = `${config.Origin}/api/v1/admin/dashboard/inventory`;
+    await page.route(securityEndpoint, async (route) => {
+      const response = await route.fetch();
+      const altered = await response.json();
+      altered.Items[0].TestedEnabledFactors = altered.Items[0].EnabledFactors + 1;
+      await route.fulfill({ response, json: altered });
+    });
+    await page.locator("#refresh").click();
+    await page.waitForFunction(() => document.querySelector("#feedback").dataset.error === "true");
+    assert.equal(await page.locator("#records").innerText(), "");
+    await page.unroute(securityEndpoint);
+    await page.locator("#refresh").click(); await ready();
+    checked("current administrator security metadata rejects inconsistent factor counts without retaining old data");
+
+    await page.setViewportSize({ width: 360, height: 800 });
+    for (const section of ["audit", "security"]) {
+      await page.locator(`nav a[data-section="${section}"]`).click(); await ready();
+      assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false);
+      await page.emulateMedia({ colorScheme: "dark" });
+      if (section === "audit") await page.locator(".inventory").scrollIntoViewIfNeeded();
+      await page.screenshot({ path: path.join(config.Report, `mobile-${section}-dark.png`), fullPage: section !== "audit" });
+      await page.emulateMedia({ colorScheme: "light" });
+    }
+    await page.setViewportSize({ width: 1440, height: 1050 });
+    checked("audit and security views reflow at 360px in the dark scheme");
     await page.locator('nav a[data-section="access"]').click(); await ready();
     const chooseIdentities = async () => {
       await page.getByLabel("Device certificate", { exact: true }).selectOption(config.DeviceCertificateID);

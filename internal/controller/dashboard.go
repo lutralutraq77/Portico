@@ -97,7 +97,8 @@ func (s *Store) DashboardInventory(ctx context.Context, conn *tls.Conn, trust *p
 	}
 	var result DashboardPage
 	err = s.Update(ctx, NewID(), func(tx *Tx) error {
-		if _, err := tx.adminPeer(trust, der); err != nil {
+		peer, err := tx.adminPeer(trust, der)
+		if err != nil {
 			return err
 		}
 		var revision int64
@@ -108,8 +109,11 @@ func (s *Store) DashboardInventory(ctx context.Context, conn *tls.Conn, trust *p
 			return tx.fail(ErrConflict)
 		}
 		result = DashboardPage{Version: 1, Section: request.Section, PolicyRevision: revision, ObservedAt: tx.now}
-		var err error
 		switch request.Section {
+		case "audit":
+			result.Items, result.Next, err = dashboardAudit(tx, request)
+		case "security":
+			result.Items, result.Next, err = dashboardSecurity(tx, request, peer, trust, der)
 		case "users":
 			result.Items, result.Next, err = dashboardRows(tx, request, "SELECT id,name,enabled FROM users WHERE id>? ORDER BY id LIMIT ?", func(rows *sql.Rows) (DashboardUser, string, error) {
 				var v DashboardUser
