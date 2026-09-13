@@ -83,6 +83,11 @@ func TestClientCompletionCannotOvertakeFinalRead(t *testing.T) {
 		t.Fatal("final read did not reach its activity check")
 	}
 	select {
+	case <-c.ReadFinishedSignal():
+	case <-ctx.Done():
+		t.Fatal("peer FIN was hidden behind application completion")
+	}
+	select {
 	case err := <-served:
 		t.Fatalf("connector closed before the final read returned: %v", err)
 	case <-time.After(30 * time.Millisecond):

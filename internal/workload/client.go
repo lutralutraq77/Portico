@@ -260,6 +260,15 @@ func (x *Conn) Read(p []byte) (int, error) {
 // ReadFinished reports a validated peer FIN after all preceding DATA was read.
 // It does not imply a live lease, successful writes or renewed authority.
 func (x *Conn) ReadFinished() bool { return x.payload != nil && x.payload.readFinished() }
+
+// ReadFinishedSignal closes on a validated peer FIN, independently of graceful
+// carrier closure. It grants no completion proof or further forwarding rights.
+func (x *Conn) ReadFinishedSignal() <-chan struct{} {
+	if x.payload == nil {
+		return nil
+	}
+	return x.payload.fin
+}
 func (x *Conn) Write(p []byte) (int, error) {
 	total := 0
 	for len(p) > 0 {

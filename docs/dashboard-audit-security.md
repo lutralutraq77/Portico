@@ -15,3 +15,6 @@ The final actual-controller/TLS browser run passed all 19 groups in 20.88 second
 See the [source-bound evidence](phase-7-audit-security-evidence.json). Full hosted qualification of the new views is pending. The previous combined source dcf8002 passed five workflows but failed two ordinary Linux final-response cases. Those tests exposed the interaction between the new client completion gate and output-drain ordering; the follow-up correction remains separate Phase 6 work. The passing service workflow does not erase that overall failure.
 
 Management and hardware approval workflows, secure bootstrap, the native administrator bridge, physical key/origin qualification and remaining Phase 6 work still belong to the objective. Neither Phase 6 nor Phase 7 is complete. The canonical acceptance manifest remains seven implemented and 84 planned out of 91.
+
+
+The combined source now includes the [FIN-triggered drain correction](fin-drain.md) from c703ddc. The audit/security browser and native source files remain identical to the recorded component checks. Full hosted qualification must cover the combined implementation.

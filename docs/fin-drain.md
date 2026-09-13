@@ -1,0 +1,11 @@
+# Final-response drain ordering
+
+The client bounds its final local output write when it receives a validated peer FIN. Graceful carrier closure waits for successful local forwarding, so closure cannot be the event that starts that forwarding deadline. The FIN signal grants no new read/write authority and does not close the independent input direction. A later carrier event cannot extend an already established drain deadline.
+
+The current correction follows hosted source `9f441b0` and combined dashboard source `dcf8002`. Each passed five workflows but failed ordinary Linux qualification in two configured-client subcases. Both tests waited for a closure receipt while stdout remained unread, contradicting the new client completion gate. Review also exposed that the production drain deadline was still started only by carrier closure.
+
+The configured-client tests now require the destination to have closed, require completion to remain unreported while the final output is unread, and then exercise both outcomes. The positive case drains a response larger than the measured pipe capacity and requires exact bytes, successful process exit and the eventual closure receipt. The negative case preserves the six-second observation window for the five-second drain limit and requires failed process exit and a closure receipt. There is no timeout increase or conversion of forwarding failure into success.
+
+Native workload/client race tests passed in 30.183 and 52.362 seconds. Windows/Linux vet and staticcheck passed. The targeted real Linux guest passed eight workload tests and thirteen subcases overall, but failed daemon startup and exited the connector on a security check before either new transfer case could open an application. It failed overall with two top-level failures and five subcase failures; that run does not qualify the changed drain behavior. Its exact source, binaries, image and log are retained in the [evidence record](phase-6-fin-drain-evidence.json).
+
+Hosted qualification of the current correction remains pending. Earlier local and hosted failures remain recorded. Phases 6 and 7 are incomplete; the canonical acceptance ledger remains seven implemented and 84 planned out of 91.

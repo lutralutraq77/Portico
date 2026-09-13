@@ -77,6 +77,17 @@ func forward(ctx context.Context, remote *workload.Conn, input Input, output Out
 	}()
 	failed, finished := false, 0
 	outputFinished := false
+	outputDeadlineSet := false
+	boundOutput := func() {
+		if !outputFinished && !outputDeadlineSet {
+			outputDeadlineSet = true
+			if output.SetWriteDeadline(time.Now().Add(drain)) != nil {
+				failed = true
+				stop()
+			}
+		}
+	}
+	readFIN := remote.ReadFinishedSignal()
 	terminal, canceled := remote.Done(), ctx.Done()
 	for finished < 2 {
 		select {
@@ -96,6 +107,12 @@ func forward(ctx context.Context, remote *workload.Conn, input Input, output Out
 			failed = true
 			canceled = nil
 			stop()
+		case <-readFIN:
+			readFIN = nil
+			// The final ACK waits for local delivery, so graceful carrier
+			// closure cannot start that delivery's deadline. Bound the final
+			// chunk at FIN; preserve the independent input half-close.
+			boundOutput()
 		case <-terminal:
 			terminal = nil
 			if remote.ReadFinished() {
@@ -104,10 +121,7 @@ func forward(ctx context.Context, remote *workload.Conn, input Input, output Out
 				// with a deadline; do not turn a graceful carrier end into data
 				// loss. No new remote payload can be read after this FIN.
 				_ = input.Close()
-				if !outputFinished && output.SetWriteDeadline(time.Now().Add(drain)) != nil {
-					failed = true
-					stop()
-				}
+				boundOutput()
 			} else {
 				failed = true
 				stop()
