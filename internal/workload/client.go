@@ -162,7 +162,7 @@ func (c *Client) Open(ctx context.Context, raw net.Conn, r control.ResourceAcces
 	}
 	x.sessionID = response.SessionID
 	_ = raw.SetDeadline(time.Time{})
-	x.payload = newPayload(x.ctx, x.tls, raw)
+	x.payload = newClientPayload(x.ctx, x.tls, raw)
 	x.work.Add(1)
 	go func() { defer x.work.Done(); <-x.payload.Done(); _ = x.Close() }()
 	x.work.Add(1)
@@ -299,6 +299,30 @@ func (x *Conn) WaitWriteAcknowledged(ctx context.Context) error {
 		return ErrDenied
 	}
 	return x.payload.waitAcknowledged(ctx)
+}
+
+// WaitFinished joins connector-initiated transport closure after both FIN
+// directions and our final ACK. Waiting for our own FIN ACK alone would let
+// the caller cancel a carrier while its outgoing ACK was still queued.
+// Completion records consumed bytes only; it cannot renew or revive authority.
+func (x *Conn) WaitFinished(ctx context.Context) error {
+	if ctx == nil || x.payload == nil || x.done == nil || x.payload.waitAcknowledged(ctx) != nil {
+		return ErrDenied
+	}
+	select {
+	case <-x.done:
+	case <-ctx.Done():
+		return ErrDenied
+	}
+	if ctx.Err() != nil || !x.ReadFinished() {
+		return ErrDenied
+	}
+	select {
+	case <-x.payload.ackSent:
+		return nil
+	default:
+		return ErrDenied
+	}
 }
 func (x *Conn) supervise() {
 	defer x.work.Done()

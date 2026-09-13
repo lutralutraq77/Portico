@@ -1,0 +1,226 @@
+{
+  "schema": 1,
+  "source_base": "1c1bd605ab51a4d7c60f168d474a569c3594eaa6",
+  "source_has_uncommitted_changes": true,
+  "status": "investigation_in_progress; complete HTTPS qualification failed",
+  "source_files": [
+    {
+      "path": "internal/workload/stream.go",
+      "sha256": "2330c363d628d1ce1142abf70c0724b1b1c1ee398c5565c06b153552ba68534a"
+    },
+    {
+      "path": "internal/workload/client.go",
+      "sha256": "5d824da2a55e4490b6af9a5d2223f51729bc5798f076abc24fecc92ba208e8f4"
+    },
+    {
+      "path": "internal/client/stream.go",
+      "sha256": "1711bfa8cd6d5dfd1f3258ef290b1245a24675db793e956d776c77650376ee1e"
+    },
+    {
+      "path": "internal/workload/stream_test.go",
+      "sha256": "58cb90e24ab3fb966f37c3eddd5d32f68d6c57e6ec44c092de155d66861a73ee"
+    },
+    {
+      "path": "internal/controller/application_https_linux_test.go",
+      "sha256": "832fb23061efd27529c1982a6bb09eb3e6a75a306754557edb2e7f12cdc80844"
+    }
+  ],
+  "native_race": {
+    "status": "passed",
+    "top_pass": 32,
+    "sub_pass": 119,
+    "fail": 0,
+    "skip": 0,
+    "log": {
+      "path": "work/reports/final-ack-native-corrected.log",
+      "sha256": "b4b49fb18ef953ec8af4f401b1a41593d7606e0e580fc4ba9e1d228f7ba5b596"
+    }
+  },
+  "static": {
+    "status": "passed",
+    "platforms": [
+      "windows",
+      "linux"
+    ],
+    "checks": [
+      "go vet",
+      "staticcheck"
+    ],
+    "log": {
+      "path": "work/reports/final-ack-static-corrected.log",
+      "sha256": "66d8c1c1f3b3b85f9cbcca0308b97dacb6708f80c1455321b56a03d27c224aef"
+    }
+  },
+  "negative_control": {
+    "status": "expected_failure",
+    "mutation": "disable only client acknowledgment ordering",
+    "log": {
+      "path": "work/reports/final-ack-order-negative/result-quoted.log",
+      "sha256": "dc57cf4d8e800d562925c45eb906eef85a9e72fa39d6ff7eafe37b55cd8f2885"
+    },
+    "overlay": {
+      "path": "work/reports/final-ack-order-negative/overlay.json",
+      "sha256": "7f54232911f3db582a7fb52629486a5339dab32530cec374c9b1e2b532dbfab6"
+    },
+    "source": {
+      "path": "work/reports/final-ack-order-negative/stream.go",
+      "sha256": "cd64d3ed2c28b1d7e94bd50b2c817a446aeaa163606d8f54ee5f77617d65e039"
+    }
+  },
+  "arch_https": {
+    "status": "failed",
+    "seconds": 179.97,
+    "cases": [
+      {
+        "name": "authenticated_https",
+        "status": "pass",
+        "seconds": 5.1
+      },
+      {
+        "name": "wrong_hostname",
+        "status": "pass",
+        "seconds": 2.7
+      },
+      {
+        "name": "untrusted_certificate",
+        "status": "pass",
+        "seconds": 2.86
+      },
+      {
+        "name": "missing_application_authentication",
+        "status": "pass",
+        "seconds": 3.3
+      },
+      {
+        "name": "wrong_resource_revision",
+        "status": "pass",
+        "seconds": 1.35
+      },
+      {
+        "name": "ungranted_resource",
+        "status": "pass",
+        "seconds": 1.0
+      },
+      {
+        "name": "positive_control_after_denials",
+        "status": "fail",
+        "seconds": 3.16
+      },
+      {
+        "name": "positive_control_repeat_00",
+        "status": "pass",
+        "seconds": 3.63
+      },
+      {
+        "name": "positive_control_repeat_01",
+        "status": "fail",
+        "seconds": 3.83
+      },
+      {
+        "name": "positive_control_repeat_02",
+        "status": "pass",
+        "seconds": 3.83
+      },
+      {
+        "name": "positive_control_repeat_03",
+        "status": "fail",
+        "seconds": 3.29
+      },
+      {
+        "name": "positive_control_repeat_04",
+        "status": "pass",
+        "seconds": 3.76
+      },
+      {
+        "name": "positive_control_repeat_05",
+        "status": "pass",
+        "seconds": 3.65
+      },
+      {
+        "name": "positive_control_repeat_06",
+        "status": "pass",
+        "seconds": 3.41
+      },
+      {
+        "name": "positive_control_repeat_07",
+        "status": "pass",
+        "seconds": 3.5
+      },
+      {
+        "name": "positive_control_repeat_08",
+        "status": "pass",
+        "seconds": 3.31
+      },
+      {
+        "name": "positive_control_repeat_09",
+        "status": "fail",
+        "seconds": 3.2
+      },
+      {
+        "name": "positive_control_repeat_10",
+        "status": "fail",
+        "seconds": 3.55
+      },
+      {
+        "name": "positive_control_repeat_11",
+        "status": "pass",
+        "seconds": 3.48
+      },
+      {
+        "name": "revoked_enrollment_has_no_new_destination",
+        "status": "pass",
+        "seconds": 1.19
+      },
+      {
+        "name": "routing_dns_and_forwarding_unchanged",
+        "status": "pass",
+        "seconds": 0.44
+      }
+    ],
+    "environment": {
+      "diagnostic_only": true,
+      "base_initramfs_sha256": "5890b005cfd0704dfbbbff1483533763a8885941acf98ebaf5c3acc372bf80ab",
+      "qemu_version": "QEMU emulator version 11.1.0 (v11.1.0-12130-ge470268ff4)",
+      "kernel_sha256": "1E6BF9027720C75C3ED0D79171F21B5791EE40CA9795D07C7C6E04DC5EA2AE90",
+      "network_devices": 0,
+      "host_filesystem_shares": 0,
+      "memory_mib": 3072,
+      "virtual_cpus": 2,
+      "controller_sha256": "1e6a4e6c2962e8b5b8510897173d0e9ba5b46835463cbb5938d9ec885d019387",
+      "portico_sha256": "c7e0039dd51009576ab21293d001f79e1e55dcbf75cda97504fc80d6eb7e430c",
+      "issuer_sha256": "e9de6a2cb60551b812ea00da5eb87b0fdb4b87e5f85da9a0fcdc58446cd9b8a2",
+      "application-initramfs.cpio.gz_sha256": "c0c596bec7c6a98ef0d51cdcacbfe1923ece5eece713178721564dd5b0468b64"
+    },
+    "log": {
+      "path": "work/reports/application-https-final-ack-first/runtime.log",
+      "sha256": "feaf889e742ff9239df8bf3480d49023842df2b35cdc9836a17003cc0844bd92"
+    }
+  },
+  "diagnostics": [
+    {
+      "name": "application-https-final-ack-diagnostic",
+      "status": "fail",
+      "seconds": 152.72,
+      "pass": 18,
+      "fail": 3,
+      "log": {
+        "path": "work/reports/application-https-final-ack-diagnostic/runtime.log",
+        "sha256": "a7e01fb88335ad3c2bf0c880ae948f17ea08c37f557ff6417a6045137fd5c679"
+      },
+      "environment": {
+        "path": "work/reports/application-https-final-ack-diagnostic/environment.json",
+        "sha256": "225d042ac66dcba2b85991f74f2279978c378ce8b83a51471f8906a0b70c44a7"
+      },
+      "source_manifest": {
+        "path": "work/reports/application-https-final-ack-diagnostic-source/source-manifest.json",
+        "sha256": "406f71df26064662966187f1451a0eabce7473a7c15aa343c86509501b7042c4"
+      }
+    }
+  ],
+  "limitations": [
+    "No current hosted qualification",
+    "Current HTTPS failure remains unresolved",
+    "Software fixtures do not qualify physical keys, production hostname or deployment",
+    "Canonical acceptance remains 7 implemented and 84 planned of 91"
+  ]
+}

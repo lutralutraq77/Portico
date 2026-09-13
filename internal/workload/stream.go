@@ -28,15 +28,35 @@ type payloadConn struct {
 	writeMu                               sync.Mutex
 	mu                                    sync.Mutex
 	writeClosed, readClosed, acknowledged bool
-	ack, done                             chan struct{}
+	ack, ackSent, done                    chan struct{}
 	ackNeeded                             chan struct{}
+	ackAfterOwn                           bool
 	once                                  sync.Once
 }
 
 func newPayload(parent context.Context, inner, raw net.Conn) *payloadConn {
+	return startPayload(parent, inner, raw, false, nil)
+}
+
+// The connector owns graceful carrier closure. Its final ACK must reach the
+// client before the client acknowledges the connector's FIN; otherwise closing
+// an asynchronous carrier can discard an ACK still queued in the other pump.
+func newClientPayload(parent context.Context, inner, raw net.Conn) *payloadConn {
+	return startPayload(parent, inner, raw, true, nil)
+}
+
+// The connector may acknowledge consumed input only after its forwarding
+// workers complete successfully, including the destination write half-close.
+// The returned function must be called once, only on that successful path.
+func newServerPayload(parent context.Context, inner, raw net.Conn) (*payloadConn, func()) {
+	forwarded := make(chan struct{})
+	return startPayload(parent, inner, raw, false, forwarded), func() { close(forwarded) }
+}
+
+func startPayload(parent context.Context, inner, raw net.Conn, ackAfterOwn bool, forwarded <-chan struct{}) *payloadConn {
 	ctx, cancel := context.WithCancel(parent)
 	r, w := io.Pipe()
-	c := &payloadConn{Conn: inner, raw: raw, ctx: ctx, cancel: cancel, reader: r, writer: w, ack: make(chan struct{}), done: make(chan struct{}), ackNeeded: make(chan struct{}, 1)}
+	c := &payloadConn{Conn: inner, raw: raw, ctx: ctx, cancel: cancel, reader: r, writer: w, ack: make(chan struct{}), ackSent: make(chan struct{}), done: make(chan struct{}), ackNeeded: make(chan struct{}, 1), ackAfterOwn: ackAfterOwn}
 	stop := context.AfterFunc(ctx, func() { _ = c.Close() })
 	var workers sync.WaitGroup
 	workers.Add(2)
@@ -47,11 +67,27 @@ func newPayload(parent context.Context, inner, raw net.Conn) *payloadConn {
 		case <-c.ctx.Done():
 			return
 		case <-c.ackNeeded:
+			if forwarded != nil {
+				select {
+				case <-c.ctx.Done():
+					return
+				case <-forwarded:
+				}
+			}
+			if c.ackAfterOwn {
+				select {
+				case <-c.ctx.Done():
+					return
+				case <-c.ack:
+				}
+			}
 			c.writeMu.Lock()
 			e := c.frame(payloadACK, nil)
 			c.writeMu.Unlock()
 			if e != nil {
 				_ = c.Close()
+			} else {
+				close(c.ackSent)
 			}
 		}
 	}()

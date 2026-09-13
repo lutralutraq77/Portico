@@ -6,14 +6,214 @@ import (
 	"encoding/binary"
 	"io"
 	"net"
+	"sync"
 	"testing"
 	"time"
 )
 
+// Delay the connector's final acknowledgment as an asynchronous carrier can.
+// Its application FIN can travel in the opposite direction independently.
+type delayedACKConn struct {
+	net.Conn
+	reached chan struct{}
+	release chan struct{}
+	closed  chan struct{}
+	done    chan struct{}
+	once    sync.Once
+	stop    sync.Once
+}
+
+func (c *delayedACKConn) Write(p []byte) (int, error) {
+	if len(p) == 5 && p[0] == payloadACK {
+		frame := bytes.Clone(p)
+		c.once.Do(func() {
+			close(c.reached)
+			go func() {
+				defer close(c.done)
+				select {
+				case <-c.release:
+					if _, err := c.Conn.Write(frame); err != nil {
+						_ = c.Close()
+					}
+				case <-c.closed:
+				}
+			}()
+		})
+		// Model a carrier accepting bytes into its bounded send pump before
+		// the peer receives them. A subsequent Close discards that queue.
+		return len(p), nil
+	}
+	return c.Conn.Write(p)
+}
+
+func (c *delayedACKConn) Close() error {
+	c.stop.Do(func() { close(c.closed); _ = c.Conn.Close() })
+	return nil
+}
+
+func TestFinalAcknowledgmentSurvivesConnectorClosure(t *testing.T) {
+	a, b := net.Pipe()
+	gate := &delayedACKConn{Conn: b, reached: make(chan struct{}), release: make(chan struct{}), closed: make(chan struct{}), done: make(chan struct{})}
+	client := newClientPayload(context.Background(), a, a)
+	connector := newPayload(context.Background(), gate, gate)
+	var release sync.Once
+	unblock := func() { release.Do(func() { close(gate.release) }) }
+	t.Cleanup(func() {
+		unblock()
+		_ = client.Close()
+		_ = connector.Close()
+		for _, stream := range []*payloadConn{client, connector} {
+			select {
+			case <-stream.Done():
+			case <-time.After(time.Second):
+				t.Error("final acknowledgment worker did not join")
+			}
+		}
+		select {
+		case <-gate.reached:
+			select {
+			case <-gate.done:
+			case <-time.After(time.Second):
+				t.Error("delayed carrier pump did not join")
+			}
+		default:
+		}
+	})
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+	finished := make(chan error, 1)
+	finSent := make(chan struct{})
+	go func() {
+		err := connector.CloseWrite()
+		close(finSent)
+		// The real connector waits for both copy directions before entering
+		// its acknowledgment stage. Wait until it has consumed the client's
+		// FIN here as well, even when the old client acknowledges too early.
+		select {
+		case <-gate.reached:
+		case <-ctx.Done():
+			err = ctx.Err()
+		}
+		if err == nil {
+			err = connector.waitAcknowledged(ctx)
+		}
+		// This is the connector's actual shutdown condition after both copy
+		// directions have reached FIN. It must not discard the other ACK.
+		_ = connector.Close()
+		finished <- err
+	}()
+	select {
+	case <-finSent:
+	case <-ctx.Done():
+		t.Fatal("connector FIN was not delivered before the queued ACK")
+	}
+	if err := client.CloseWrite(); err != nil {
+		t.Fatal(err)
+	}
+	select {
+	case <-gate.reached:
+	case <-ctx.Done():
+		t.Fatal("connector never attempted its acknowledgment")
+	}
+	select {
+	case <-finished:
+		t.Fatal("connector closed while its acknowledgment to the client was still undelivered")
+	case <-time.After(30 * time.Millisecond):
+	}
+	unblock()
+	select {
+	case err := <-finished:
+		if err != nil {
+			t.Fatal(err)
+		}
+	case <-ctx.Done():
+		t.Fatal("connector did not complete after acknowledgment delivery")
+	}
+	if err := client.waitAcknowledged(ctx); err != nil {
+		t.Fatal("connector closure lost the client's final acknowledgment", err)
+	}
+}
+
+func TestClientCompletionWaitsForConnectorAndHonorsCancellation(t *testing.T) {
+	left, right := payloadPair(t)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+	if err := left.CloseWrite(); err != nil {
+		t.Fatal(err)
+	}
+	if err := right.CloseWrite(); err != nil {
+		t.Fatal(err)
+	}
+	if left.waitAcknowledged(ctx) != nil || right.waitAcknowledged(ctx) != nil {
+		t.Fatal("fixture did not complete both directions")
+	}
+	c := &Conn{payload: left, done: left.done}
+	short, stop := context.WithTimeout(ctx, 30*time.Millisecond)
+	defer stop()
+	if err := c.WaitFinished(short); err == nil {
+		t.Fatal("own FIN acknowledgment bypassed outstanding connector shutdown")
+	}
+	_ = right.Close()
+	if err := c.WaitFinished(ctx); err != nil {
+		t.Fatal("completed exchange was lost on graceful connector closure", err)
+	}
+	canceled, abort := context.WithCancel(ctx)
+	abort()
+	if c.WaitFinished(canceled) == nil || (&Conn{}).WaitFinished(ctx) == nil {
+		t.Fatal("completion accepted canceled or incomplete state")
+	}
+	//lint:ignore SA1012 Deliberately verify the public method rejects a missing context.
+	if c.WaitFinished(nil) == nil {
+		t.Fatal("completion accepted a missing context")
+	}
+}
+
+func TestConnectorAcknowledgmentRequiresSuccessfulForwarding(t *testing.T) {
+	for _, success := range []bool{false, true} {
+		t.Run(map[bool]string{false: "forwarding_failed", true: "forwarding_finished"}[success], func(t *testing.T) {
+			a, b := net.Pipe()
+			client := newClientPayload(context.Background(), a, a)
+			connector, acknowledge := newServerPayload(context.Background(), b, b)
+			t.Cleanup(func() {
+				_ = client.Close()
+				_ = connector.Close()
+				for _, stream := range []*payloadConn{client, connector} {
+					select {
+					case <-stream.Done():
+					case <-time.After(time.Second):
+						t.Error("forwarding acknowledgment worker did not join")
+					}
+				}
+			})
+			if client.CloseWrite() != nil || connector.CloseWrite() != nil {
+				t.Fatal("fixture FIN exchange failed")
+			}
+			waiting, stop := context.WithTimeout(context.Background(), 30*time.Millisecond)
+			defer stop()
+			if client.waitAcknowledged(waiting) == nil {
+				t.Fatal("connector acknowledged input before forwarding completed")
+			}
+			ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+			defer cancel()
+			if success {
+				acknowledge()
+				if client.waitAcknowledged(ctx) != nil || connector.waitAcknowledged(ctx) != nil {
+					t.Fatal("successful forwarding did not complete both acknowledgments")
+				}
+			} else {
+				_ = connector.Close()
+				if client.waitAcknowledged(ctx) == nil {
+					t.Fatal("failed forwarding acquired a completion acknowledgment")
+				}
+			}
+		})
+	}
+}
+
 func payloadPair(t *testing.T) (*payloadConn, *payloadConn) {
 	t.Helper()
 	a, b := net.Pipe()
-	left := newPayload(context.Background(), a, a)
+	left := newClientPayload(context.Background(), a, a)
 	right := newPayload(context.Background(), b, b)
 	t.Cleanup(func() {
 		_ = left.Close()
