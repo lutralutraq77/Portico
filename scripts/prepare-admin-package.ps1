@@ -30,6 +30,14 @@ try {
     $recipe=[IO.File]::ReadAllText((Join-Path $PorticoRoot 'packaging/arch/PKGBUILD.admin.in')).Replace('@PACKAGE_VERSION@',$version).Replace('@TREE_SHA256@',$treeHash).Replace('@NOTICE_SHA256@',$noticeHash).Replace("`r`n","`n")
     if($recipe -match '@[A-Z_]+@'){throw 'Unresolved administrator package recipe'}
     [IO.File]::WriteAllText((Join-Path $output 'PKGBUILD'),$recipe,[Text.UTF8Encoding]::new($false))
+    if($IsLinux){
+        # These newly generated, public package inputs must be readable by the
+        # separate unprivileged container builder. No identity state is here.
+        & chmod 0755 -- $output
+        if($LASTEXITCODE -ne 0){throw 'Cannot set public package directory mode'}
+        & chmod 0644 -- $tree (Join-Path $output 'PKGBUILD') (Join-Path $output 'DEVELOPMENT.txt')
+        if($LASTEXITCODE -ne 0){throw 'Cannot set public package input modes'}
+    }
     $record=[ordered]@{schema=1;development_only=$true;source_revision=$revision;source_date_epoch=[long]$epoch;go_version=$goVersion;runtime_version=$lock.version;runtime_archive_sha256=$asset.sha256;tree_sha256=$treeHash;recipe_sha256=(Get-FileHash -LiteralPath (Join-Path $output 'PKGBUILD')).Hash.ToLowerInvariant();package_name='portico-admin-development';package_version=$version}
     [IO.File]::WriteAllText((Join-Path $output 'provenance.json'),($record|ConvertTo-Json -Depth 4)+"`n")
     Write-Output $output
