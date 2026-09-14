@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "recordedUTC": "2026-09-14T12:28:12.4398757Z",
+  "recordedUTC": "2026-09-14T12:30:05.4930818Z",
   "scope": "Native administrator session clock component; Phases 6 and 7 remain incomplete",
   "baseCommit": "64796c07d014da5eb872207bb32e23acc0fa1029",
   "sourceBinding": "Unchanged files come from baseCommit; listed hashes identify tested changes before commit",
@@ -9,7 +9,7 @@
     "SECURITY_CONTROL_MATRIX.md": "861e58190489bad51240b25b4610a5b2ec4d17177d743cfa0453f5b595d03162",
     "docs/delivery-status.md": "2723699041424d7cdbfce50de35c79dba72b0614228cfcc2a218e35ae1928cc8",
     "docs/native-administration.md": "df3faea160edfb6261ae52df17c997daaf26a2cbad4de8b5e7f7caaacc2b3a18",
-    "docs/phase-7-native-hosted-evidence.json": "713c99d460005a9a67e14de36565f105881f498a85cb4da02447f382a0858a6f",
+    "docs/phase-7-native-hosted-evidence.json": "aa67d8be66d42209ce8f5b585aec2c0e8564d2ba5e64251823cc4dd22e67c9c7",
     "internal/adminbridge/client.go": "ee018490a4a23f4c761f9fcef82269fbbc6d9e5de4062b8c8c18e0fa426870c9",
     "internal/adminbridge/client_test.go": "bbb318c1b06bb5626cf6db8cdd908c6f048751a97e1369e6faf8d47aaaac8806",
     "internal/adminbridge/launch.go": "5b7aa1a2c9bdb9abdade6be6b2bef610476168b413344a0f493d107ccee3d9a9",
