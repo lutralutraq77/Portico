@@ -25,6 +25,7 @@
   let pending, generation = 0;
   const accessViews = ["access", "grants", "hosting"];
   const securityViews = ["security", "factors"];
+  const lifecycleEntities = { users: "user", devices: "device", connectors: "connector" };
   const choiceTypes = {
     device: { label: "Device certificate", section: "certificates", profile: "device" },
     connector: { label: "Connector certificate", section: "certificates", profile: "connector" },
@@ -96,7 +97,7 @@
     for (const [label] of view.columns) {
       const cell = element("th", label); cell.scope = "col"; header.append(cell);
     }
-    if (section === "resources" || section === "factors") { const cell = element("th", "Manage"); cell.scope = "col"; header.append(cell); }
+    if (section === "resources" || section === "factors" || Object.hasOwn(lifecycleEntities, section)) { const cell = element("th", "Manage"); cell.scope = "col"; header.append(cell); }
     const head = element("thead"); head.append(header); table.append(head);
     const body = element("tbody");
     for (const item of data.Items) {
@@ -123,12 +124,21 @@
         }
         row.append(cell);
       }
+      if (Object.hasOwn(lifecycleEntities, section)) {
+        const entity = lifecycleEntities[section], cell = element("td"); cell.dataset.label = "Manage";
+        for (const [action, label] of [["rename", "Rename"], ["disable", "Revoke access"]]) {
+          const button = element("button", label); button.type = "button"; button.disabled = !item.Enabled;
+          button.setAttribute("aria-label", `${label} for ${entity} ${item.Name}`);
+          button.addEventListener("click", () => startPolicy(`${action}-${entity}`, item)); cell.append(button);
+        }
+        row.append(cell);
+      }
       body.append(row);
     }
     table.append(body);
     const wrapper = element("div", undefined, "table-wrap"); wrapper.append(table);
     records.replaceChildren(wrapper);
-    const actions = { resources: ["Create resource", "create-resource"], grants: ["Add device grant", "grant"], hosting: ["Add hosting permission", "host"] };
+    const actions = { resources: ["Create resource", "create-resource"], grants: ["Add device grant", "grant"], hosting: ["Add hosting permission", "host"], users: ["Add user", "create-user"], devices: ["Add device", "create-device"], connectors: ["Add connector", "create-connector"] };
     if (Object.hasOwn(actions, section)) {
       const [label, kind] = actions[section], bar = element("div", undefined, "policy-actions");
       const button = element("button", label, "primary-action"); button.type = "button";
@@ -305,12 +315,19 @@
     }
   }
   const policyTitles = { "create-resource": "Create resource", "revise-resource": "Revise resource", grant: "Add device grant", host: "Add hosting permission" };
-  const policyTypes = { connector: "connectors", device: "devices", resource: "resources" };
+  for (const entity of Object.values(lifecycleEntities)) for (const [action, label] of [["create", "Add"], ["rename", "Rename"], ["disable", "Revoke"]]) policyTitles[`${action}-${entity}`] = `${label} ${entity}${action === "disable" ? " access" : ""}`;
+  const policyTypes = { connector: "connectors", device: "devices", resource: "resources", user: "users" };
   const uuid = (value) => typeof value === "string" && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(value) && value !== "00000000-0000-0000-0000-000000000000";
   const exact = (value, keys) => value && typeof value === "object" && !Array.isArray(value) && Object.keys(value).length === keys.length && keys.every((key) => Object.hasOwn(value, key));
   const date = (value) => typeof value === "string" && value.length < 64 && Number.isFinite(Date.parse(value));
   function startPolicy(kind, previous) {
     if (pending || document.hidden) return;
+    const [action, entity] = kind.split("-");
+    if (Object.values(lifecycleEntities).includes(entity)) {
+      const keys = kind === "create-device" ? ["user"] : [];
+      policy = { kind, previous, revision, lifecycle: { action, entity }, fields: { Name: previous?.Name || "", Platform: "linux", NotAfter: "" }, choices: Object.fromEntries(keys.map((key) => [key, { cursors: [""], index: 0, selected: "" }])) };
+      void loadPolicy(policy); return;
+    }
     const keys = kind.endsWith("resource") ? ["connector"] : kind === "grant" ? ["device", "resource"] : ["resource"];
     policy = { kind, previous, revision, fields: { Name: previous?.Name || "", Address: previous?.Address || "", Port: String(previous?.Port || ""), From: "", Until: "" }, choices: Object.fromEntries(keys.map((key) => [key, { cursors: [""], index: 0, selected: key === "connector" ? previous?.ConnectorID || "" : "" }])) };
     void loadPolicy(policy);
@@ -372,7 +389,19 @@
       }
       field.append(label, select, element("p", `Page ${choice.index + 1} · up to 50 records`, "record-id"), pager); form.append(field);
     }
-    const fields = state.kind.endsWith("resource") ? [["Name", "Resource name", "text"], ["Address", "Canonical destination IP address", "text"], ["Port", "TCP port", "number"]] : [["From", "Valid from (UTC)", "datetime-local"], ["Until", "Valid until (UTC)", "datetime-local"]];
+    let fields = state.kind.endsWith("resource") ? [["Name", "Resource name", "text"], ["Address", "Canonical destination IP address", "text"], ["Port", "TCP port", "number"]] : [["From", "Valid from (UTC)", "datetime-local"], ["Until", "Valid until (UTC)", "datetime-local"]];
+    if (state.lifecycle) {
+      fields = state.lifecycle.action === "disable" ? [] : [["Name", `${state.lifecycle.entity[0].toUpperCase() + state.lifecycle.entity.slice(1)} name`, "text"]];
+      if (state.previous) form.append(element("p", `${state.previous.Name} · ${state.previous.ID}`, "record-id"));
+      if (state.kind === "create-device") {
+        fields.push(["NotAfter", "Device authorization expires (UTC)", "datetime-local"]);
+        const field = element("div", undefined, "access-choice"), label = element("label", "Platform"), select = element("select");
+        label.htmlFor = "policy-platform"; select.id = label.htmlFor;
+        for (const value of ["linux", "windows", "android"]) { const option = element("option", value); option.value = value; select.append(option); }
+        select.value = state.fields.Platform; select.addEventListener("change", () => { state.fields.Platform = select.value; });
+        field.append(label, select); form.append(field);
+      }
+    }
     for (const [key, title, type] of fields) {
       const field = element("div", undefined, "access-choice"), label = element("label", title), input = element("input");
       label.htmlFor = `policy-${key.toLowerCase()}`; input.id = label.htmlFor; input.type = type; input.required = true; input.value = state.fields[key];
@@ -385,10 +414,21 @@
     const cancelButton = element("button", "Cancel change"); cancelButton.type = "button"; cancelButton.addEventListener("click", policyCancel);
     form.append(submit, cancelButton);
     form.addEventListener("submit", (event) => { event.preventDefault(); if (!pending && state === policy && form.reportValidity()) void previewPolicy(state, pages, form); });
-    const explanation = state.kind.endsWith("resource") ? "A resource defines one TCP destination. Device grants and connector hosting permissions must explicitly cover its revision." : "Enter both times in UTC. The displayed device and exact resource revision define the permission.";
+    const explanation = state.lifecycle ? lifecycleEffect(state) : state.kind.endsWith("resource") ? "A resource defines one TCP destination. Device grants and connector hosting permissions must explicitly cover its revision." : "Enter both times in UTC. The displayed device and exact resource revision define the permission.";
     records.replaceChildren(form, element("p", explanation, "access-explanation"));
   }
   function policyDraft(state, pages) {
+    if (state.lifecycle) {
+      const draft = { Kind: state.kind, PolicyRevision: state.revision };
+      if (state.previous) draft.TargetID = state.previous.ID;
+      if (state.lifecycle.action !== "disable") draft.Name = state.fields.Name;
+      if (state.kind === "create-device") {
+        const user = pages.user.Items.find((item) => item.ID === state.choices.user.selected && item.Enabled);
+        if (!user) throw new Error("Missing device owner");
+        draft.UserID = user.ID; draft.Platform = state.fields.Platform; draft.NotAfter = new Date(state.fields.NotAfter + "Z").toISOString();
+      }
+      return { Lifecycle: draft };
+    }
     if (state.kind.endsWith("resource")) {
       const connector = pages.connector.Items.find((item) => item.ID === state.choices.connector.selected && item.Enabled);
       if (!connector) throw new Error("Missing connector");
@@ -406,6 +446,7 @@
     return { Grant: { ...permission, UserID: device.UserID, DeviceID: device.ID } };
   }
   function validPolicyPreview(view, draft, state, pages) {
+    if (state.lifecycle) return validLifecyclePreview(view, draft.Lifecycle, state, pages);
     const fields = ["ID", "Digest", "Kind", "UserID", "UserName", "DeviceID", "DeviceName", "Resource", "From", "Until", "ExpiresAt", "PolicyRevision"];
     if (state.previous) fields.push("Previous");
     if (!exact(view, fields) || !uuid(view.ID) || !/^[0-9a-f]{64}$/.test(view.Digest) || view.Kind !== state.kind || view.PolicyRevision !== state.revision || !date(view.ExpiresAt) || Date.parse(view.ExpiresAt) <= Date.now() || Date.parse(view.ExpiresAt) > Date.now() + 301000 || !date(view.From) || !date(view.Until)) return false;
@@ -449,6 +490,7 @@
     }
   }
   function renderPolicyPreview(view, state) {
+    if (state.lifecycle) { renderLifecyclePreview(view, state); return; }
     const panel = element("section", undefined, "access-result policy-preview"); panel.id = "policy-preview";
     const heading = element("h2", `Review: ${policyTitles[state.kind]}`); heading.tabIndex = -1; panel.append(heading);
     function details(resource, title) {
@@ -593,6 +635,48 @@
       clearTimeout(timeout);
       if (attempt === generation) pending = undefined;
     }
+  }
+  function lifecycleEffect(state) {
+    if (state.lifecycle.action === "create") return `This creates a ${state.lifecycle.entity} record. Enrollment, credentials and explicit access permissions are separate steps.`;
+    if (state.lifecycle.action === "rename") return "Only the displayed name changes. The identity identifier and existing access remain the same.";
+    const effects = { user: "All devices belonging to this user lose access. Dependent sessions are cancelled and new sessions are denied.", device: "This device loses access. Its dependent sessions are cancelled and new sessions are denied.", connector: "All resources delivered by this connector lose their transport. Dependent sessions are cancelled and new sessions are denied." };
+    return effects[state.lifecycle.entity] + " The record remains as a disabled tombstone. Your current administrator user/device and connectors serving administrator resources are protected from this operation.";
+  }
+  function validLifecyclePreview(view, draft, state, pages) {
+    const fields = ["ID", "Digest", "Kind", "UserID", "UserName", "DeviceID", "DeviceName", "Resource", "From", "Until", "ExpiresAt", "PolicyRevision", "Lifecycle"];
+    if (state.lifecycle.action === "rename") fields.push("PreviousName");
+    const zeroDate = (value) => date(value) && Date.parse(value) === Date.parse("0001-01-01T00:00:00Z");
+    if (!exact(view, fields) || !uuid(view.ID) || !/^[0-9a-f]{64}$/.test(view.Digest) || view.Kind !== state.kind || view.Kind !== draft.Kind || view.PolicyRevision !== state.revision || !date(view.ExpiresAt) || Date.parse(view.ExpiresAt) <= Date.now() || Date.parse(view.ExpiresAt) > Date.now() + 301000 || !zeroDate(view.From) || !zeroDate(view.Until)) return false;
+    if (["UserID", "UserName", "DeviceID", "DeviceName"].some((key) => view[key] !== "")) return false;
+    const resource = view.Resource;
+    if (!exact(resource, ["ID", "Revision", "Name", "ConnectorID", "ConnectorName", "Address", "Port", "Protocol", "Until"]) || resource.Revision !== 0 || resource.Port !== 0 || !zeroDate(resource.Until) || ["ID", "Name", "ConnectorID", "ConnectorName", "Address", "Protocol"].some((key) => resource[key] !== "")) return false;
+    const target = view.Lifecycle, previous = state.previous;
+    if (!exact(target, ["Entity", "ID", "Name", "UserID", "UserName", "Platform", "Version", "Enabled", "NotAfter"]) || target.Entity !== state.lifecycle.entity || !uuid(target.ID) || target.Enabled !== true || !date(target.NotAfter) || ["Name", "UserID", "UserName", "Platform", "Version"].some((key) => typeof target[key] !== "string" || target[key].length > 4096)) return false;
+    if (previous && (target.ID !== previous.ID || draft.TargetID !== previous.ID)) return false;
+    if (target.Name !== (state.lifecycle.action === "disable" ? previous.Name : draft.Name) || !target.Name) return false;
+    if (state.lifecycle.action === "rename" && view.PreviousName !== previous.Name) return false;
+    if (target.Entity === "device") {
+      const expected = previous || { UserID: draft.UserID, Platform: draft.Platform, NotAfter: draft.NotAfter };
+      if (!uuid(target.UserID) || !target.UserName || target.UserID !== expected.UserID || target.Platform !== expected.Platform || Date.parse(target.NotAfter) !== Date.parse(expected.NotAfter) || target.Version !== "") return false;
+      if (!previous && target.UserName !== pages.user.Items.find((item) => item.ID === draft.UserID)?.Name) return false;
+    } else if (target.UserID !== "" || target.UserName !== "" || target.Platform !== "" || !zeroDate(target.NotAfter)) return false;
+    return target.Version === (target.Entity === "connector" ? previous?.Version || "unreported" : "");
+  }
+  function renderLifecyclePreview(view, state) {
+    const target = view.Lifecycle, panel = element("section", undefined, "access-result policy-preview"); panel.id = "policy-preview";
+    const heading = element("h2", `Review: ${policyTitles[state.kind]}`); heading.tabIndex = -1;
+    const details = element("dl"), values = [["Record type", target.Entity], ["Record ID", target.ID]];
+    if (view.PreviousName) values.push(["Current name", view.PreviousName], ["Proposed name", target.Name]);
+    else values.push(["Name", target.Name]);
+    if (target.Entity === "device") values.push(["Owner", target.UserName], ["Owner ID", target.UserID], ["Platform", target.Platform], ["Authorization expires (UTC)", new Date(target.NotAfter).toISOString()]);
+    if (target.Entity === "connector") values.push(["Recorded version", target.Version]);
+    for (const [label, value] of values) details.append(element("dt", label), element("dd", value));
+    panel.append(heading, details, element("p", lifecycleEffect(state)), element("p", `Approval expires ${new Date(view.ExpiresAt).toISOString()} · policy revision ${view.PolicyRevision}`));
+    const approve = element("button", "Approve with security key", "primary-action"), cancelButton = element("button", "Cancel change"), actions = element("div", undefined, "policy-actions");
+    approve.type = cancelButton.type = "button";
+    approve.addEventListener("click", () => { if (!pending && state === policy && !document.hidden) void approvePolicy(view, state, panel, approve); });
+    cancelButton.addEventListener("click", policyCancel); actions.append(approve, cancelButton); panel.append(actions);
+    records.replaceChildren(panel); heading.focus();
   }
   function select() {
     const candidate = location.hash.slice(1);

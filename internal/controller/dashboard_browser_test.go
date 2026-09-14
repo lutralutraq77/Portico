@@ -47,15 +47,25 @@ func TestDashboardFactorBrowser(t *testing.T) {
 	testDashboardBrowser(t, "factors")
 }
 
+func TestDashboardLifecycleBrowser(t *testing.T) {
+	testDashboardBrowser(t, "lifecycle")
+}
+
 func testDashboardBrowser(t *testing.T, mode string) {
 	t.Helper()
 	management, factors := mode == "policy", mode == "factors"
+	lifecycle := mode == "lifecycle"
 	node, browser, report := os.Getenv("PORTICO_BROWSER_NODE"), os.Getenv("PORTICO_BROWSER_EXECUTABLE"), os.Getenv("PORTICO_BROWSER_REPORT")
 	if !filepath.IsAbs(node) || !filepath.IsAbs(browser) || !filepath.IsAbs(report) {
 		t.Fatal("browser qualification requires absolute node, browser and report paths")
 	}
-	a := adminSeed(t)
-	if management || factors {
+	var a *adminFixture
+	if lifecycle {
+		a = lifecycleAdminSeed(t)
+	} else {
+		a = adminSeed(t)
+	}
+	if management || factors || lifecycle {
 		a.setupFactors(t)
 	}
 	for i := range 54 {
@@ -133,6 +143,7 @@ func testDashboardBrowser(t *testing.T, mode string) {
 	privateDER, err := x509.MarshalPKCS8PrivateKey(a.identity.PrivateKey)
 	must(t, err)
 	config := struct {
+		AdministratorUserID, AdministratorDeviceID                                                                string
 		Origin, Proxy, Certificate, Key, Browser, Report, DeviceCertificateID, ConnectorCertificateID, ResourceID string
 		ConnectorID, DeviceID, UserID, CredentialID, CredentialKey, UserHandle                                    string
 		SignCount                                                                                                 uint32
@@ -145,15 +156,19 @@ func testDashboardBrowser(t *testing.T, mode string) {
 		Key:         string(pem.EncodeToMemory(&pem.Block{Type: "PRIVATE KEY", Bytes: privateDER})),
 	}
 	script := "test-dashboard-browser.cjs"
-	if management || factors {
+	if management || factors || lifecycle {
 		script = "test-dashboard-policy-browser.cjs"
 		config.ConnectorID, config.DeviceID, config.UserID = a.f.f.connector.ID, a.f.f.device.ID, a.f.f.user.ID
 		credentialDER, err := x509.MarshalPKCS8PrivateKey(key.Private)
 		must(t, err)
 		config.CredentialID = base64.StdEncoding.EncodeToString(key.ID)
 		config.CredentialKey = base64.StdEncoding.EncodeToString(credentialDER)
-		config.UserHandle = base64.StdEncoding.EncodeToString([]byte(a.f.f.user.ID))
+		config.UserHandle = base64.StdEncoding.EncodeToString([]byte(a.userID))
 		config.SignCount = key.Counter
+	}
+	if lifecycle {
+		script = "test-dashboard-lifecycle-browser.cjs"
+		config.AdministratorUserID, config.AdministratorDeviceID = a.userID, a.deviceID
 	}
 	if factors {
 		script = "test-dashboard-factor-browser.cjs"
@@ -181,9 +196,59 @@ func testDashboardBrowser(t *testing.T, mode string) {
 	must(t, json.NewEncoder(in).Encode(config))
 	scanner := bufio.NewScanner(out)
 	revoked, passed := false, false
+	var lifecycleSession SessionRequest
 	for scanner.Scan() {
 		line := scanner.Text()
 		switch line {
+		case "PORTICO_BROWSER_LIFECYCLE_ACTIVE":
+			if !lifecycle || lifecycleSession.SessionID != "" {
+				t.Fatal("invalid lifecycle activation fixture request")
+			}
+			permit, err := policy.engine.Authorize(ctx, policy.connectorConn, policy.request())
+			must(t, err)
+			active, err := policy.engine.Activate(ctx, policy.connectorConn, SessionRequest{Version: 1, SessionID: permit.SessionID, Sequence: permit.Sequence})
+			must(t, err)
+			lifecycleSession = SessionRequest{Version: 1, SessionID: permit.SessionID, Sequence: active.Sequence}
+			_, err = fmt.Fprintln(in, "active")
+			must(t, err)
+		case "PORTICO_BROWSER_LIFECYCLE_REVOKED":
+			if !lifecycle || lifecycleSession.SessionID == "" {
+				t.Fatal("no active lifecycle fixture")
+			}
+			if _, err := policy.engine.Renew(ctx, policy.connectorConn, lifecycleSession); err == nil {
+				t.Fatal("browser revocation left renewal authority")
+			}
+			if _, err := policy.engine.Authorize(ctx, policy.connectorConn, policy.request()); err == nil {
+				t.Fatal("browser revocation left new session authority")
+			}
+			var state, reason string
+			must(t, a.f.f.s.db.QueryRow("SELECT state FROM authorized_sessions WHERE id=?", lifecycleSession.SessionID).Scan(&state))
+			must(t, a.f.f.s.db.QueryRow("SELECT reason FROM session_cancellations WHERE session_id=?", lifecycleSession.SessionID).Scan(&reason))
+			if state != "closed" || reason != "closed" {
+				t.Fatal("browser revocation did not cancel its dependent session")
+			}
+			_, err := fmt.Fprintln(in, "authority_removed")
+			must(t, err)
+		case "PORTICO_BROWSER_LIFECYCLE_STATE":
+			if !lifecycle {
+				t.Fatal("lifecycle state requested in wrong fixture")
+			}
+			var snapshot struct{ Users, Devices, Connectors, EnabledUsers, EnabledDevices, EnabledConnectors, Enrollments, Grants, Hosting, Applied int }
+			for query, target := range map[string]*int{
+				"SELECT count(*) FROM users":                                    &snapshot.Users,
+				"SELECT count(*) FROM devices":                                  &snapshot.Devices,
+				"SELECT count(*) FROM connectors":                               &snapshot.Connectors,
+				"SELECT count(*) FROM users WHERE enabled=1":                    &snapshot.EnabledUsers,
+				"SELECT count(*) FROM devices WHERE enabled=1":                  &snapshot.EnabledDevices,
+				"SELECT count(*) FROM connectors WHERE enabled=1":               &snapshot.EnabledConnectors,
+				"SELECT count(*) FROM enrollments":                              &snapshot.Enrollments,
+				"SELECT count(*) FROM grants":                                   &snapshot.Grants,
+				"SELECT count(*) FROM host_bindings":                            &snapshot.Hosting,
+				"SELECT count(*) FROM audit_events WHERE action='policy.apply'": &snapshot.Applied,
+			} {
+				must(t, a.f.f.s.db.QueryRow(query).Scan(target))
+			}
+			must(t, json.NewEncoder(in).Encode(snapshot))
 		case "PORTICO_BROWSER_FACTOR_STATE":
 			if !factors {
 				t.Fatal("factor state requested outside factor fixture")
@@ -215,7 +280,7 @@ func testDashboardBrowser(t *testing.T, mode string) {
 			}
 			must(t, json.NewEncoder(in).Encode(snapshot))
 		case "PORTICO_BROWSER_POLICY_CHANGE":
-			if !management && !factors {
+			if !management && !factors && !lifecycle {
 				t.Fatal("policy mutation requested outside management fixture")
 			}
 			must(t, a.f.f.s.Update(ctx, a.f.f.actor, func(tx *Tx) error { return tx.AddUser(User{NewID(), "Concurrent policy change", true}) }))
@@ -229,7 +294,7 @@ func testDashboardBrowser(t *testing.T, mode string) {
 			_, err = fmt.Fprintln(in, "grant_disabled")
 			must(t, err)
 		case "PORTICO_BROWSER_REVOKE":
-			must(t, a.f.f.s.Update(ctx, a.f.f.actor, func(tx *Tx) error { return tx.Disable("device", a.f.f.device.ID) }))
+			must(t, a.f.f.s.Update(ctx, a.f.f.actor, func(tx *Tx) error { return tx.Disable("device", a.deviceID) }))
 			revoked = true
 			_, err = fmt.Fprintln(in, "revoked")
 			must(t, err)
