@@ -267,14 +267,15 @@ func TestArchGuestApplicationSSH(t *testing.T) {
 	}
 	t.Run(positive.name, func(t *testing.T) { check(t, positive) })
 	for name, change := range map[string]func(*sshCase){
-		"wrong_host_key":     func(c *sshCase) { c.trust = wrongTrust },
-		"unknown_host_key":   func(c *sshCase) { c.trust = emptyTrust },
-		"missing_trust_file": func(c *sshCase) { c.trust = filepath.Join(session.dir, "missing-trust") },
-		"wrong_host_name":    func(c *sshCase) { c.host = "wrong.private.test" },
-		"wrong_ssh_user_key": func(c *sshCase) { c.identity = wrongIdentity },
-		"wrong_ssh_account":  func(c *sshCase) { c.user = "bob" },
-		"wrong_revision":     func(c *sshCase) { c.revision++; c.connections = 0 },
-		"ungranted_resource": func(c *sshCase) { c.resource = NewID(); c.connections = 0 },
+		"wrong_host_key":       func(c *sshCase) { c.trust = wrongTrust },
+		"unknown_host_key":     func(c *sshCase) { c.trust = emptyTrust },
+		"missing_trust_file":   func(c *sshCase) { c.trust = filepath.Join(session.dir, "missing-trust") },
+		"wrong_host_name":      func(c *sshCase) { c.host = "wrong.private.test" },
+		"wrong_ssh_user_key":   func(c *sshCase) { c.identity = wrongIdentity },
+		"missing_ssh_user_key": func(c *sshCase) { c.identity = filepath.Join(session.dir, "missing-identity") },
+		"wrong_ssh_account":    func(c *sshCase) { c.user = "bob" },
+		"wrong_revision":       func(c *sshCase) { c.revision++; c.connections = 0 },
+		"ungranted_resource":   func(c *sshCase) { c.resource = NewID(); c.connections = 0 },
 	} {
 		t.Run(name, func(t *testing.T) {
 			candidate := positive
