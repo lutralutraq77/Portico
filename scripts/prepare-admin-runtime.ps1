@@ -8,7 +8,9 @@ $asset = $lock.artifacts.$target
 if ($lock.version -notmatch '^\d+\.\d+\.\d+$' -or $asset.file -notmatch '^electron-v[0-9.]+-(win32|linux)-x64\.zip$' -or $asset.sha256 -notmatch '^[0-9a-f]{64}$') { throw 'Invalid runtime lock' }
 $archive = Join-Path $PorticoWork ('downloads/' + $asset.file)
 if (-not (Test-Path -LiteralPath $archive)) {
-    Invoke-WebRequest -Uri ('https://github.com/electron/electron/releases/download/v' + $lock.version + '/' + $asset.file) -OutFile $archive
+    # Only this idempotent public artifact GET is retried. The pinned digest
+    # remains mandatory, and no administration request gains a retry path.
+    Invoke-WebRequest -Uri ('https://github.com/electron/electron/releases/download/v' + $lock.version + '/' + $asset.file) -OutFile $archive -MaximumRetryCount 2 -RetryIntervalSec 2 -ConnectionTimeoutSeconds 30 -OperationTimeoutSeconds 60
 }
 if ((Get-FileHash -LiteralPath $archive -Algorithm SHA256).Hash -ine $asset.sha256) { throw 'Runtime archive digest mismatch' }
 $destination = Join-Path $PorticoWork ('toolchains/admin-electron-' + $lock.version + '-' + $target)

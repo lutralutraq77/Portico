@@ -14,7 +14,7 @@ try {
     $asset=$lock.artifacts.'linux-amd64'
     if($lock.version -notmatch '^\d+\.\d+\.\d+$' -or $asset.file -notmatch '^electron-v[0-9.]+-linux-x64\.zip$' -or $asset.sha256 -notmatch '^[0-9a-f]{64}$'){throw 'Invalid Linux runtime pin'}
     $archive=Join-Path $PorticoWork ('downloads/'+$asset.file)
-    if(-not (Test-Path -LiteralPath $archive)){Invoke-WebRequest -Uri ('https://github.com/electron/electron/releases/download/v'+$lock.version+'/'+$asset.file) -OutFile $archive}
+    if(-not (Test-Path -LiteralPath $archive)){Invoke-WebRequest -Uri ('https://github.com/electron/electron/releases/download/v'+$lock.version+'/'+$asset.file) -OutFile $archive -MaximumRetryCount 2 -RetryIntervalSec 2 -ConnectionTimeoutSeconds 30 -OperationTimeoutSeconds 60}
     if((Get-FileHash -LiteralPath $archive).Hash -ine $asset.sha256){throw 'Pinned runtime digest mismatch'}
     $output=Join-Path $PorticoWork ('admin-package/'+$revision)
     if(Test-Path -LiteralPath $output){throw 'Administrator package output already exists; preserve it'}
