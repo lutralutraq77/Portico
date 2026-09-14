@@ -16,11 +16,11 @@ type entry struct {
 }
 
 func main() {
-	names := []string{"init", "tests/cli", "tests/controller", "tests/pki", "tests/adminauth", "tests/wire", "tests/carrier", "tests/control", "tests/boottime", "tests/workload", "tests/clockhealth", "tests/connector", "tests/localfile", "tests/client", "tests/enrollment", "tests/adapter", "tests/issuer", "portico", "tests/localipc", "tests/agent", "tests/adminkey"}
-	if len(os.Args) == 4 {
-		names = []string{"init", "tests/adminkey"}
-	} else if len(os.Args) != 23 {
-		panic("usage: archive output init adminkey-test, or output init followed by the complete fixed test/app list")
+	names := []string{"init", "tests/cli", "tests/controller", "tests/pki", "tests/adminauth", "tests/wire", "tests/carrier", "tests/control", "tests/boottime", "tests/workload", "tests/clockhealth", "tests/connector", "tests/localfile", "tests/client", "tests/enrollment", "tests/adapter", "tests/issuer", "portico", "tests/localipc", "tests/agent", "tests/adminkey", "tests/adminapp"}
+	if len(os.Args) == 5 {
+		names = []string{"init", "tests/adminkey", "tests/adminapp"}
+	} else if len(os.Args) != 24 {
+		panic("usage: archive output init adminkey-test adminapp-test, or output init followed by the complete fixed test/app list")
 	}
 	f, e := os.Create(os.Args[1])
 	check(e)

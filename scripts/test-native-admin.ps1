@@ -16,6 +16,8 @@ try {
     # budget does not change any browser, TLS or administrator session deadline.
     & go test -race ./internal/adminkey -count=1 -v -timeout 8m *> (Join-Path $PorticoWork ('reports/' + $RunName + '-key.log'))
     if ($LASTEXITCODE -ne 0) { throw 'Encrypted administrator key tests failed' }
+    & go test -race ./internal/adminapp -count=1 -v -timeout 2m *> (Join-Path $PorticoWork ('reports/' + $RunName + '-app.log'))
+    if ($LASTEXITCODE -ne 0) { throw 'Administrator application tests failed' }
     try {
         $env:ELECTRON_RUN_AS_NODE = '1'
         # Electron is a GUI executable on Windows. Own and wait for the process

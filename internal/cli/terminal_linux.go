@@ -22,7 +22,7 @@ var terminalAdmission = make(chan struct{}, 1)
 // Application pipes, inherited secret pipes, arguments and environment remain
 // independent. No terminal path or prompt text is accepted from configuration.
 func readTerminalSecrets(parent context.Context, operation string) (data []byte, resultErr error) {
-	if parent == nil || parent.Err() != nil || (operation != "prepare" && operation != "redeem" && operation != "activate" && operation != "client") {
+	if parent == nil || parent.Err() != nil || (operation != "prepare" && operation != "redeem" && operation != "activate" && operation != "client" && operation != "administrator") {
 		return nil, enrollment.ErrRejected
 	}
 	select {

@@ -42,7 +42,7 @@ Current software checks are scripts/check.ps1 (both Go modules, unit/race/fuzz, 
 
 ## External decisions and qualifications
 
-The [Linux administrator key component](administrator-key-storage.md) provides encrypted durable state, administrator-specific authority binding and a revocable native signer. Portable cryptographic/race tests and the isolated Linux file/TLS test passed. New-source hosted qualification and installed launcher integration remain pending.
+The [Linux administrator key component](administrator-key-storage.md) provides encrypted durable state, administrator-specific authority binding and a revocable native signer. Portable cryptographic/race tests and the isolated Linux file/TLS test passed. All seven hosted workflows for key source 4e2416a passed, including the actual Linux native window and six key tests under the race detector. The subsequent [administrator command](administrator-command.md) connects protected configuration and key loading to the native lifecycle. Supported installation and actual installed-command browser qualification remain pending, alongside issuance/renewal, management routing and complete bootstrap/recovery.
 
 The owner is undecided on both hardware-key models and the private sign-in hostname. Test fixtures use isolated .test origins while software work proceeds. Q01–Q14 in [open questions](../OPEN_QUESTIONS.md) track transport, browser/native isolation, revocation semantics, owner recovery, platform support, network deployment, release custody and governance. No production values, custodians, legal license or physical test evidence are invented.
 

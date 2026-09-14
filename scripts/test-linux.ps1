@@ -27,8 +27,8 @@ try {
  $env:GOOS='linux';$env:GOARCH='amd64';$env:CGO_ENABLED='0'
  & go build -trimpath -buildvcs=false -o $initPath ./tools/linuxvm/init/main_linux.go
  if ($LASTEXITCODE -ne 0){throw 'Linux test init build failed'}
- $packages=@('cli','controller','pki','adminauth','wire','carrier','control','boottime','workload','clockhealth','connector','localfile','client','enrollment','localipc','agent','adminkey')
- if ($AdministratorOnly) { $packages=@('adminkey') }
+ $packages=@('cli','controller','pki','adminauth','wire','carrier','control','boottime','workload','clockhealth','connector','localfile','client','enrollment','localipc','agent','adminkey','adminapp')
+ if ($AdministratorOnly) { $packages=@('adminkey','adminapp') }
  foreach($package in $packages){
   & go test -c -o (Join-Path $vm $package) ('./internal/'+$package)
   if ($LASTEXITCODE -ne 0){throw ('Linux test build failed: '+$package)}
@@ -46,9 +46,9 @@ try {
  }
  $env:GOOS=$priorOS;$env:GOARCH=$priorArch;$env:CGO_ENABLED=$priorCGO
  if ($AdministratorOnly) {
-  & go run ./tools/linuxvm/archive/main.go $archivePath $initPath (Join-Path $vm 'adminkey')
+  & go run ./tools/linuxvm/archive/main.go $archivePath $initPath (Join-Path $vm 'adminkey') (Join-Path $vm 'adminapp')
  } else {
-  & go run ./tools/linuxvm/archive/main.go $archivePath $initPath (Join-Path $vm 'cli') (Join-Path $vm 'controller') (Join-Path $vm 'pki') (Join-Path $vm 'adminauth') (Join-Path $vm 'wire') (Join-Path $vm 'carrier') (Join-Path $vm 'control') (Join-Path $vm 'boottime') (Join-Path $vm 'workload') (Join-Path $vm 'clockhealth') (Join-Path $vm 'connector') (Join-Path $vm 'localfile') (Join-Path $vm 'client') (Join-Path $vm 'enrollment') (Join-Path $vm 'adapter') (Join-Path $vm 'issuer') (Join-Path $vm 'portico') (Join-Path $vm 'localipc') (Join-Path $vm 'agent') (Join-Path $vm 'adminkey')
+  & go run ./tools/linuxvm/archive/main.go $archivePath $initPath (Join-Path $vm 'cli') (Join-Path $vm 'controller') (Join-Path $vm 'pki') (Join-Path $vm 'adminauth') (Join-Path $vm 'wire') (Join-Path $vm 'carrier') (Join-Path $vm 'control') (Join-Path $vm 'boottime') (Join-Path $vm 'workload') (Join-Path $vm 'clockhealth') (Join-Path $vm 'connector') (Join-Path $vm 'localfile') (Join-Path $vm 'client') (Join-Path $vm 'enrollment') (Join-Path $vm 'adapter') (Join-Path $vm 'issuer') (Join-Path $vm 'portico') (Join-Path $vm 'localipc') (Join-Path $vm 'agent') (Join-Path $vm 'adminkey') (Join-Path $vm 'adminapp')
  }
  if ($LASTEXITCODE -ne 0){throw 'Test initramfs creation failed'}
  $log=Join-Path $PorticoWork 'reports/linux-runtime.log'

@@ -57,8 +57,10 @@ func RunInputContext(ctx context.Context, args []string, stdin *os.File, stdout,
 	source6, valid6 := parseSecretOption(args, 6)
 	source8, valid8 := parseSecretOption(args, 8)
 	switch {
+	case valid4 && source4 != noSecretSource && args[0] == "admin" && args[1] == "open" && args[2] == "--config":
+		return runAdministrator(ctx, args[3], source4, stderr)
 	case len(args) == 0 || (len(args) == 1 && (args[0] == "help" || args[0] == "--help" || args[0] == "-h")):
-		if _, err := io.WriteString(stdout, usage); err != nil {
+		if _, err := io.WriteString(stdout, usage+adminUsage); err != nil {
 			return 1
 		}
 		return 0

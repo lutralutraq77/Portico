@@ -114,6 +114,7 @@ func main() {
 		// Native hosted tests cover the complete cryptographic suite. Exercise
 		// persisted key custody and actual TLS on this independent guest kernel.
 		{"/tests/adminkey", []string{"-test.v", "-test.timeout=600s", "-test.run=^TestLinuxEncryptedSignerPersistsAndAuthenticatesTLS$"}},
+		{"/tests/adminapp", []string{"-test.v", "-test.shuffle=on", "-test.timeout=180s"}},
 		{"/tests/workload", []string{"-test.v", "-test.shuffle=on", "-test.timeout=180s"}},
 		{"/tests/controller", []string{"-test.v", "-test.shuffle=on", "-test.timeout=600s"}},
 		{"/tests/pki", []string{"-test.v", "-test.shuffle=on", "-test.timeout=180s"}},
@@ -126,7 +127,7 @@ func main() {
 		{"/portico", []string{"version", "--json"}},
 	}
 	for _, test := range tests {
-		if administratorOnly && test.name != "/tests/adminkey" {
+		if administratorOnly && test.name != "/tests/adminkey" && test.name != "/tests/adminapp" {
 			continue
 		}
 		if workloadOnly {
