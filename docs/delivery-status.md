@@ -46,4 +46,6 @@ The [Linux administrator key component](administrator-key-storage.md) provides e
 
 The owner is undecided on both hardware-key models and the private sign-in hostname. Test fixtures use isolated .test origins while software work proceeds. Q01–Q14 in [open questions](../OPEN_QUESTIONS.md) track transport, browser/native isolation, revocation semantics, owner recovery, platform support, network deployment, release custody and governance. No production values, custodians, legal license or physical test evidence are invented.
 
+Administrator-command source `0960991` passed all seven hosted workflows. The subsequent [native administrator package](administrator-package.md) adds a deterministic pinned runtime tree, offline Arch install/remove fixtures and an unmodified installed-command/window test using the real kernel clock. Its hosted execution remains to be qualified. This does not close production bootstrap, issuance/renewal, management-resource routing or independent recovery.
+
 The primary project, shared work directory, toolchains and generated reports stay under E:\Portico. An additional integration checkout is under E:\Portico-encrypted-client; its caches and test output also remain on E:. Development work does not by itself change production DNS, firewall rules, Mullvad configuration or release trust.

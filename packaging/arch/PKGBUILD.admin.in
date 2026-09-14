@@ -1,0 +1,28 @@
+# Unsigned development runtime. No identity files, service activation or hooks.
+pkgname=portico-admin-development
+pkgver=@PACKAGE_VERSION@
+pkgrel=1
+pkgdesc='Development native window for private Portico administration'
+arch=('x86_64')
+url='https://github.com/lutralutraq77/Portico'
+# Project licensing remains undecided. Preserve all upstream runtime notices.
+license=()
+depends=('portico-cli-development' 'gtk3' 'nss' 'alsa-lib' 'mesa')
+options=('!strip' '!debug')
+source=('portico-admin-tree.tar.gz' 'DEVELOPMENT.txt')
+sha256sums=('@TREE_SHA256@' '@NOTICE_SHA256@')
+
+check() {
+    test -f usr/lib/portico-admin/app/main.cjs
+    test -x usr/lib/portico-admin/electron/electron
+    test -f usr/lib/portico-admin/electron/LICENSE
+    test -f usr/lib/portico-admin/electron/LICENSES.chromium.html
+}
+
+package() {
+    install -d "$pkgdir/usr/lib"
+    cp -a usr/lib/portico-admin "$pkgdir/usr/lib/"
+    # Root-owned helper enables Chromium's sandbox for ordinary desktop users.
+    chmod 4755 "$pkgdir/usr/lib/portico-admin/electron/chrome-sandbox"
+    install -Dm644 DEVELOPMENT.txt "$pkgdir/usr/share/doc/portico-admin-development/DEVELOPMENT.txt"
+}

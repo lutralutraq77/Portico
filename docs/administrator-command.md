@@ -31,7 +31,7 @@ The command uses fixed paths `/usr/lib/portico-admin/electron/electron` and `/us
 
 The existing private state directory is locked exclusively for the whole session. A second cooperating administrator process fails before unlocking a key. The command creates no state directory, repairs no permissions and deletes no stale lock. Root and the effective UID remain trusted, including against replacement after inspection. This check is not a package signature, complete dependency review or OS process sandbox. The browser retains the existing native transport and renderer restrictions described in [native administration](native-administration.md).
 
-A supported administrator installer, packaged runtime review/fuses, actual installed-command browser qualification and real administrator enrollment remain unfinished. The current Arch CLI development package does not install the Electron tree. The command therefore fails closed until the required protected files exist; this work does not install services or modify the host.
+A separate [administrator development package](administrator-package.md) now prepares the fixed Electron/application tree and includes an isolated installed-command qualification path. The Arch CLI package still does not install that tree itself. Hosted package/window results must qualify the new path. A supported signed installer, packaged runtime review/fuses and real administrator enrollment remain unfinished. The command fails closed until the required protected files exist; this work does not install services or modify the developer host.
 
 ## Qualification
 

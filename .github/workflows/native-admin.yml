@@ -6,6 +6,11 @@ on:
       - 'internal/**'
       - 'scripts/*native*'
       - 'scripts/prepare-admin-runtime.ps1'
+      - 'scripts/prepare-admin-package.ps1'
+      - 'scripts/test-admin-package.ps1'
+      - 'scripts/arch-admin-*.sh'
+      - 'packaging/arch/PKGBUILD.admin.in'
+      - 'tools/adminbundle/**'
       - '.github/workflows/native-admin.yml'
       - 'go.mod'
       - 'go.sum'
@@ -18,7 +23,7 @@ concurrency:
 jobs:
   linux-window:
     runs-on: ubuntu-24.04
-    timeout-minutes: 15
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -46,6 +51,27 @@ jobs:
         shell: bash
         run: |
           xvfb-run --auto-servernum pwsh -NoProfile -File scripts/test-native-admin.ps1
+      - name: Test administrator archive boundaries and prepare pinned installation
+        shell: pwsh
+        run: |
+          . ./scripts/env.ps1
+          $env:GOMAXPROCS='2'
+          $env:CGO_ENABLED='1'
+          Push-Location tools
+          try {
+            go test -race ./adminbundle -count=1 -v *> ../work/reports/native-admin-bundle.log
+            if ($LASTEXITCODE -ne 0) { throw 'Administrator archive tests failed' }
+          } finally { Pop-Location }
+          ./scripts/prepare-admin-package.ps1
+      - name: Build and install-remove the Arch administrator package offline
+        shell: pwsh
+        run: |
+          $revision=(& git rev-parse HEAD).Trim()
+          ./scripts/test-admin-package.ps1 -Prepared (Join-Path $env:GITHUB_WORKSPACE ('work/admin-package/'+$revision))
+      - name: Qualify the unmodified installed administrator command and window
+        shell: bash
+        run: |
+          xvfb-run --auto-servernum pwsh -NoProfile -File scripts/test-installed-native-admin.ps1 -Prepared "$GITHUB_WORKSPACE/work/admin-package/$(git rev-parse HEAD)"
       - name: Upload redacted native qualification evidence
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -59,4 +85,24 @@ jobs:
             work/reports/native-admin-browser/failure.json
             work/reports/native-admin-browser/native-*-key-review.png
             work/reports/native-admin-browser-clock-fault/clock-ready.txt
+          retention-days: 14
+      - name: Upload installed administrator and package evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: installed-admin-linux
+          path: |
+            work/reports/native-admin-installed.log
+            work/reports/native-admin-installed.json
+            work/reports/native-admin-bundle.log
+            work/installed-admin/portico
+            work/admin-package/*/provenance.json
+            work/admin-package/*/prepare.log
+            work/admin-package/*/PKGBUILD
+            work/admin-package/*/DEVELOPMENT.txt
+            work/admin-package/*/portico-admin-tree.tar.gz
+            work/admin-package/*/arch-build.log
+            work/admin-package/*/arch-install.log
+            work/admin-package/*/arch-qualification.json
+            work/admin-package/*/output/*.pkg.tar.zst
           retention-days: 14
