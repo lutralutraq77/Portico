@@ -20,7 +20,7 @@ func TestSSHInvocation(t *testing.T) {
 	if a.Endpoint != s.Endpoint || argv[0] != "/usr/bin/ssh" || argv[len(argv)-1] != "{socket}" || s.Command[1] != "{socket}" {
 		t.Fatal("SSH command mutated or placeholder expanded in remote command")
 	}
-	if !slices.Equal(argv[len(argv)-8:], []string{"-i", s.Identity, "-l", s.User, "--", s.Host, "printf", "{socket}"}) {
+	if !slices.Equal(argv[len(argv)-8:], []string{"-o", `IdentityFile="` + s.Identity + `"`, "-l", s.User, "--", s.Host, "printf", "{socket}"}) {
 		t.Fatal("host or command entered the SSH option list")
 	}
 	for _, option := range []string{"none", "ProxyUseFdpass=yes", "ControlPath=none", "StrictHostKeyChecking=yes", "GlobalKnownHostsFile=none", "IdentityAgent=none", "CertificateFile=none", "CanonicalizeHostname=no", "VerifyHostKeyDNS=no", "UpdateHostKeys=no"} {
@@ -41,6 +41,7 @@ func TestSSHInvocation(t *testing.T) {
 		"invalid_user":      func(s *SSH) { s.User = "alice\nbob" },
 		"relative_identity": func(s *SSH) { s.Identity = "key" },
 		"token_identity":    func(s *SSH) { s.Identity = "/private/%h" },
+		"quoted_identity":   func(s *SSH) { s.Identity = "/private/\" key" },
 		"environment_trust": func(s *SSH) { s.KnownHosts = "/private/${HOME}" },
 		"quoted_trust":      func(s *SSH) { s.KnownHosts = "/private/\" trust" },
 		"nul_command":       func(s *SSH) { s.Command = []string{"a\x00b"} },

@@ -1,0 +1,38 @@
+{
+  "schema": 1,
+  "scope": "Hosted checks of the SSH descriptor adapter; these runs do not execute real OpenSSH",
+  "main_source": "1c5840c4da7a0beed5e39dd677c8e2ae9af0706d",
+  "dashboard_source": "4453375d19ad8eb34203b86f5cf26828e7a9de2e",
+  "main_pull_request_runs": {
+    "linux": {"id": 34787400127, "conclusion": "success"},
+    "service": {"id": 34787400179, "conclusion": "failure"},
+    "quality": {"id": 34787400154, "conclusion": "success"},
+    "dependency": {"id": 34787400303, "conclusion": "success"},
+    "arch_package": {"id": 34787400168, "conclusion": "success"},
+    "codeql": {"id": 34787400139, "conclusion": "success"}
+  },
+  "dashboard_pull_request_runs": {
+    "linux": {"id": 34787403795, "conclusion": "success"},
+    "service": {"id": 34787403847, "conclusion": "success"},
+    "quality": {"id": 34787403749, "conclusion": "success"},
+    "dependency": {"id": 34787403752, "conclusion": "success"},
+    "arch_package": {"id": 34787403780, "conclusion": "success"},
+    "codeql": {"id": 34787403818, "conclusion": "success"}
+  },
+  "main_service_artifact": {
+    "sha256": "29933b27223f64ccfc80c862769a3fcef7d45af3ada9d28e0a45c04453769ff5",
+    "tested_merge": "7258b453017010aaa69e63a82da0a8f4234bc2df",
+    "tested_tree": "d6aaeb8561c781a6c558f28378e4637af612af60",
+    "merge_parents": ["1a4332095eb4b9c4975bbe6e712301a8468738f6", "1c5840c4da7a0beed5e39dd677c8e2ae9af0706d"],
+    "runtime_member": "arch-systemd/7258b453017010aaa69e63a82da0a8f4234bc2df/runtime.log",
+    "installed_service_subcases_passed": 4,
+    "https_subcases_passed": 20,
+    "https_subcases_failed": 1,
+    "failure": "positive_control_repeat_04: destination, HTTP and authentication counts each advanced by one; launcher returned exit status 1 in 0.71 seconds. Root cause remains unresolved."
+  },
+  "new_real_ssh_fixture": "Compilation, go vet and staticcheck passed locally; runtime qualification pending",
+  "phase_6_complete": false,
+  "phase_7_complete": false,
+  "acceptance_implemented": 7,
+  "acceptance_planned": 84
+}

@@ -11,7 +11,7 @@ concurrency:
 jobs:
   service:
     runs-on: ubuntu-24.04
-    timeout-minutes: 45
+    timeout-minutes: 60
     env:
       GOMAXPROCS: '2'
     defaults:
@@ -34,7 +34,7 @@ jobs:
         run: ./scripts/test-arch-package.ps1
       - name: Build pinned QEMU and extract pinned kernel
         run: ./scripts/prepare-linux-runtime.ps1
-      - name: Execute installed unit under actual systemd user manager in NIC-less guest
+      - name: Execute installed unit and real HTTPS and SSH applications in NIC-less guest
         run: ./scripts/test-arch-systemd.ps1
       - name: Upload user service qualification
         if: always()

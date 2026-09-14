@@ -1,0 +1,37 @@
+{
+  "schema": 1,
+  "source_base_commit": "84a1f2f9e3f29036315d100c1b4312d19802a970",
+  "change": "Use explicit IdentityFile configuration so a missing selected identity cannot enable default private keys",
+  "primary_sources": [
+    "https://github.com/openssh/openssh-portable/blob/V_10_5_P1/ssh.c",
+    "https://github.com/openssh/openssh-portable/blob/V_10_5_P1/readconf.c"
+  ],
+  "runtime_component": {
+    "top_pass": 5,
+    "top_fail": 1,
+    "sub_pass": 40,
+    "sub_fail": 1,
+    "log_sha256": "b7b8c4f6da715d6074aa5ab21101fdd0e6bacf183158a319f9c5e285cd56843c"
+  },
+  "runtime_failure": "TestGuestDescriptorPassing/cli_full_duplex_after_helper_exit: helper was killed at the five-second fixture command bound. The overall run failed; the other 40 subcases, including the corrected SSH invocation, passed. Cause not established.",
+  "linux_compilation": "passed",
+  "linux_vet": "passed",
+  "linux_staticcheck": "passed",
+  "real_missing_identity_runtime": "pending",
+  "physical_key_qualification": false,
+  "controller_test_binary_sha256": "2da4fe662f980640f95e2ca3a126b6009ae43bc801623d7ad8a4ef217f07960c",
+  "source_files": [
+    {
+      "sha256": "a41416e076d84f8e85d6b676583459aa0e61abb7b4b68bf1837949a9152d6620",
+      "path": "internal/agent/ssh_config_linux.go"
+    },
+    {
+      "sha256": "1249ce78bc6141dd5d15c1ad8ab80e4ba9f7aaa4d2a45e70d42a4cc2a0f74fda",
+      "path": "internal/agent/ssh_linux_test.go"
+    },
+    {
+      "sha256": "a0a7325f11d3786e9bbe119ffe1a947273dddf96c65c9c4dc37f2cbf9533b6f2",
+      "path": "internal/controller/application_ssh_linux_test.go"
+    }
+  ]
+}

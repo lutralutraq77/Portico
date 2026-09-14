@@ -41,7 +41,9 @@ func (s SSH) application(helper string) (Application, []string, error) {
 		"-o", "IdentitiesOnly=yes", "-o", "IdentityAgent=none", "-o", "AddKeysToAgent=no", "-o", "CertificateFile=none",
 		"-o", "PreferredAuthentications=publickey", "-o", "PasswordAuthentication=no", "-o", "KbdInteractiveAuthentication=no",
 		"-o", "ForwardAgent=no", "-o", "ForwardX11=no", "-o", "ClearAllForwardings=yes", "-o", "PermitLocalCommand=no",
-		"-i", s.Identity, "-l", s.User, "--", s.Host}
+		// Unlike -i, IdentityFile retains a missing explicit path in OpenSSH's
+		// identity list. It cannot silently enable the default private keys.
+		"-o", `IdentityFile="` + s.Identity + `"`, "-l", s.User, "--", s.Host}
 	a.Argv = append(a.Argv, s.Command...)
 	args, err := a.commandArguments(false)
 	if err != nil {
