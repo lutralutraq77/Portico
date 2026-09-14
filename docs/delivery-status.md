@@ -1,6 +1,6 @@
 # Complete delivery status
 
-The project has fifteen phases, numbered 0 through 14. The current user objective is to complete Phases 6 and 7 in totality, then wait for approval before starting Phase 8. This includes the integrated SSH CA phase in the requested total scope. Work continues across phases where independent software can be implemented without unresolved physical or deployment inputs. No phase number, successful build or component test implies production readiness.
+The project has fifteen phases, numbered 0 through 14. The current user objective is to complete Phases 6 and 7 in totality, then wait for approval before starting Phase 8. Work continues across phases where independent software can be implemented without unresolved physical or deployment inputs. No phase number, successful build or component test implies production readiness.
 
 | Phase | Current authoritative state | Evidence still required for full completion |
 |---|---|---|
@@ -22,7 +22,7 @@ The project has fifteen phases, numbered 0 through 14. The current user objectiv
 
 The [FIN-triggered drain correction](fin-drain.md) and subsequent [fresh connector binding fixture](daemon-binding-fixture.md) passed all six PR workflows on main 30974c8 and dashboard 5afced8. The full Linux guests passed 229 top-level tests/1,108 subcases and 247 top-level tests/1,149 subcases respectively, each with four explicit skips. Both Arch guests passed four installed-service and 21 HTTPS cases. The [source-bound evidence](phase-6-fresh-binding-hosted-evidence.json) retains published artifact digests and exact logs. Earlier failed runs remain recorded; these passes do not establish the cause of the historical intermittent authenticated HTTPS failure.
 
-The [SSH descriptor adapter](ssh-application.md) passed focused Linux checks with six top-level tests and 40 subcases. On main 1c5840c, five of six PR workflows passed; the Arch service run passed four installed-service cases but failed one of 21 HTTPS cases after destination authentication. All six dashboard workflows passed on 4453375. The [recorded outcomes](phase-6-ssh-hosted-evidence.json) preserve the unresolved intermittent HTTPS failure. New real OpenSSH tests and pinned, signature-checked CI provisioning are under runtime qualification. Both Phases 6 and 7 remain incomplete.
+The [SSH descriptor adapter](ssh-application.md) passed focused Linux checks with six top-level tests and 40 subcases. On main 1c5840c, five of six PR workflows passed; the Arch service run passed four installed-service cases but failed one of 21 HTTPS cases after destination authentication. All six dashboard workflows passed on 4453375. The [recorded outcomes](phase-6-ssh-hosted-evidence.json) preserve the unresolved intermittent HTTPS failure. The corrected 17-case real OpenSSH fixture subsequently passed on b7161ef and dashboard 2b39bf6, with all 21 HTTPS and four installed-service cases. Main passed all six PR workflows; dashboard passed five and failed its full Linux daemon shutdown after all 17 functional subcases passed. The [verified current artifacts](phase-6-ssh-runtime-evidence.json) preserve these distinct outcomes. Both Phases 6 and 7 remain incomplete.
 
 ## Evidence rules
 

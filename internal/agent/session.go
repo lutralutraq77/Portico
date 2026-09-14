@@ -114,10 +114,23 @@ func (m *manager) valid() bool {
 	return ok && m.active != nil
 }
 func (m *manager) healthy() bool {
+	return m.health() == nil
+}
+
+// Cancellation invalidates authority just like a failed observation, but is a
+// requested shutdown. Preserve a previously observed clock/state failure even
+// when cancellation arrives concurrently with it.
+func (m *manager) health() error {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	_, ok := m.observeLocked()
-	return ok
+	if ok {
+		return nil
+	}
+	if !m.broken && !m.closed && m.root.Err() != nil {
+		return m.root.Err()
+	}
+	return ErrRejected
 }
 
 func (m *manager) unlock(ctx context.Context, passphrase []byte) error {

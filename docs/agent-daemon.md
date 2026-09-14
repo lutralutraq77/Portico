@@ -41,4 +41,6 @@ Final Linux staticcheck/vet and whitespace checks passed after correcting a test
 
 The complete hosted guest passed 222 top-level checks and 1,084 subcases with no failures and two expected process-helper skips. This includes invalid-control state preservation and the actual daemon enrollment scenario's seventeen subcases, including wrong-password unlock, in 76.56 seconds. The runtime log SHA-256 is `451a8bf7619cb55959643c4bebe0121ef832fa12ec9ef44328b158d27caf7a22`. Actual installed user-manager qualification subsequently passed on the separate source recorded above; these earlier daemon results do not establish that service boundary.
 
+The [shutdown ordering correction](daemon-shutdown.md) distinguishes explicit cancellation during a health tick from an actual clock failure. Its deterministic regression reproduced the earlier erroneous failure return and passed after the correction; corrected-source hosted qualification remains pending.
+
 This extends Phase 6 software. It does not resolve platform key custody, browser-origin/application isolation, physical suspend, hardware administration or the remaining [delivery gates](delivery-status.md).

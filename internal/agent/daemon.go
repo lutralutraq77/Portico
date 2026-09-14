@@ -2,6 +2,7 @@ package agent
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	"portico.local/portico/internal/client"
@@ -55,6 +56,10 @@ func runLocked(ctx context.Context, path string, m *manager) (result error) {
 	go func() { done <- s.grpc.Serve(&limitedListener{Listener: l, server: s}) }()
 	tick := time.NewTicker(250 * time.Millisecond)
 	defer tick.Stop()
+	return superviseLocked(ctx, m, s, done, tick.C)
+}
+
+func superviseLocked(ctx context.Context, m *manager, s *server, done <-chan error, tick <-chan time.Time) error {
 	for {
 		select {
 		case <-ctx.Done():
@@ -63,10 +68,13 @@ func runLocked(ctx context.Context, path string, m *manager) (result error) {
 			return nil
 		case <-done:
 			return ErrRejected
-		case <-tick.C:
-			if !m.healthy() {
+		case <-tick:
+			if err := m.health(); err != nil {
 				s.stop()
 				<-done
+				if errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) {
+					return nil
+				}
 				return ErrRejected
 			}
 		}

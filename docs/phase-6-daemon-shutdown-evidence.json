@@ -1,0 +1,56 @@
+{
+  "schema": 1,
+  "source_base_commit": "b7161efa9593431e6a3d03c72d43555ea7a7fd01",
+  "status": "deterministic regression reproduced; correction passed native race and Linux compilation/static checks; corrected-source hosted runtime pending",
+  "source_files": [
+    {
+      "path": "internal/agent/daemon.go",
+      "sha256": "6558825dfbd9dce7b45e5a6ba702a54e265584b29c062b6f9ef309d22d09d848"
+    },
+    {
+      "path": "internal/agent/session.go",
+      "sha256": "e3b26d75d81a92d4a24900c90f1513f29f2c80b8b3784724c37e9ac0044c6209"
+    },
+    {
+      "path": "internal/agent/daemon_test.go",
+      "sha256": "b3634708d7f2d24e089afeb6a92e58839504d5275744211cf10fab8cb91e05d8"
+    }
+  ],
+  "before": {
+    "top_pass": 0,
+    "sha256": "a84cc8304b4f8978f45e11366d693e696846d916657ed5dbb4ed85a5b81181a2",
+    "log": "E:/Portico/work/reports/daemon-shutdown-before.log",
+    "top_fail": 1,
+    "sub_pass": 3,
+    "failure": "cancel_during_selected_health_tick returns ErrRejected on the original supervision behavior",
+    "sub_fail": 1
+  },
+  "after": {
+    "sub_fail": 0,
+    "skips": 0,
+    "seconds": 41.668,
+    "top_pass": 3,
+    "sha256": "7d45800bea46d2fe5144e37ef97d9bd0b0c02e9a95caf79da3d727cf1454c459",
+    "race": true,
+    "log": "E:/Portico/work/reports/daemon-shutdown-after.jsonl",
+    "sub_pass": 9,
+    "top_fail": 0
+  },
+  "static_analysis": "Native and Linux agent vet/staticcheck passed",
+  "linux_compilation": {
+    "sha256": "33672f6cde300bc52ea8ce9b77c5adbab3dd5737ebbd7611111ca48c7b6ca6a6",
+    "artifact": "E:/Portico/work/reports/daemon-shutdown-linux-tests",
+    "executed": false
+  },
+  "limitations": [
+    "The test orders a synthetic health tick against cancellation over a disposable loopback gRPC listener; it is independent of physical clock and Unix transport qualification.",
+    "No timeout or authority boundary relaxed.",
+    "Preceding hosted daemon shutdown failure is consistent with this race, but its log does not identify the selected supervisor branch.",
+    "No claim that this resolves separate historical HTTPS final-response or descriptor deadline failures."
+  ],
+  "canonical_acceptance": {
+    "total": 91,
+    "implemented": 7,
+    "planned": 84
+  }
+}
