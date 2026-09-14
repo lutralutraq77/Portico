@@ -124,7 +124,13 @@ func Run(parent context.Context, client *Client, spec Launch) error {
 	if serveErr != nil {
 		return fmt.Errorf("%w: child channel: %w", ErrRejected, serveErr)
 	}
-	if exitErr != nil || ctx.Err() != nil {
+	if client.context.Err() != nil {
+		return fmt.Errorf("%w: native session ended", ErrRejected)
+	}
+	if ctx.Err() != nil {
+		return fmt.Errorf("%w: launch cancelled", ErrRejected)
+	}
+	if exitErr != nil {
 		return fmt.Errorf("%w: child exit", ErrRejected)
 	}
 	return nil

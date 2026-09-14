@@ -13,6 +13,7 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"sync/atomic"
 	"testing"
 	"time"
 
@@ -23,21 +24,25 @@ import (
 )
 
 func TestDashboardNativeBrowser(t *testing.T) {
-	runDashboardNativeBrowser(t, false)
+	runDashboardNativeBrowser(t, "")
 }
 
 func TestDashboardNativeBrowserFailure(t *testing.T) {
-	runDashboardNativeBrowser(t, true)
+	runDashboardNativeBrowser(t, "intentional-failure")
 }
 
-func runDashboardNativeBrowser(t *testing.T, failure bool) {
+func TestDashboardNativeBrowserClockFault(t *testing.T) {
+	runDashboardNativeBrowser(t, "clock-fault")
+}
+
+func runDashboardNativeBrowser(t *testing.T, mode string) {
 	t.Helper()
 	executable, report := filepath.Clean(os.Getenv("PORTICO_NATIVE_EXECUTABLE")), filepath.Clean(os.Getenv("PORTICO_BROWSER_REPORT"))
 	if !filepath.IsAbs(executable) || !filepath.IsAbs(report) {
 		t.Fatal("native browser requires absolute runtime and report paths")
 	}
-	if failure {
-		report += "-intentional-failure"
+	if mode != "" {
+		report += "-" + mode
 	}
 	a := adminSeed(t)
 	listener, err := net.Listen("tcp", "127.0.0.1:0")
@@ -65,17 +70,62 @@ func runDashboardNativeBrowser(t *testing.T, failure bool) {
 	})
 	testContext, cancel := context.WithTimeout(context.Background(), 90*time.Second)
 	defer cancel()
-	client, err := adminbridge.New(testContext, adminbridge.Config{Origin: origin, ServerRootDER: root.Raw, ServerSPKI: pki.Hash(leaf.RawSubjectPublicKeyInfo), AdministratorTrust: a.trust, Identity: a.identity, BootstrapAddress: listener.Addr().String(), Timeout: 5 * time.Second, Lifetime: 2 * time.Minute})
+	var clockFault atomic.Bool
+	// Only the health estimate is synthetic. The actual boot/UTC readers remain
+	// active; this fixture never changes the host clock or time service.
+	health := func() (time.Duration, error) {
+		if clockFault.Load() {
+			return 0, errors.New("isolated clock health fault")
+		}
+		return time.Millisecond, nil
+	}
+	client, err := adminbridge.New(testContext, adminbridge.Config{Origin: origin, ServerRootDER: root.Raw, ServerSPKI: pki.Hash(leaf.RawSubjectPublicKeyInfo), AdministratorTrust: a.trust, Identity: a.identity, BootstrapAddress: listener.Addr().String(), Timeout: 5 * time.Second, Lifetime: 2 * time.Minute, ClockHealth: health})
 	must(t, err)
+	defer client.Close()
 	entry, err := filepath.Abs(filepath.Join("..", "..", "scripts", "test-dashboard-native-browser.cjs"))
 	must(t, err)
-	if failure {
+	if mode == "intentional-failure" {
 		entry, err = filepath.Abs(filepath.Join("..", "..", "scripts", "test-dashboard-native-failure.cjs"))
 		must(t, err)
 	}
+	watchContext, stopWatch := context.WithCancel(testContext)
+	defer stopWatch()
+	watchDone := make(chan struct{})
+	if mode == "clock-fault" {
+		entry, err = filepath.Abs(filepath.Join("..", "..", "scripts", "test-dashboard-native-clock.cjs"))
+		must(t, err)
+		go func() {
+			defer close(watchDone)
+			ticker := time.NewTicker(20 * time.Millisecond)
+			defer ticker.Stop()
+			for {
+				select {
+				case <-watchContext.Done():
+					return
+				case <-ticker.C:
+					marker, err := os.ReadFile(filepath.Join(report, "clock-ready.txt"))
+					if err == nil && string(marker) == "native clock fixture ready\n" {
+						clockFault.Store(true)
+						return
+					}
+				}
+			}
+		}()
+	} else {
+		close(watchDone)
+	}
 	started := time.Now()
 	err = adminbridge.Run(testContext, client, adminbridge.Launch{Executable: executable, EntryPoint: entry, StateDirectory: report})
-	if failure {
+	stopWatch()
+	<-watchDone
+	if mode == "clock-fault" {
+		if !clockFault.Load() || !errors.Is(err, adminbridge.ErrRejected) || time.Since(started) > 12*time.Second {
+			t.Fatal("loaded native window did not terminate promptly after clock health loss")
+		}
+		t.Log("loaded native window rejected clock health loss and joined the child and pipes; physical suspend remains unqualified")
+		return
+	}
+	if mode == "intentional-failure" {
 		if !errors.Is(err, adminbridge.ErrRejected) || time.Since(started) > 12*time.Second {
 			t.Fatal("native failure did not reject and terminate promptly")
 		}

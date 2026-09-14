@@ -35,7 +35,7 @@ try {
             if ($nodeProcess.ExitCode -ne 0 -or $output -notmatch '# fail 0\b' -or $output -notmatch '# pass [1-9][0-9]*\b') { throw 'Native channel test result was not a verified pass' }
         } finally { $nodeProcess.Dispose() }
     } finally { Remove-Item Env:ELECTRON_RUN_AS_NODE -ErrorAction SilentlyContinue }
-    & go test -race -tags dashboardbrowser ./internal/controller -run '^TestDashboardNativeBrowser(Failure)?$' -count=1 -v -timeout 3m *> (Join-Path $PorticoWork ('reports/' + $RunName + '-browser.log'))
+    & go test -race -tags dashboardbrowser ./internal/controller -run '^TestDashboardNativeBrowser(Failure|ClockFault)?$' -count=1 -v -timeout 3m *> (Join-Path $PorticoWork ('reports/' + $RunName + '-browser.log'))
     if ($LASTEXITCODE -ne 0) { throw 'Native browser qualification failed' }
     [ordered]@{ revision=(& git rev-parse HEAD); platform=[Runtime.InteropServices.RuntimeInformation]::OSDescription; go=(& go version); runtime=$runtime; result='PASS'; scope='Native component and virtual-key qualification; no physical keys, platform custody, installed administration package or owner recovery qualification' } | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath (Join-Path $PorticoWork ('reports/' + $RunName + '-summary.json'))
 } finally { Pop-Location }

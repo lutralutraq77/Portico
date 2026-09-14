@@ -41,6 +41,7 @@ type Config struct {
 	BootstrapAddress  string
 	Socket            string
 	Timeout, Lifetime time.Duration
+	ClockHealth       ClockHealth
 }
 
 // Request deliberately has no arbitrary headers, proxy destination, cookies,
@@ -66,6 +67,8 @@ type Client struct {
 	context      context.Context
 	cancel       context.CancelFunc
 	admission    chan struct{}
+	clock        *sessionClock
+	watchDone    chan struct{}
 }
 
 func Origin(value string) bool {
@@ -109,6 +112,10 @@ func Origin(value string) bool {
 }
 
 func New(parent context.Context, c Config) (*Client, error) {
+	return newClient(parent, c, newSessionClock(c.ClockHealth))
+}
+
+func newClient(parent context.Context, c Config, clock *sessionClock) (*Client, error) {
 	if parent == nil || parent.Err() != nil || !Origin(c.Origin) || c.AdministratorTrust == nil || c.AdministratorTrust.Profile() != pki.Administrator || c.Timeout <= 0 || c.Timeout > 5*time.Second || c.Lifetime <= 0 || c.Lifetime > 10*time.Minute || (c.BootstrapAddress == "") == (c.Socket == "") {
 		return nil, ErrRejected
 	}
@@ -128,6 +135,15 @@ func New(parent context.Context, c Config) (*Client, error) {
 	if err != nil {
 		return nil, ErrRejected
 	}
+	initial, err := clock.begin(c.Lifetime, credential.NotBefore, credential.NotAfter)
+	if err != nil {
+		return nil, ErrRejected
+	}
+	for _, bound := range []time.Time{initial.wall.Add(-initial.uncertainty), initial.wall.Add(initial.uncertainty)} {
+		if _, err := c.AdministratorTrust.VerifyPeer(identity.Certificate[0], bound); err != nil {
+			return nil, ErrRejected
+		}
+	}
 	var dial func(context.Context, string, string) (net.Conn, error)
 	if c.BootstrapAddress != "" {
 		address, err := netip.ParseAddrPort(c.BootstrapAddress)
@@ -146,28 +162,76 @@ func New(parent context.Context, c Config) (*Client, error) {
 	u, _ := url.Parse(c.Origin)
 	roots := x509.NewCertPool()
 	roots.AddCert(root)
-	tc := &tls.Config{MinVersion: tls.VersionTLS13, RootCAs: roots, ServerName: u.Hostname(), Certificates: []tls.Certificate{identity}, SessionTicketsDisabled: true}
+	tc := &tls.Config{MinVersion: tls.VersionTLS13, RootCAs: roots, ServerName: u.Hostname(), SessionTicketsDisabled: true}
+	tc.GetClientCertificate = func(*tls.CertificateRequestInfo) (*tls.Certificate, error) {
+		if _, _, err := clock.check(); err != nil {
+			return nil, ErrRejected
+		}
+		return &identity, nil
+	}
 	tc.VerifyConnection = func(state tls.ConnectionState) error {
 		if state.Version != tls.VersionTLS13 || len(state.VerifiedChains) == 0 || len(state.PeerCertificates) == 0 || len(state.PeerCertificates) > 3 || pki.Hash(state.PeerCertificates[0].RawSubjectPublicKeyInfo) != c.ServerSPKI {
 			return ErrRejected
+		}
+		v, _, err := clock.check()
+		if err != nil {
+			return ErrRejected
+		}
+		for _, cert := range state.VerifiedChains[0] {
+			if v.wall.Add(-v.uncertainty).Before(cert.NotBefore) || !v.wall.Add(v.uncertainty).Before(cert.NotAfter) {
+				return ErrRejected
+			}
 		}
 		return nil
 	}
 	// Each request proves the device key again. With no reused connection or
 	// idempotency headers, the transport cannot retry a sensitive POST.
 	transport := &http.Transport{TLSClientConfig: tc, Proxy: nil, DisableCompression: true, DisableKeepAlives: true, MaxConnsPerHost: 4, TLSHandshakeTimeout: c.Timeout, ResponseHeaderTimeout: c.Timeout, MaxResponseHeaderBytes: 8192, DialContext: dial}
-	end := time.Now().Add(c.Lifetime)
-	if credential.NotAfter.Before(end) {
-		end = credential.NotAfter
-	}
-	ctx, cancel := context.WithDeadline(parent, end)
+	ctx, cancel := context.WithCancel(parent)
 	client := &http.Client{Transport: transport, CheckRedirect: func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse }}
-	return &Client{origin: c.Origin, host: u.Host, trust: c.AdministratorTrust, leaf: bytes.Clone(identity.Certificate[0]), timeout: c.Timeout, client: client, transport: transport, context: ctx, cancel: cancel, admission: make(chan struct{}, 4)}, nil
+	result := &Client{origin: c.Origin, host: u.Host, trust: c.AdministratorTrust, leaf: bytes.Clone(identity.Certificate[0]), timeout: c.Timeout, client: client, transport: transport, context: ctx, cancel: cancel, admission: make(chan struct{}, 4), clock: clock, watchDone: make(chan struct{})}
+	go result.watch()
+	return result, nil
 }
 
-func (c *Client) Close()                { c.cancel(); c.transport.CloseIdleConnections() }
+func (c *Client) Close()                { c.cancel(); <-c.watchDone; c.transport.CloseIdleConnections() }
 func (c *Client) Origin() string        { return c.origin }
 func (c *Client) Done() <-chan struct{} { return c.context.Done() }
+
+func (c *Client) watch() {
+	defer close(c.watchDone)
+	defer c.transport.CloseIdleConnections()
+	for {
+		_, left, err := c.clock.check()
+		if err != nil {
+			c.cancel()
+			return
+		}
+		timer := time.NewTimer(min(left, 25*time.Millisecond))
+		select {
+		case <-c.context.Done():
+			timer.Stop()
+			return
+		case <-timer.C:
+		}
+	}
+}
+
+func (c *Client) remaining() (time.Duration, error) {
+	v, left, err := c.clock.check()
+	if err == nil {
+		for _, bound := range []time.Time{v.wall.Add(-v.uncertainty), v.wall.Add(v.uncertainty)} {
+			if _, err = c.trust.VerifyPeer(c.leaf, bound); err != nil {
+				break
+			}
+		}
+	}
+	if err != nil || c.context.Err() != nil {
+		c.cancel()
+		return 0, ErrRejected
+	}
+	return left, nil
+}
 
 func (c *Client) permitted(r Request) bool {
 	if r.Site != "" && r.Site != "none" && r.Site != "same-origin" {
@@ -200,11 +264,11 @@ func (c *Client) Exchange(parent context.Context, request Request) (Response, er
 		return Response{}, ErrRejected
 	}
 	defer func() { <-c.admission }()
-	if _, err := c.trust.VerifyPeer(c.leaf, time.Now()); err != nil {
-		c.Close()
+	left, err := c.remaining()
+	if err != nil {
 		return Response{}, ErrRejected
 	}
-	ctx, cancel := context.WithTimeout(parent, c.timeout)
+	ctx, cancel := context.WithTimeout(parent, min(c.timeout, left))
 	defer cancel()
 	stop := context.AfterFunc(c.context, cancel)
 	defer stop()
@@ -267,6 +331,10 @@ func (c *Client) Exchange(parent context.Context, request Request) (Response, er
 		headers[name] = values[0]
 	}
 	if headers["Referrer-Policy"] != "no-referrer" || headers["X-Frame-Options"] != "DENY" || (headers["Content-Security-Policy"] != browserCSP && headers["Content-Security-Policy"] != "default-src 'none'") {
+		clear(body)
+		return Response{}, ErrRejected
+	}
+	if _, err := c.remaining(); err != nil {
 		clear(body)
 		return Response{}, ErrRejected
 	}

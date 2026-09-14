@@ -85,7 +85,7 @@ func bridgeSeed(t *testing.T, handler http.HandlerFunc) *bridgeFixture {
 	t.Cleanup(f.server.Close)
 	_, port, err := net.SplitHostPort(f.server.Listener.Addr().String())
 	testfixture.Must(t, err)
-	f.config = Config{Origin: "https://localhost:" + port, ServerSPKI: pki.Hash(identity.Leaf.RawSubjectPublicKeyInfo), ServerRootDER: serverRoot.Raw, AdministratorTrust: trust, Identity: tls.Certificate{Certificate: [][]byte{leaf.Raw}, PrivateKey: f.signer}, BootstrapAddress: f.server.Listener.Addr().String(), Timeout: time.Second, Lifetime: time.Minute}
+	f.config = Config{Origin: "https://localhost:" + port, ServerSPKI: pki.Hash(identity.Leaf.RawSubjectPublicKeyInfo), ServerRootDER: serverRoot.Raw, AdministratorTrust: trust, Identity: tls.Certificate{Certificate: [][]byte{leaf.Raw}, PrivateKey: f.signer}, BootstrapAddress: f.server.Listener.Addr().String(), Timeout: time.Second, Lifetime: time.Minute, ClockHealth: func() (time.Duration, error) { return 0, nil }}
 	return f
 }
 

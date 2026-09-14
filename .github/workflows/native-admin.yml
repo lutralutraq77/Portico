@@ -3,8 +3,7 @@ on:
   pull_request:
     paths:
       - 'desktop/admin/**'
-      - 'internal/adminbridge/**'
-      - 'internal/controller/**'
+      - 'internal/**'
       - 'scripts/*native*'
       - 'scripts/prepare-admin-runtime.ps1'
       - '.github/workflows/native-admin.yml'
@@ -59,4 +58,5 @@ jobs:
             work/reports/native-admin-browser/result.json
             work/reports/native-admin-browser/failure.json
             work/reports/native-admin-browser/native-*-key-review.png
+            work/reports/native-admin-browser-clock-fault/clock-ready.txt
           retention-days: 14
