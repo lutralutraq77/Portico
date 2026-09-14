@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"crypto/ecdsa"
 	"crypto/tls"
 	"crypto/x509"
 	"crypto/x509/pkix"
@@ -25,6 +26,8 @@ type adminFixture struct {
 	keys             []*testfixture.VirtualKey
 	factors          []string
 	userID, deviceID string
+	ca               *x509.Certificate
+	caKey            *ecdsa.PrivateKey
 }
 
 func adminSeed(t *testing.T) *adminFixture {
@@ -54,7 +57,7 @@ func adminSeedFor(t *testing.T, f *enrollmentFixture, userID, deviceID string) *
 	}
 	v, e := adminauth.New(adminauth.Config{Origin: "https://admin.portico.test", Models: models, ValidUntil: time.Now().Add(time.Hour)})
 	must(t, e)
-	return &adminFixture{f: f, trust: trust, conn: conn, identity: tls.Certificate{Certificate: [][]byte{leaf.Raw}, PrivateKey: key}, verifier: v, keys: keys, userID: userID, deviceID: deviceID}
+	return &adminFixture{f: f, trust: trust, conn: conn, identity: tls.Certificate{Certificate: [][]byte{leaf.Raw}, PrivateKey: key}, verifier: v, keys: keys, userID: userID, deviceID: deviceID, ca: ca, caKey: ik}
 }
 func (a *adminFixture) register(t *testing.T, key *testfixture.VirtualKey, challenge AdminChallenge) string {
 	t.Helper()

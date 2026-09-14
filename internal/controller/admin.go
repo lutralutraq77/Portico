@@ -93,8 +93,9 @@ func adminDER(ctx context.Context, conn *tls.Conn) ([]byte, error) {
 type AdminOperation struct {
 	Kind       string
 	TargetID   string
-	Invitation *InvitationSpec `json:",omitempty"`
-	PolicyHash string          `json:",omitempty"`
+	Invitation *InvitationSpec   `json:",omitempty"`
+	PolicyHash string            `json:",omitempty"`
+	Renewal    *AdminRenewalSpec `json:",omitempty"`
 }
 type AdminChallenge struct {
 	ID           string
@@ -105,6 +106,7 @@ type AdminResult struct {
 	InvitationID     string
 	InvitationSecret string
 	Registration     *AdminChallenge
+	RenewalID        string `json:",omitempty"`
 }
 
 func (t *Tx) adminUser(user string, testedOnly bool) (adminauth.User, error) {
@@ -137,11 +139,19 @@ func (t *Tx) stageAdmin(p adminPeer, v *adminauth.Verifier, op AdminOperation, r
 	if v == nil || !validID(op.TargetID) {
 		return result, t.fail(ErrInvalid)
 	}
-	if op.Kind != "invite" && op.Kind != "revoke-enrollment" && op.Kind != "apply-policy" && op.Kind != "register-factor" && op.Kind != "disable-factor" && op.Kind != "test-factor" && !(op.Kind == "bootstrap-factor" && registration) {
+	if op.Kind != "invite" && op.Kind != "renew-administrator" && op.Kind != "revoke-enrollment" && op.Kind != "apply-policy" && op.Kind != "register-factor" && op.Kind != "disable-factor" && op.Kind != "test-factor" && !(op.Kind == "bootstrap-factor" && registration) {
 		return result, t.fail(ErrInvalid)
 	}
 	if (op.Kind == "invite") != (op.Invitation != nil) {
 		return result, t.fail(ErrInvalid)
+	}
+	if (op.Kind == "renew-administrator") != (op.Renewal != nil) {
+		return result, t.fail(ErrInvalid)
+	}
+	if op.Renewal != nil {
+		if _, e := pki.ParseCSR(op.Renewal.CSR); e != nil {
+			return result, t.fail(ErrInvalid)
+		}
 	}
 	if (op.Kind == "apply-policy" && !digest(op.PolicyHash)) || (op.Kind != "apply-policy" && op.PolicyHash != "") {
 		return result, t.fail(ErrInvalid)
@@ -240,7 +250,7 @@ func (t *Tx) beginAdmin(p adminPeer, v *adminauth.Verifier, op AdminOperation) (
 	if t.tx.QueryRowContext(t.ctx, "SELECT count(*) FROM admin_factors WHERE user_id=? AND enabled=1 AND tested=1", p.user).Scan(&tested) != nil {
 		return AdminChallenge{}, t.fail(ErrStorage)
 	}
-	if (op.Kind != "test-factor" && tested < 1) || ((invitationKind(op.Kind) || op.Kind == "apply-policy") && tested < 2) {
+	if (op.Kind != "test-factor" && tested < 1) || ((invitationKind(op.Kind) || op.Kind == "apply-policy" || op.Kind == "renew-administrator") && tested < 2) {
 		return AdminChallenge{}, t.fail(ErrDenied)
 	}
 	return t.stageAdmin(p, v, op, false)
@@ -280,6 +290,7 @@ const (
 	adminFinishAny adminFinishScope = iota
 	adminFinishFactor
 	adminFinishInvitation
+	adminFinishRenewal
 )
 
 func (s *Store) finishAdminOperation(ctx context.Context, conn *tls.Conn, trust *pki.Trust, v *adminauth.Verifier, id string, response []byte, scope adminFinishScope, applyPolicy func(*Tx, adminPeer, AdminOperation) error) (AdminResult, error) {
@@ -306,7 +317,7 @@ func (s *Store) finishAdminOperation(ctx context.Context, conn *tls.Conn, trust 
 		if json.Unmarshal(sessionBytes, &session) != nil || json.Unmarshal(operationBytes, &op) != nil {
 			return t.fail(ErrIntegrity)
 		}
-		if scope > adminFinishInvitation || (scope == adminFinishFactor && !factorKind(op.Kind)) || (scope == adminFinishInvitation && !invitationKind(op.Kind)) {
+		if scope > adminFinishRenewal || (scope == adminFinishFactor && !factorKind(op.Kind)) || (scope == adminFinishInvitation && !invitationKind(op.Kind)) || (scope == adminFinishRenewal && op.Kind != "renew-administrator") {
 			return t.fail(ErrDenied)
 		}
 		if (applyPolicy != nil && op.Kind != "apply-policy") || (applyPolicy == nil && op.Kind == "apply-policy") {
@@ -360,6 +371,12 @@ func (s *Store) finishAdminOperation(ctx context.Context, conn *tls.Conn, trust 
 			return e
 		}
 		switch op.Kind {
+		case "renew-administrator":
+			if e = t.reserveAdminRenewal(p, trust, op); e != nil {
+				return e
+			}
+			result.RenewalID = op.TargetID
+			return nil
 		case "apply-policy":
 			if applyPolicy == nil {
 				return t.fail(ErrDenied)

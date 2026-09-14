@@ -6,7 +6,7 @@ $lock = Get-Content -LiteralPath (Join-Path $PorticoRoot 'tools/toolchain.lock.j
 function Get-VerifiedArchive {
     param([string]$Url, [string]$ExpectedSHA256, [string]$Destination)
     if (-not (Test-Path -LiteralPath $Destination)) {
-        Invoke-WebRequest -Uri $Url -OutFile $Destination
+        Invoke-WebRequest -Uri $Url -OutFile $Destination -MaximumRetryCount 2 -RetryIntervalSec 2 -ConnectionTimeoutSeconds 30 -OperationTimeoutSeconds 60
     }
     $actual = (Get-FileHash -LiteralPath $Destination -Algorithm SHA256).Hash
     if ($actual -ine $ExpectedSHA256) { throw "Archive checksum mismatch: $Destination" }
@@ -69,4 +69,3 @@ try {
     }
 } finally { Pop-Location }
 Write-Output ('Pinned development tools ready under ' + $PorticoWork)
-

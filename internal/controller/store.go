@@ -32,11 +32,14 @@ var policySchema string
 //go:embed closure.sql
 var closureSchema string
 
+//go:embed admin_renewal.sql
+var adminRenewalSchema string
+
 const applicationID = 0x50525443
-const schemaVersion = 5
+const schemaVersion = 6
 
 func currentSchemaDigest() string {
-	h := sha256.Sum256([]byte(schema + enrollmentSchema + adminSchema + policySchema + closureSchema))
+	h := sha256.Sum256([]byte(schema + enrollmentSchema + adminSchema + policySchema + closureSchema + adminRenewalSchema))
 	return hex.EncodeToString(h[:])
 }
 
@@ -108,13 +111,13 @@ func (s *Store) initialize(ctx context.Context) error {
 		if e = tx.QueryRowContext(ctx, "SELECT count(*) FROM sqlite_master WHERE name NOT LIKE 'sqlite_%'").Scan(&n); e != nil || n != 0 {
 			return ErrIntegrity
 		}
-		if _, e = tx.ExecContext(ctx, schema+enrollmentSchema+adminSchema+policySchema+closureSchema); e != nil {
+		if _, e = tx.ExecContext(ctx, schema+enrollmentSchema+adminSchema+policySchema+closureSchema+adminRenewalSchema); e != nil {
 			return classify(e)
 		}
 		if _, e = tx.ExecContext(ctx, "INSERT INTO meta(singleton,schema_digest) VALUES(1,?)", want); e != nil {
 			return ErrStorage
 		}
-		if _, e = tx.ExecContext(ctx, "PRAGMA user_version=5; PRAGMA application_id=1347572803"); e != nil {
+		if _, e = tx.ExecContext(ctx, "PRAGMA user_version=6; PRAGMA application_id=1347572803"); e != nil {
 			return ErrStorage
 		}
 	} else if (version < 1 || version > schemaVersion) || app != applicationID {
@@ -145,6 +148,11 @@ func (s *Store) initialize(ctx context.Context) error {
 		if got != hex.EncodeToString(previous[:]) {
 			return ErrIntegrity
 		}
+	} else if version == 5 {
+		previous := sha256.Sum256([]byte(schema + enrollmentSchema + adminSchema + policySchema + closureSchema))
+		if got != hex.EncodeToString(previous[:]) {
+			return ErrIntegrity
+		}
 	} else if got != want {
 		return ErrIntegrity
 	}
@@ -169,7 +177,10 @@ func (s *Store) initialize(ctx context.Context) error {
 		return e
 	}
 	if version >= 1 && version < schemaVersion {
-		migration := closureSchema
+		migration := adminRenewalSchema
+		if version <= 4 {
+			migration = closureSchema + migration
+		}
 		if version <= 3 {
 			migration = policySchema + migration
 		}
@@ -193,7 +204,7 @@ func (s *Store) initialize(ctx context.Context) error {
 		if _, e = tx.ExecContext(ctx, "UPDATE meta SET schema_digest=? WHERE singleton=1", want); e != nil {
 			return ErrStorage
 		}
-		if _, e = tx.ExecContext(ctx, "PRAGMA user_version=5"); e != nil {
+		if _, e = tx.ExecContext(ctx, "PRAGMA user_version=6"); e != nil {
 			return ErrStorage
 		}
 		t := &Tx{tx: tx, ctx: ctx, now: s.now().UTC(), actor: NewID(), correlation: NewID()}

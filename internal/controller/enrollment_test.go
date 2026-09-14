@@ -146,6 +146,9 @@ func tlsHandshake(t *testing.T, s *Store, trust *pki.Trust, client tls.Certifica
 	serverConfig, e := s.ClientTLSConfig(tls.Certificate{Certificate: [][]byte{der}, PrivateKey: k}, trust, pending)
 	if trust.Profile() == pki.Administrator {
 		serverConfig, e = s.AdminTLSConfig(tls.Certificate{Certificate: [][]byte{der}, PrivateKey: k}, trust)
+		if pending {
+			serverConfig, e = s.AdminRenewalTLSConfig(tls.Certificate{Certificate: [][]byte{der}, PrivateKey: k}, trust)
+		}
 	}
 	must(t, e)
 	roots := x509.NewCertPool()
