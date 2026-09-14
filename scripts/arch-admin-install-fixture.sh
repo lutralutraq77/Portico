@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
+trap 'printf "PORTICO_ARCH_ADMIN_INSTALL_FAILED line=%s status=%s\n" "$LINENO" "$?" >&2' ERR
 test "$(id -u)" -eq 0
 test ! -e /usr/lib/portico-admin
 mkdir -m 700 /root/portico-administrator-fixture
@@ -7,6 +8,10 @@ printf '%s\n' 'isolated owner state marker' > /root/portico-administrator-fixtur
 before=$(sha256sum /root/portico-administrator-fixture/preserved)
 packages=(/input/portico-admin-development-*.pkg.tar.zst)
 test "${#packages[@]}" -eq 1
+# The minimal image excludes documentation. Admit this package's notice in
+# this disposable container, retaining all signature and other extraction rules.
+pacman-conf NoExtract
+printf '\n[options]\nNoExtract = !usr/share/doc/portico-admin-development/DEVELOPMENT.txt\n' >> /etc/pacman.conf
 # The NIC-less package fixture validates ownership/install/remove without
 # executing the browser. Actual dependency-complete window testing is separate.
 pacman -U --nodeps --nodeps --noconfirm "${packages[0]}"
@@ -15,6 +20,7 @@ test "$(stat -c '%u:%g:%a' /usr/lib/portico-admin/electron/electron)" = '0:0:755
 test -f /usr/lib/portico-admin/electron/LICENSE
 test -f /usr/lib/portico-admin/electron/LICENSES.chromium.html
 test -f /usr/lib/portico-admin/app/main.cjs
+test -f /usr/share/doc/portico-admin-development/DEVELOPMENT.txt
 test "$(find /usr/lib/portico-admin -type l | wc -l)" -eq 0
 test "$(find /usr/lib/portico-admin -perm /0022 | wc -l)" -eq 0
 test "$(find /usr/lib/portico-admin -type f -perm /7000 | wc -l)" -eq 1
