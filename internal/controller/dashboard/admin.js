@@ -2,6 +2,7 @@
 
 (() => {
   const sections = {
+    issuers: { title: "Enrollment issuers", description: "Bound ordinary-device and connector issuers.", columns: [["Issuer", "ID"], ["Profile", "Profile"], ["Fingerprint", "Fingerprint"], ["Expires", "NotAfter"], ["Configuration", "Enabled"]], fields: { ID: "string", Profile: "string", Fingerprint: "string", RootFingerprint: "string", Enabled: "boolean", NotAfter: "date" } },
     factors: { title: "Security keys", description: "Attested keys registered to the administrator using this connection.", columns: [["Key record", "ID"], ["Attested model", "ModelID"], ["Configuration", "Enabled"], ["Key test", "Tested"]], fields: { ID: "string", ModelID: "string", Enabled: "boolean", Tested: "boolean" }, scopeTitle: "Keep a tested backup key available.", scopeDescription: "Retiring a key requires a different tested key. Registration must be followed by a separate key test. These records do not prove physical recovery readiness.", loaded: "Your security-key records loaded." },
     users: { title: "Users", description: "People registered in this deployment.", columns: [["Person", "Name", "ID"], ["Configuration", "Enabled"]], fields: { ID: "string", Name: "string", Enabled: "boolean" } },
     devices: { title: "Devices", description: "Registered devices and the identities they belong to.", columns: [["Device", "Name", "ID"], ["User", "UserID"], ["Platform", "Platform"], ["Identity expires", "NotAfter"], ["Configuration", "Enabled"]], fields: { ID: "string", UserID: "string", Name: "string", Platform: "string", Enabled: "boolean", NotAfter: "date" } },
@@ -34,6 +35,7 @@
   let choices = {};
   let policy = null;
   let factor = null;
+	let secretCleanup;
 
   function element(tag, text, className) {
     const node = document.createElement(tag);
@@ -46,6 +48,7 @@
     feedback.dataset.error = String(error);
   }
   function clear() {
+    secretCleanup?.();
     policy = null;
     factor = null;
     records.replaceChildren();
@@ -78,6 +81,7 @@
     if (!validItems) return false;
     if (requestedSection === "factors") return data.Items.every((item) => uuid(item.ID) && uuid(item.ModelID));
     const hash = (value) => /^[0-9a-f]{64}$/.test(value);
+    if (requestedSection === "issuers") return data.Items.every((item) => uuid(item.ID) && ["device", "connector"].includes(item.Profile) && hash(item.Fingerprint) && hash(item.RootFingerprint));
     if (requestedSection === "security") return data.Items.length === 1 && data.Next === "" && data.Items.every((item) => hash(item.CertificateFingerprint) && item.TestedEnabledFactors <= item.EnabledFactors && Date.parse(item.CertificateExpiresAt) > Date.parse(data.ObservedAt));
     if (requestedSection === "audit") return (!data.Next || data.Next === data.Items.at(-1)?.ID) && data.Items.every((item, index) => item.Sequence > 0 && item.Generation > 0 && hash(item.Hash) && (item.Sequence === 1 ? item.PreviousHash === "" : hash(item.PreviousHash)) && (index === 0 || (item.Sequence === data.Items[index-1].Sequence + 1 && item.PreviousHash === data.Items[index-1].Hash)));
     return true;
@@ -97,7 +101,7 @@
     for (const [label] of view.columns) {
       const cell = element("th", label); cell.scope = "col"; header.append(cell);
     }
-    if (section === "resources" || section === "factors" || Object.hasOwn(lifecycleEntities, section)) { const cell = element("th", "Manage"); cell.scope = "col"; header.append(cell); }
+    if (section === "resources" || section === "factors" || section === "enrollments" || Object.hasOwn(lifecycleEntities, section)) { const cell = element("th", "Manage"); cell.scope = "col"; header.append(cell); }
     const head = element("thead"); head.append(header); table.append(head);
     const body = element("tbody");
     for (const item of data.Items) {
@@ -124,6 +128,11 @@
         }
         row.append(cell);
       }
+      if (section === "enrollments") {
+        const cell = element("td"); cell.dataset.label = "Manage";
+        const button = element("button", "Revoke enrollment"); button.type = "button"; button.disabled = item.State === "revoked";
+        button.setAttribute("aria-label", `Revoke enrollment ${item.ID}`); button.addEventListener("click", () => startInvitation(item.Profile, item)); cell.append(button); row.append(cell);
+      }
       if (Object.hasOwn(lifecycleEntities, section)) {
         const entity = lifecycleEntities[section], cell = element("td"); cell.dataset.label = "Manage";
         for (const [action, label] of [["rename", "Rename"], ["disable", "Revoke access"]]) {
@@ -138,6 +147,11 @@
     table.append(body);
     const wrapper = element("div", undefined, "table-wrap"); wrapper.append(table);
     records.replaceChildren(wrapper);
+    if (section === "enrollments") {
+      const bar = element("div", undefined, "policy-actions");
+      for (const profile of ["device", "connector"]) { const button = element("button", `Invite ${profile}`, "primary-action"); button.type = "button"; button.addEventListener("click", () => startInvitation(profile)); bar.append(button); }
+      records.prepend(bar);
+    }
     const actions = { resources: ["Create resource", "create-resource"], grants: ["Add device grant", "grant"], hosting: ["Add hosting permission", "host"], users: ["Add user", "create-user"], devices: ["Add device", "create-device"], connectors: ["Add connector", "create-connector"] };
     if (Object.hasOwn(actions, section)) {
       const [label, kind] = actions[section], bar = element("div", undefined, "policy-actions");
@@ -316,7 +330,8 @@
   }
   const policyTitles = { "create-resource": "Create resource", "revise-resource": "Revise resource", grant: "Add device grant", host: "Add hosting permission" };
   for (const entity of Object.values(lifecycleEntities)) for (const [action, label] of [["create", "Add"], ["rename", "Rename"], ["disable", "Revoke"]]) policyTitles[`${action}-${entity}`] = `${label} ${entity}${action === "disable" ? " access" : ""}`;
-  const policyTypes = { connector: "connectors", device: "devices", resource: "resources", user: "users" };
+  policyTitles.invite = "Create enrollment invitation"; policyTitles["revoke-enrollment"] = "Revoke enrollment";
+  const policyTypes = { connector: "connectors", device: "devices", resource: "resources", user: "users", issuer: "issuers" };
   const uuid = (value) => typeof value === "string" && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(value) && value !== "00000000-0000-0000-0000-000000000000";
   const exact = (value, keys) => value && typeof value === "object" && !Array.isArray(value) && Object.keys(value).length === keys.length && keys.every((key) => Object.hasOwn(value, key));
   const date = (value) => typeof value === "string" && value.length < 64 && Number.isFinite(Date.parse(value));
@@ -345,7 +360,9 @@
       const pages = {};
       // Each subsequent selector is bound to the first verified policy revision.
       for (const [key, choice] of Object.entries(state.choices)) {
-        const page = await privateJSON("/api/v1/admin/dashboard/inventory", { Section: policyTypes[key], After: choice.cursors[choice.index], Limit: 50, PolicyRevision: state.revision }, controller.signal);
+        const request = { Section: policyTypes[key], After: choice.cursors[choice.index], Limit: 50, PolicyRevision: state.revision };
+        if (key === "issuer") request.Profile = state.profile;
+        const page = await privateJSON("/api/v1/admin/dashboard/inventory", request, controller.signal);
         if (!validPage(page, policyTypes[key], state.revision)) throw new Error("Invalid policy choices");
         state.revision = page.PolicyRevision; pages[key] = page;
       }
@@ -370,7 +387,7 @@
       const select = element("select"); select.id = label.htmlFor; select.required = true;
       const empty = element("option", `Choose ${key}`); empty.value = ""; select.append(empty);
       for (const item of page.Items.filter((item) => item.Enabled)) {
-        const title = key === "resource" ? `${item.Name} · revision ${item.Revision} · ${item.Address}:${item.Port}` : `${item.Name} · ${item.ID}`;
+        const title = key === "issuer" ? `${item.Profile} · ${item.ID}` : key === "resource" ? `${item.Name} · revision ${item.Revision} · ${item.Address}:${item.Port}` : `${item.Name} · ${item.ID}`;
         const option = element("option", title); option.value = item.ID; select.append(option);
       }
       select.value = choice.selected; choice.selected = select.value;
@@ -390,6 +407,10 @@
       field.append(label, select, element("p", `Page ${choice.index + 1} · up to 50 records`, "record-id"), pager); form.append(field);
     }
     let fields = state.kind.endsWith("resource") ? [["Name", "Resource name", "text"], ["Address", "Canonical destination IP address", "text"], ["Port", "TCP port", "number"]] : [["From", "Valid from (UTC)", "datetime-local"], ["Until", "Valid until (UTC)", "datetime-local"]];
+    if (state.invitation) {
+      fields = state.previous ? [] : [["ExpiresAt", "Invitation expires (UTC, within one hour)", "datetime-local"], ["NotAfter", "Issued identity expires (UTC)", "datetime-local"]];
+      if (state.previous) form.append(element("p", `Enrollment ${state.previous.ID} · ${state.previous.Profile} · ${state.previous.State}`, "record-id"));
+    }
     if (state.lifecycle) {
       fields = state.lifecycle.action === "disable" ? [] : [["Name", `${state.lifecycle.entity[0].toUpperCase() + state.lifecycle.entity.slice(1)} name`, "text"]];
       if (state.previous) form.append(element("p", `${state.previous.Name} · ${state.previous.ID}`, "record-id"));
@@ -414,10 +435,17 @@
     const cancelButton = element("button", "Cancel change"); cancelButton.type = "button"; cancelButton.addEventListener("click", policyCancel);
     form.append(submit, cancelButton);
     form.addEventListener("submit", (event) => { event.preventDefault(); if (!pending && state === policy && form.reportValidity()) void previewPolicy(state, pages, form); });
-    const explanation = state.lifecycle ? lifecycleEffect(state) : state.kind.endsWith("resource") ? "A resource defines one TCP destination. Device grants and connector hosting permissions must explicitly cover its revision." : "Enter both times in UTC. The displayed device and exact resource revision define the permission.";
+    const explanation = state.invitation ? invitationEffect(state) : state.lifecycle ? lifecycleEffect(state) : state.kind.endsWith("resource") ? "A resource defines one TCP destination. Device grants and connector hosting permissions must explicitly cover its revision." : "Enter both times in UTC. The displayed device and exact resource revision define the permission.";
     records.replaceChildren(form, element("p", explanation, "access-explanation"));
   }
   function policyDraft(state, pages) {
+    if (state.invitation) {
+      if (state.previous) return { Kind: state.kind, EnrollmentID: state.previous.ID, PolicyRevision: state.revision };
+      const principal = pages[state.profile].Items.find((item) => item.ID === state.choices[state.profile].selected && item.Enabled);
+      const issuer = pages.issuer.Items.find((item) => item.ID === state.choices.issuer.selected && item.Enabled && item.Profile === state.profile);
+      if (!principal || !issuer || Date.parse(issuer.NotAfter) <= Date.now()) throw new Error("Invalid invitation identity");
+      return { Kind: state.kind, PrincipalID: principal.ID, IssuerID: issuer.ID, Profile: state.profile, PolicyRevision: state.revision, ExpiresAt: new Date(state.fields.ExpiresAt + "Z").toISOString(), NotAfter: new Date(state.fields.NotAfter + "Z").toISOString() };
+    }
     if (state.lifecycle) {
       const draft = { Kind: state.kind, PolicyRevision: state.revision };
       if (state.previous) draft.TargetID = state.previous.ID;
@@ -476,10 +504,10 @@
     const timeout = setTimeout(() => controller.abort(), 8000);
     try {
       const draft = policyDraft(state, pages);
-      const view = await privateJSON("/api/v1/admin/policy/preview", draft, controller.signal);
-      if (!validPolicyPreview(view, draft, state, pages)) throw new Error("Preview differs from draft");
+      const view = await privateJSON(state.invitation ? "/api/v1/admin/invitations/challenge" : "/api/v1/admin/policy/preview", draft, controller.signal);
+      if (!(state.invitation ? validInvitationPreview(view, draft, state, pages) : validPolicyPreview(view, draft, state, pages))) throw new Error("Preview differs from draft");
       if (attempt !== generation || state !== policy || document.hidden) return;
-      renderPolicyPreview(view, state);
+      if (state.invitation) renderInvitationPreview(view, state); else renderPolicyPreview(view, state);
       message("Review every detail. This change has not been applied.");
     } catch {
       if (attempt !== generation) return;
@@ -631,6 +659,77 @@
     } catch {
       if (attempt !== generation) return;
       message(submitted ? "The result could not be confirmed. The key operation may have been applied. Refresh and inspect the key records before starting another operation." : "No key response was submitted. The key, browser, access or policy could not be verified. Cancel and begin a fresh operation.", true);
+    } finally {
+      clearTimeout(timeout);
+      if (attempt === generation) pending = undefined;
+    }
+  }
+  function startInvitation(profile, previous) {
+    if (pending || document.hidden || !["device", "connector"].includes(profile)) return;
+    const keys = previous ? [] : ["issuer", profile];
+    policy = { kind: previous ? "revoke-enrollment" : "invite", invitation: true, profile, previous, revision, fields: { ExpiresAt: "", NotAfter: "" }, choices: Object.fromEntries(keys.map((key) => [key, { cursors: [""], index: 0, selected: "" }])) };
+    void loadPolicy(policy);
+  }
+  function invitationEffect(state) {
+    return state.previous ? "This revokes the enrollment and any certificate issued through it. Dependent sessions are cancelled and new authentication is denied. The record is retained. Your current administrator device and management connectors are protected." : "The selected identity can enroll once with its own new key. The secret is created only after security-key approval and is shown once. It does not grant access to resources. Invitation expiry must be within one hour; identity expiry must fit the device and issuer authority.";
+  }
+  function validInvitationPreview(view, draft, state, pages) {
+    if (!exact(view, ["Kind", "PolicyRevision", "ExpiresAt", "Invitation", "Challenge"]) || view.Kind !== state.kind || view.PolicyRevision !== state.revision || !date(view.ExpiresAt) || Date.parse(view.ExpiresAt) <= Date.now() || Date.parse(view.ExpiresAt) > Date.now() + 121000 || !validFactorCeremony(view.Challenge, false, state)) return false;
+    const item = view.Invitation;
+    if (!exact(item, ["ID", "IssuerID", "PrincipalID", "Profile", "ExpiresAt", "NotAfter", "PrincipalName", "UserID", "UserName", "State"]) || !uuid(item.ID) || !uuid(item.IssuerID) || !uuid(item.PrincipalID) || item.Profile !== state.profile || !date(item.ExpiresAt) || !date(item.NotAfter) || typeof item.PrincipalName !== "string" || !item.PrincipalName || item.PrincipalName.length > 4096 || typeof item.UserName !== "string" || item.UserName.length > 4096) return false;
+    if (state.profile === "device" ? !uuid(item.UserID) || !item.UserName : item.UserID !== "" || item.UserName !== "") return false;
+    const expected = state.previous || draft;
+    if (item.IssuerID !== expected.IssuerID || item.PrincipalID !== expected.PrincipalID || Date.parse(item.ExpiresAt) !== Date.parse(expected.ExpiresAt) || Date.parse(item.NotAfter) !== Date.parse(expected.NotAfter)) return false;
+    if (state.previous) return item.ID === expected.ID && item.State === expected.State && item.State !== "revoked";
+    const principal = pages[state.profile].Items.find((record) => record.ID === draft.PrincipalID);
+    return item.State === "pending-approval" && item.PrincipalName === principal.Name && (state.profile !== "device" || item.UserID === principal.UserID);
+  }
+  function renderInvitationPreview(view, state) {
+    const item = view.Invitation, panel = element("section", undefined, "access-result policy-preview"); panel.id = "invitation-preview";
+    const heading = element("h2", `Review: ${policyTitles[state.kind]}`); heading.tabIndex = -1;
+    const list = element("dl"), values = [["Enrollment ID", item.ID], ["Profile", item.Profile], ["Identity", item.PrincipalName], ["Identity ID", item.PrincipalID], ["Issuer ID", item.IssuerID], ["State", item.State], ["Invitation expires (UTC)", new Date(item.ExpiresAt).toISOString()], ["Issued identity expires (UTC)", new Date(item.NotAfter).toISOString()]];
+    if (item.UserID) values.push(["Owner", item.UserName], ["Owner ID", item.UserID]);
+    for (const [label, value] of values) list.append(element("dt", label), element("dd", value));
+    panel.append(heading, list, element("p", invitationEffect(state)), element("p", `Approval expires ${new Date(view.ExpiresAt).toISOString()} · policy revision ${view.PolicyRevision}`));
+    const button = element("button", "Approve with security key", "primary-action"), back = element("button", "Cancel change"), actions = element("div", undefined, "policy-actions");
+    button.type = back.type = "button"; back.addEventListener("click", policyCancel);
+    button.addEventListener("click", () => { if (!pending && state === policy && !document.hidden) void approveInvitation(view, state, panel, button); });
+    actions.append(button, back); panel.append(actions); records.replaceChildren(panel); heading.focus();
+  }
+  async function approveInvitation(view, state, panel, button) {
+    cancel(); const attempt = generation, controller = new AbortController(); pending = controller;
+    button.disabled = true; let submitted = false;
+    const expires = Math.min(Date.parse(view.ExpiresAt), state.previous ? Infinity : Date.parse(view.Invitation.ExpiresAt));
+    const timeout = setTimeout(() => controller.abort(), Math.max(1, Math.min(60000, expires - Date.now())));
+    const active = () => attempt === generation && state === policy && !document.hidden && !controller.signal.aborted && Date.now() < expires;
+    try {
+      if (!active() || !globalThis.PublicKeyCredential?.parseRequestOptionsFromJSON || !PublicKeyCredential.prototype.toJSON || !validFactorCeremony(view.Challenge, false, state)) throw new Error("Invalid invitation approval");
+      message("Use a tested registered security key and complete its user verification.");
+      const credential = await navigator.credentials.get({ publicKey: PublicKeyCredential.parseRequestOptionsFromJSON(view.Challenge.Approval.publicKey), signal: controller.signal });
+      if (!active()) return;
+      if (!credential || credential.type !== "public-key") throw new Error("Missing security-key proof");
+      submitted = true; message("Submitting the approved enrollment operation…");
+      const result = await privateJSON("/api/v1/admin/invitations/confirm", { ID: view.Challenge.ID, Response: credential.toJSON() }, controller.signal);
+      if (attempt !== generation || state !== policy || document.hidden) return;
+      if (!active()) throw new Error("Confirmation expired");
+      if (!exact(result, state.previous ? ["ID"] : ["ID", "Secret"]) || result.ID !== view.Invitation.ID || (!state.previous && (typeof result.Secret !== "string" || !/^[A-Za-z0-9_-]{43}$/.test(result.Secret)))) throw new Error("Invalid enrollment confirmation");
+      panel.replaceChildren(element("h2", state.previous ? "Enrollment revoked" : "Invitation created"), element("p", `Enrollment ${result.ID}`, "record-id"));
+      if (!state.previous) {
+        const label = element("label", "One-time invitation secret"), secret = element("input"), hide = element("button", "Hide secret now");
+        secret.id = "invitation-secret"; label.htmlFor = secret.id; secret.type = "text"; secret.readOnly = true; secret.autocomplete = "off"; secret.spellcheck = false; secret.value = result.Secret;
+        hide.type = "button";
+        const clearSecret = () => { secret.value = ""; label.remove(); secret.remove(); hide.remove(); if (secretCleanup === clearSecret) secretCleanup = undefined; };
+        secretCleanup = clearSecret;
+        hide.addEventListener("click", clearSecret);
+        panel.append(element("p", "Transfer this secret privately to the enrolling device. It cannot be retrieved again. It disappears here after one minute or when you leave this view."), label, secret, hide);
+        setTimeout(clearSecret, Math.max(1, Math.min(60000, Date.parse(view.Invitation.ExpiresAt) - Date.now())));
+      }
+      const back = element("button", "Return to enrollments", "primary-action"); back.type = "button"; back.addEventListener("click", policyCancel); panel.append(back);
+      const heading = panel.querySelector("h2"); heading.tabIndex = -1; heading.focus();
+      message(state.previous ? "The server confirmed enrollment revocation." : "The server committed the invitation. Its secret is available only in this response.");
+    } catch {
+      if (attempt !== generation) return;
+      message(submitted ? "The result could not be confirmed. The enrollment operation may have been applied. Refresh and inspect its status. If an invitation secret was lost, revoke that invitation before creating another." : "No approval was submitted. Cancel this operation and start a fresh review.", true);
     } finally {
       clearTimeout(timeout);
       if (attempt === generation) pending = undefined;

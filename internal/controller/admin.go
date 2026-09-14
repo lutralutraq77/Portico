@@ -102,6 +102,7 @@ type AdminChallenge struct {
 	Approval     *protocol.CredentialAssertion `json:",omitempty"`
 }
 type AdminResult struct {
+	InvitationID     string
 	InvitationSecret string
 	Registration     *AdminChallenge
 }
@@ -136,7 +137,7 @@ func (t *Tx) stageAdmin(p adminPeer, v *adminauth.Verifier, op AdminOperation, r
 	if v == nil || !validID(op.TargetID) {
 		return result, t.fail(ErrInvalid)
 	}
-	if op.Kind != "invite" && op.Kind != "apply-policy" && op.Kind != "register-factor" && op.Kind != "disable-factor" && op.Kind != "test-factor" && !(op.Kind == "bootstrap-factor" && registration) {
+	if op.Kind != "invite" && op.Kind != "revoke-enrollment" && op.Kind != "apply-policy" && op.Kind != "register-factor" && op.Kind != "disable-factor" && op.Kind != "test-factor" && !(op.Kind == "bootstrap-factor" && registration) {
 		return result, t.fail(ErrInvalid)
 	}
 	if (op.Kind == "invite") != (op.Invitation != nil) {
@@ -239,7 +240,7 @@ func (t *Tx) beginAdmin(p adminPeer, v *adminauth.Verifier, op AdminOperation) (
 	if t.tx.QueryRowContext(t.ctx, "SELECT count(*) FROM admin_factors WHERE user_id=? AND enabled=1 AND tested=1", p.user).Scan(&tested) != nil {
 		return AdminChallenge{}, t.fail(ErrStorage)
 	}
-	if (op.Kind != "test-factor" && tested < 1) || ((op.Kind == "invite" || op.Kind == "apply-policy") && tested < 2) {
+	if (op.Kind != "test-factor" && tested < 1) || ((invitationKind(op.Kind) || op.Kind == "apply-policy") && tested < 2) {
 		return AdminChallenge{}, t.fail(ErrDenied)
 	}
 	return t.stageAdmin(p, v, op, false)
@@ -270,10 +271,18 @@ func (s *Store) BeginAdminOperation(ctx context.Context, conn *tls.Conn, trust *
 // exact operation in one transaction with its audit events. It rechecks TLS
 // identity and the global policy generation immediately before the mutation.
 func (s *Store) FinishAdminOperation(ctx context.Context, conn *tls.Conn, trust *pki.Trust, v *adminauth.Verifier, id string, response []byte) (AdminResult, error) {
-	return s.finishAdminOperation(ctx, conn, trust, v, id, response, false, nil)
+	return s.finishAdminOperation(ctx, conn, trust, v, id, response, adminFinishAny, nil)
 }
 
-func (s *Store) finishAdminOperation(ctx context.Context, conn *tls.Conn, trust *pki.Trust, v *adminauth.Verifier, id string, response []byte, factorOnly bool, applyPolicy func(*Tx, adminPeer, AdminOperation) error) (AdminResult, error) {
+type adminFinishScope uint8
+
+const (
+	adminFinishAny adminFinishScope = iota
+	adminFinishFactor
+	adminFinishInvitation
+)
+
+func (s *Store) finishAdminOperation(ctx context.Context, conn *tls.Conn, trust *pki.Trust, v *adminauth.Verifier, id string, response []byte, scope adminFinishScope, applyPolicy func(*Tx, adminPeer, AdminOperation) error) (AdminResult, error) {
 	if v == nil || !validID(id) {
 		return AdminResult{}, ErrInvalid
 	}
@@ -297,7 +306,7 @@ func (s *Store) finishAdminOperation(ctx context.Context, conn *tls.Conn, trust 
 		if json.Unmarshal(sessionBytes, &session) != nil || json.Unmarshal(operationBytes, &op) != nil {
 			return t.fail(ErrIntegrity)
 		}
-		if factorOnly && !factorKind(op.Kind) {
+		if scope > adminFinishInvitation || (scope == adminFinishFactor && !factorKind(op.Kind)) || (scope == adminFinishInvitation && !invitationKind(op.Kind)) {
 			return t.fail(ErrDenied)
 		}
 		if (applyPolicy != nil && op.Kind != "apply-policy") || (applyPolicy == nil && op.Kind == "apply-policy") {
@@ -357,8 +366,18 @@ func (s *Store) finishAdminOperation(ctx context.Context, conn *tls.Conn, trust 
 			}
 			return applyPolicy(t, p, op)
 		case "invite":
+			if op.Invitation == nil || op.TargetID != op.Invitation.ID {
+				return t.fail(ErrDenied)
+			}
 			result.InvitationSecret, e = t.invite(*op.Invitation)
+			result.InvitationID = op.TargetID
 			return e
+		case "revoke-enrollment":
+			if _, e = t.reviewEnrollmentRevocation(p, op.TargetID); e != nil {
+				return e
+			}
+			result.InvitationID = op.TargetID
+			return t.RevokeEnrollment(op.TargetID)
 		case "register-factor":
 			challenge, e := t.stageAdmin(p, v, op, true)
 			if e != nil {

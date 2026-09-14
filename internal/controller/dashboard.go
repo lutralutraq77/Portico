@@ -64,6 +64,11 @@ type DashboardCertificate struct {
 	NotBefore, NotAfter                time.Time
 	Revoked                            bool
 }
+type DashboardIssuer struct {
+	ID, Profile, Fingerprint, RootFingerprint string
+	Enabled                                   bool
+	NotAfter                                  time.Time
+}
 
 type DashboardGrant struct {
 	ID, UserID, UserName, DeviceID, DeviceName, ResourceID, ResourceName string
@@ -86,7 +91,7 @@ type DashboardHosting struct {
 func (s *Store) DashboardInventory(ctx context.Context, conn *tls.Conn, trust *pki.Trust, request DashboardRequest) (DashboardPage, error) {
 	if request.Limit < 1 || request.Limit > dashboardPageLimit || request.PolicyRevision < 0 ||
 		(request.After != "" && (!validID(request.After) || request.PolicyRevision == 0)) ||
-		(request.Profile != "" && (request.Section != "certificates" || (request.Profile != "device" && request.Profile != "connector"))) {
+		(request.Profile != "" && ((request.Section != "certificates" && request.Section != "issuers") || (request.Profile != "device" && request.Profile != "connector"))) {
 		return DashboardPage{}, ErrInvalid
 	}
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
@@ -149,6 +154,21 @@ func (s *Store) DashboardInventory(ctx context.Context, conn *tls.Conn, trust *p
 				e := rows.Scan(&v.ID, &v.IssuerID, &v.PrincipalID, &v.Profile, &v.State, &expiry, &notAfter)
 				v.ExpiresAt, v.NotAfter = time.Unix(0, expiry).UTC(), time.Unix(0, notAfter).UTC()
 				return v, v.ID, e
+			})
+		case "issuers":
+			query := "SELECT i.id,b.profile,b.issuer_sha256,b.root_sha256,i.enabled,i.not_after FROM issuers i JOIN pki_bindings b ON b.issuer_id=i.id WHERE i.id>?"
+			if request.Profile == "device" {
+				query += " AND b.profile='device'"
+			} else if request.Profile == "connector" {
+				query += " AND b.profile='connector'"
+			}
+			query += " ORDER BY i.id LIMIT ?"
+			result.Items, result.Next, err = dashboardRows(tx, request, query, func(rows *sql.Rows) (DashboardIssuer, string, error) {
+				var v DashboardIssuer
+				var expiry int64
+				err := rows.Scan(&v.ID, &v.Profile, &v.Fingerprint, &v.RootFingerprint, &v.Enabled, &expiry)
+				v.NotAfter = time.Unix(0, expiry).UTC()
+				return v, v.ID, err
 			})
 		case "certificates":
 			query := "SELECT c.id,c.issuer_id,COALESCE(c.device_id,c.connector_id),c.profile,COALESCE(d.name,k.name),c.leaf_sha256,c.not_before,c.not_after,c.revoked FROM certificates c LEFT JOIN devices d ON d.id=c.device_id LEFT JOIN connectors k ON k.id=c.connector_id WHERE c.id>?"

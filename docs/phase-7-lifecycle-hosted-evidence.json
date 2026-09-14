@@ -1,0 +1,196 @@
+{
+  "schema": 1,
+  "source_revision": "40cd1daa6e0f563bef63e1b6d9224e306e6a282f",
+  "tested_merge_revision": "9f25c09b87c54c3a8a3b7126c62dc4cfe94b1709",
+  "tested_tree": "9e5e3dfd07802c2790e2996bc7ec6b888c753484",
+  "tested_parents": [
+    "33d7807b87fe9935790cc3c99bcbf7d6c2b887b9",
+    "40cd1daa6e0f563bef63e1b6d9224e306e6a282f"
+  ],
+  "source_and_merge_tree_identical": true,
+  "workflows": [
+    {
+      "name": "Dependency review",
+      "id": 34801788660,
+      "url": "https://github.com/lutralutraq77/Portico/actions/runs/34801788660",
+      "status": "completed",
+      "conclusion": "success",
+      "head_sha": "40cd1daa6e0f563bef63e1b6d9224e306e6a282f"
+    },
+    {
+      "name": "Arch development package",
+      "id": 34801788692,
+      "url": "https://github.com/lutralutraq77/Portico/actions/runs/34801788692",
+      "status": "completed",
+      "conclusion": "success",
+      "head_sha": "40cd1daa6e0f563bef63e1b6d9224e306e6a282f"
+    },
+    {
+      "name": "CodeQL",
+      "id": 34801788731,
+      "url": "https://github.com/lutralutraq77/Portico/actions/runs/34801788731",
+      "status": "completed",
+      "conclusion": "success",
+      "head_sha": "40cd1daa6e0f563bef63e1b6d9224e306e6a282f"
+    },
+    {
+      "name": "Repository quality",
+      "id": 34801788833,
+      "url": "https://github.com/lutralutraq77/Portico/actions/runs/34801788833",
+      "status": "completed",
+      "conclusion": "failure",
+      "head_sha": "40cd1daa6e0f563bef63e1b6d9224e306e6a282f"
+    },
+    {
+      "name": "Arch user service runtime",
+      "id": 34801788713,
+      "url": "https://github.com/lutralutraq77/Portico/actions/runs/34801788713",
+      "status": "completed",
+      "conclusion": "failure",
+      "head_sha": "40cd1daa6e0f563bef63e1b6d9224e306e6a282f"
+    },
+    {
+      "name": "Isolated Linux runtime",
+      "id": 34801788678,
+      "url": "https://github.com/lutralutraq77/Portico/actions/runs/34801788678",
+      "status": "completed",
+      "conclusion": "success",
+      "head_sha": "40cd1daa6e0f563bef63e1b6d9224e306e6a282f"
+    }
+  ],
+  "linux_runtime": {
+    "top_pass": 260,
+    "sub_pass": 1188,
+    "top_skipped": 5,
+    "fail": 0
+  },
+  "arch_runtime": {
+    "TestSystemdGuestAgentEnrollmentAndRevocation": {
+      "status": "PASS",
+      "seconds": 52.74,
+      "sub_pass": 4,
+      "sub_fail": 0
+    },
+    "TestArchGuestApplicationHTTPS": {
+      "status": "FAIL",
+      "seconds": 43.74,
+      "sub_pass": 19,
+      "sub_fail": 2
+    },
+    "TestArchGuestApplicationSSH": {
+      "status": "not reached",
+      "seconds": null,
+      "sub_pass": 0,
+      "sub_fail": 0
+    }
+  },
+  "arch_environment": {
+    "schema": 1,
+    "source_revision": "9f25c09b87c54c3a8a3b7126c62dc4cfe94b1709",
+    "image": "quay.io/archlinux/archlinux@sha256:2685bf92cc6215cc922488ae8e80b4875f4bdf19fef648818b1742517ce27077",
+    "package_sha256": "5dd7ac8991b72adb59d72ebc56fdb3ae6dd795092bfbed93d3de6f7f3303d2af",
+    "unit_sha256": "29a26f3c83e42a72d214d3c79b07939d7e9da1229b904c2e98e393508bfe39fc",
+    "binary_sha256": "404392a0674d559d15ccadd366c2e731fa20967217d2f2248c5ad993023af3fb",
+    "controller_test_sha256": "56c847201686469bd9d9f222a918784b3c7f3afeb2cd358b2a01f1e93bc6409b",
+    "qemu_version": "QEMU emulator version 11.1.1",
+    "qemu_sha256": "2aa2409f942b1bcdf47ad695658a25528d38c1e7a0555569256dcfb0bedf8635",
+    "kernel_sha256": "1e6bf9027720c75c3ed0d79171f21b5791ee40ca9795d07c7c6e04dc5ea2ae90",
+    "initramfs_sha256": "3d6f513783618deb6ac2ca9ed1f820458c55bcc5ad7c83dd985f7d35ac3b73d7",
+    "acceleration": "tcg",
+    "virtual_cpus": 2,
+    "memory_mib": 3072,
+    "network_devices": 0,
+    "host_filesystem_shares": 0,
+    "issuer_binary_sha256": "e9de6a2cb60551b812ea00da5eb87b0fdb4b87e5f85da9a0fcdc58446cd9b8a2",
+    "ssh_package_lock_sha256": "24f20e29f06516768a8d67af1797fbd9381449c85b501e8b8efa62db8787d51a",
+    "ssh_binaries_manifest_sha256": "3f1fe4776e6a0f0d3a86aca5e953cfb9e799a7907c4b37e1d1c2710aba9a1b03"
+  },
+  "quality_failures": [
+    {
+      "job_id": "103845751957",
+      "status": "failure",
+      "failure": "staticcheck U1000: lifecycleAdminSeed is unused without dashboardbrowser build tag",
+      "resolution": "New invitation native tests use the same independent-administrator fixture; untagged static analysis must pass on the new source."
+    },
+    {
+      "job_id": "103845752105",
+      "status": "failure",
+      "failure": "staticcheck U1000: lifecycleAdminSeed is unused without dashboardbrowser build tag",
+      "resolution": "New invitation native tests use the same independent-administrator fixture; untagged static analysis must pass on the new source."
+    }
+  ],
+  "published_archives": {
+    "linux": {
+      "id": 10330949746,
+      "run_id": 34801788678,
+      "digest": "sha256:2bef8f580399cff355284dcbc1f828ba6d809742ded073814de9080f3f078fed",
+      "verification": "Downloaded archive SHA256 verified against published digest by the scoped evidence fetch script before extraction."
+    },
+    "service": {
+      "id": 10331788564,
+      "run_id": 34801788713,
+      "digest": "sha256:eef2db3f6ffbd7f681a0b33408620df94608d07d47d0efc242aed2b149516c0a",
+      "verification": "Downloaded archive SHA256 verified against published digest by the scoped evidence fetch script before extraction."
+    }
+  },
+  "artifact_root": "E:/Portico/work/reports/final-ack-hosted",
+  "artifacts": [
+    {
+      "path": "40cd1da-runs-current.json",
+      "sha256": "e7198f7a258a9821a97e11e6e1320a5d281dbeba5586080a88fdbb8ed4bef493"
+    },
+    {
+      "path": "40cd1da-linux-artifacts.json",
+      "sha256": "2ee945747954f190dfb523d40ffb26f54c57519c2b484d961aeb7e5fdff328ea"
+    },
+    {
+      "path": "40cd1da-linux-runtime.log",
+      "sha256": "ce5cadef9764da83747c3a103d3e48b17a0428b428ba85cb5a9cdd8bc4d3fd1e"
+    },
+    {
+      "path": "40cd1da-linux-runtime-environment.json",
+      "sha256": "3fd3a79d20dff3fdd69b458057222ba18bc62b0a03cbca9cda22cefc971c0fb8"
+    },
+    {
+      "path": "40cd1da-service-artifacts.json",
+      "sha256": "6227c85ccfddebbc0fafe25338b2ea3164c3a0573364112e690fa90785778ae8"
+    },
+    {
+      "path": "40cd1da-service-runtime.log",
+      "sha256": "222c405a62e86d55d94382fe6e9002e872b078def3a62086c8f11305d394fa96"
+    },
+    {
+      "path": "40cd1da-service-environment.json",
+      "sha256": "3a833eb8dcd3810b6166f4690b9c93645e0fd5dcfc2c8ab16aab42488fcc3676"
+    },
+    {
+      "path": "40cd1da-service-rootfs-build.log",
+      "sha256": "1024a929aee12bbb641361fb13961a3c6c311329f0372edb69af65c6cbce0cd2"
+    },
+    {
+      "path": "40cd1da-service-ssh-binaries.sha256",
+      "sha256": "3f1fe4776e6a0f0d3a86aca5e953cfb9e799a7907c4b37e1d1c2710aba9a1b03"
+    },
+    {
+      "path": "40cd1da-quality-job-103845751957.log",
+      "sha256": "6be347a9244715fd0bcd8798dca71fadbfc33a90abd540001ea9f6239cc3c066"
+    },
+    {
+      "path": "40cd1da-quality-job-103845752105.log",
+      "sha256": "4f35276850bbe1582b380784bb16b7e4cfbd4719fad7a7de99f7196ff91baa11"
+    },
+    {
+      "path": "40cd1da-jobs-34801788833.json",
+      "sha256": "cd57904787c0f6c37e32a5ed075a65bbad64ac0b9a9fb43ae23ab6a8c2c87726"
+    },
+    {
+      "path": "40cd1da-jobs-34801788713.json",
+      "sha256": "3edee72f21da1885628177d44dc18c85dd2ea6610a7f57fa1ad48ac9d542341a"
+    }
+  ],
+  "limitations": [
+    "Four hosted workflows passed; repository quality and Arch user-service runtime failed.",
+    "HTTPS positive_control_repeat_02 and positive_control_repeat_05 exited with launcher status 1 after destination/HTTP/authenticated counts 1/1/1. Cause remains unproven; SSH was not reached.",
+    "These runs predate the new invitation source. They do not qualify full Phases 6 and 7 or any physical keys, hostname, bootstrap or recovery."
+  ]
+}

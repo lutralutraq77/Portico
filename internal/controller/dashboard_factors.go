@@ -108,7 +108,7 @@ func (s *Store) BeginFactor(ctx context.Context, conn *tls.Conn, trust *pki.Trus
 }
 
 func (s *Store) FinishFactor(ctx context.Context, conn *tls.Conn, trust *pki.Trust, verifier *adminauth.Verifier, id string, response []byte) (FactorResult, error) {
-	result, err := s.finishAdminOperation(ctx, conn, trust, verifier, id, response, true, nil)
+	result, err := s.finishAdminOperation(ctx, conn, trust, verifier, id, response, adminFinishFactor, nil)
 	if err != nil {
 		return FactorResult{}, err
 	}

@@ -190,6 +190,20 @@ func (p *PolicyEngine) NewHTTPServer(c PolicyHTTPConfig) (*PolicyHTTPServer, err
 				return
 			}
 			result, e = p.store.FinishFactor(r.Context(), conn, c.AdministratorTrust, c.AdministratorVerifier, request.ID, request.Response)
+		case c.Profile == pki.Administrator && r.URL.Path == "/api/v1/admin/invitations/challenge":
+			var request InvitationRequest
+			if wire.Decode(body, &request) != nil {
+				deny()
+				return
+			}
+			result, e = p.store.BeginInvitation(r.Context(), conn, c.AdministratorTrust, c.AdministratorVerifier, request)
+		case c.Profile == pki.Administrator && r.URL.Path == "/api/v1/admin/invitations/confirm":
+			var request finishApprovalRequest
+			if wire.Decode(body, &request) != nil {
+				deny()
+				return
+			}
+			result, e = p.store.FinishInvitation(r.Context(), conn, c.AdministratorTrust, c.AdministratorVerifier, request.ID, request.Response)
 		case c.Profile == pki.Administrator && r.URL.Path == "/api/v1/admin/policy/preview":
 			var request PolicyDraft
 			if wire.Decode(body, &request) != nil {

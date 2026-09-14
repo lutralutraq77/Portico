@@ -50,22 +50,26 @@ func TestDashboardFactorBrowser(t *testing.T) {
 func TestDashboardLifecycleBrowser(t *testing.T) {
 	testDashboardBrowser(t, "lifecycle")
 }
+func TestDashboardInvitationBrowser(t *testing.T) {
+	testDashboardBrowser(t, "invitations")
+}
 
 func testDashboardBrowser(t *testing.T, mode string) {
 	t.Helper()
 	management, factors := mode == "policy", mode == "factors"
 	lifecycle := mode == "lifecycle"
+	invitations := mode == "invitations"
 	node, browser, report := os.Getenv("PORTICO_BROWSER_NODE"), os.Getenv("PORTICO_BROWSER_EXECUTABLE"), os.Getenv("PORTICO_BROWSER_REPORT")
 	if !filepath.IsAbs(node) || !filepath.IsAbs(browser) || !filepath.IsAbs(report) {
 		t.Fatal("browser qualification requires absolute node, browser and report paths")
 	}
 	var a *adminFixture
-	if lifecycle {
+	if lifecycle || invitations {
 		a = lifecycleAdminSeed(t)
 	} else {
 		a = adminSeed(t)
 	}
-	if management || factors || lifecycle {
+	if management || factors || lifecycle || invitations {
 		a.setupFactors(t)
 	}
 	for i := range 54 {
@@ -143,6 +147,7 @@ func testDashboardBrowser(t *testing.T, mode string) {
 	privateDER, err := x509.MarshalPKCS8PrivateKey(a.identity.PrivateKey)
 	must(t, err)
 	config := struct {
+		DeviceIssuerID, ConnectorIssuerID                                                                         string
 		AdministratorUserID, AdministratorDeviceID                                                                string
 		Origin, Proxy, Certificate, Key, Browser, Report, DeviceCertificateID, ConnectorCertificateID, ResourceID string
 		ConnectorID, DeviceID, UserID, CredentialID, CredentialKey, UserHandle                                    string
@@ -156,7 +161,7 @@ func testDashboardBrowser(t *testing.T, mode string) {
 		Key:         string(pem.EncodeToMemory(&pem.Block{Type: "PRIVATE KEY", Bytes: privateDER})),
 	}
 	script := "test-dashboard-browser.cjs"
-	if management || factors || lifecycle {
+	if management || factors || lifecycle || invitations {
 		script = "test-dashboard-policy-browser.cjs"
 		config.ConnectorID, config.DeviceID, config.UserID = a.f.f.connector.ID, a.f.f.device.ID, a.f.f.user.ID
 		credentialDER, err := x509.MarshalPKCS8PrivateKey(key.Private)
@@ -169,6 +174,10 @@ func testDashboardBrowser(t *testing.T, mode string) {
 	if lifecycle {
 		script = "test-dashboard-lifecycle-browser.cjs"
 		config.AdministratorUserID, config.AdministratorDeviceID = a.userID, a.deviceID
+	}
+	if invitations {
+		script = "test-dashboard-invitation-browser.cjs"
+		config.DeviceIssuerID, config.ConnectorIssuerID = policy.device.trust.IssuerID(), policy.connector.trust.IssuerID()
 	}
 	if factors {
 		script = "test-dashboard-factor-browser.cjs"
@@ -197,9 +206,45 @@ func testDashboardBrowser(t *testing.T, mode string) {
 	scanner := bufio.NewScanner(out)
 	revoked, passed := false, false
 	var lifecycleSession SessionRequest
+	var invitationSession SessionRequest
+	var invitationLeaf []byte
 	for scanner.Scan() {
 		line := scanner.Text()
 		switch line {
+		case "PORTICO_BROWSER_INVITATION_STATE":
+			if !invitations {
+				t.Fatal("wrong invitation fixture")
+			}
+			var snapshot struct{ Total, Invited, Active, Revoked int }
+			for query, target := range map[string]*int{
+				"SELECT count(*) FROM enrollments":                       &snapshot.Total,
+				"SELECT count(*) FROM enrollments WHERE state='invited'": &snapshot.Invited,
+				"SELECT count(*) FROM enrollments WHERE state='active'":  &snapshot.Active,
+				"SELECT count(*) FROM enrollments WHERE state='revoked'": &snapshot.Revoked,
+			} {
+				must(t, a.f.f.s.db.QueryRow(query).Scan(target))
+			}
+			must(t, json.NewEncoder(in).Encode(snapshot))
+		case "PORTICO_BROWSER_INVITATION_REVOKED":
+			if !invitations || invitationSession.SessionID == "" {
+				t.Fatal("no active invitation fixture")
+			}
+			if _, err := policy.engine.Renew(ctx, policy.connectorConn, invitationSession); err == nil {
+				t.Fatal("enrollment revocation left renewal authority")
+			}
+			request := policy.request()
+			request.ClientLeafDER = invitationLeaf
+			if _, err := policy.engine.Authorize(ctx, policy.connectorConn, request); err == nil {
+				t.Fatal("enrollment revocation left new session authority")
+			}
+			var state, reason string
+			must(t, a.f.f.s.db.QueryRow("SELECT state FROM authorized_sessions WHERE id=?", invitationSession.SessionID).Scan(&state))
+			must(t, a.f.f.s.db.QueryRow("SELECT reason FROM session_cancellations WHERE session_id=?", invitationSession.SessionID).Scan(&reason))
+			if state != "closed" || reason != "closed" {
+				t.Fatal("enrollment revocation did not queue cancellation")
+			}
+			_, err := fmt.Fprintln(in, "authority_removed")
+			must(t, err)
 		case "PORTICO_BROWSER_LIFECYCLE_ACTIVE":
 			if !lifecycle || lifecycleSession.SessionID != "" {
 				t.Fatal("invalid lifecycle activation fixture request")
@@ -280,7 +325,7 @@ func testDashboardBrowser(t *testing.T, mode string) {
 			}
 			must(t, json.NewEncoder(in).Encode(snapshot))
 		case "PORTICO_BROWSER_POLICY_CHANGE":
-			if !management && !factors && !lifecycle {
+			if !management && !factors && !lifecycle && !invitations {
 				t.Fatal("policy mutation requested outside management fixture")
 			}
 			must(t, a.f.f.s.Update(ctx, a.f.f.actor, func(tx *Tx) error { return tx.AddUser(User{NewID(), "Concurrent policy change", true}) }))
@@ -301,6 +346,35 @@ func testDashboardBrowser(t *testing.T, mode string) {
 		case "PORTICO_DASHBOARD_BROWSER_PASS":
 			passed = true
 		default:
+			if invitations && strings.HasPrefix(line, "PORTICO_BROWSER_INVITATION_REDEEM ") {
+				// Software-fixture token arrives only on this in-memory child pipe;
+				// neither it nor the proof is printed or written to reports.
+				var value InvitationResult
+				must(t, json.Unmarshal([]byte(strings.TrimPrefix(line, "PORTICO_BROWSER_INVITATION_REDEEM ")), &value))
+				if invitationSession.SessionID != "" {
+					t.Fatal("fixture redemption already exercised")
+				}
+				key, attempt := newKey(t), NewID()
+				csr := csrFor(t, key)
+				s := a.f.f.s
+				must(t, s.ReserveEnrollment(ctx, a.f.f.actor, value.ID, value.Secret, attempt, csr))
+				must(t, s.IssueEnrollment(ctx, a.f.f.actor, value.ID, policy.device.trust, policy.device.provider(t)))
+				leaf, err := s.EnrollmentCertificate(ctx, a.f.f.actor, value.ID, value.Secret, attempt, csr)
+				must(t, err)
+				conn, err := tlsHandshake(t, s, policy.device.trust, tls.Certificate{Certificate: [][]byte{leaf}, PrivateKey: key}, true)
+				must(t, err)
+				must(t, s.ActivateEnrollment(ctx, value.ID, conn, policy.device.trust))
+				request := policy.request()
+				request.ClientLeafDER = leaf
+				permit, err := policy.engine.Authorize(ctx, policy.connectorConn, request)
+				must(t, err)
+				active, err := policy.engine.Activate(ctx, policy.connectorConn, SessionRequest{Version: 1, SessionID: permit.SessionID, Sequence: permit.Sequence})
+				must(t, err)
+				invitationSession = SessionRequest{Version: 1, SessionID: permit.SessionID, Sequence: active.Sequence}
+				invitationLeaf = leaf
+				_, err = fmt.Fprintln(in, "activated")
+				must(t, err)
+			}
 			if factors && strings.HasPrefix(line, "PORTICO_BROWSER_FACTOR_DIAG ") {
 				var request finishApprovalRequest
 				must(t, json.Unmarshal([]byte(strings.TrimPrefix(line, "PORTICO_BROWSER_FACTOR_DIAG ")), &request))
