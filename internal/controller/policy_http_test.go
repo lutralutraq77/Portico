@@ -16,6 +16,7 @@ import (
 	"testing"
 	"time"
 
+	"portico.local/portico/internal/control"
 	"portico.local/portico/internal/pki"
 	"portico.local/portico/internal/testfixture"
 	"portico.local/portico/internal/wire"
@@ -166,9 +167,9 @@ func TestPolicyHTTPRealTLSAndHostileRequests(t *testing.T) {
 func TestPolicyHTTPProfileIsolationAndLiveConnectionRevocation(t *testing.T) {
 	v := newPolicyFixture(t)
 	f := servePolicy(t, v.engine, PolicyHTTPConfig{Profile: pki.Device}, v.deviceIdentity)
-	var catalog []ResourceAccess
+	var catalog control.CatalogSnapshot
 	f.post(t, "/api/v1/device/catalog", struct{}{}, &catalog)
-	if len(catalog) != 1 {
+	if catalog.Version != 1 || len(catalog.Resources) != 1 {
 		t.Fatal("incorrect private catalog")
 	}
 	must(t, v.device.f.s.Update(ctx, v.device.f.actor, func(tx *Tx) error { return tx.Disable("device", v.device.f.device.ID) }))

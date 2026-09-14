@@ -67,7 +67,11 @@ func (t *Tx) event(action, target string) error {
 	if e := t.exec("INSERT INTO audit_events VALUES(?,?,?,?,?,?,?,?,?,?)", ev.Sequence, ev.ID, ev.OccurredAt, ev.ActorID, ev.CorrelationID, ev.Action, ev.TargetID, ev.Generation, ev.PreviousHash, ev.Hash); e != nil {
 		return e
 	}
-	return t.exec("UPDATE meta SET audit_sequence=?,audit_hash=? WHERE singleton=1", ev.Sequence, ev.Hash)
+	if e := t.exec("UPDATE meta SET audit_sequence=?,audit_hash=? WHERE singleton=1", ev.Sequence, ev.Hash); e != nil {
+		return e
+	}
+	t.audited = true
+	return nil
 }
 
 type querier interface {

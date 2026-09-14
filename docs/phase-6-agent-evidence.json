@@ -1,0 +1,78 @@
+{
+  "schema": 1,
+  "source_commit": "e1b3575ae4fb2b69905cf3f3b7075af93ac3f568",
+  "verified_on": "2026-09-10",
+  "status": "passed",
+  "tested_merge": "ea037aa3c179dab58a31ed69a509eefc48702e8c",
+  "source_and_merge_tree": "ddfc1e56150c1fa25888541e840aebdfc3009698",
+  "hosted": {
+    "quality_run": 34536601073,
+    "ubuntu_job": 103069568668,
+    "windows_job": 103069569000,
+    "linux_runtime_run": 34536601098,
+    "linux_runtime_job": 103069568498,
+    "codeql_run": 34536601179,
+    "codeql_job": 103069568156,
+    "dependency_review_run": 34536601084,
+    "arch_run": 34536601117,
+    "arch_job": 103069568653,
+    "top_level_passes": 208,
+    "subcase_passes": 1005,
+    "failures": 0,
+    "skips": [
+      "TestLocalIPCProcessHelper",
+      "TestIssuerProcessFixture"
+    ],
+    "artifact_id": 10175969621,
+    "artifact_zip_sha256": "44d94e72ebcb12d454d0569e190a20f614f100f4c897d89c72e06f18df8fcb2f",
+    "archive_directory": "work/reports/phase-6-agent-hosted",
+    "runtime_log_sha256": "89fa948662748c4811aadc99bbf024096c9d36a240764fe4db48be22c3b6e053",
+    "environment_sha256": "dedd06874530dab73418dfd2a123f740416035f51775b5310a767648a1f8c50f",
+    "ubuntu_log_sha256": "4bd09f86d4d637a243ee8541d9064f4d9efdcd1081d3e90440a04a8074cff9a7",
+    "windows_log_sha256": "853e2c02127eb941a02eb02c036279fb632c213111ba8db781d844a7c8220395",
+    "codeql_log_sha256": "84c7bd58b6ba28cac44a7b7ac817a7b74fbc9d95cf4eab38cc46df6bfa01037c",
+    "arch_log_sha256": "aa3561f2371c20f03eb9fed159a59bb227ead1abf3dacb1947e51bf79cda152f",
+    "arch_artifact_id": 10175662629,
+    "arch_artifact_zip_sha256": "253cae3b469ea32f1887651f5d01f4fb249052aa314dfdde3c56d0c0d2679fa2",
+    "arch_package_sha256": "586a79016f937ad447bd24adbadefa67babdbca32bc5541c63efb0c0cb6e01bb",
+    "marker": "PORTICO_LINUX_ALL_PASS"
+  },
+  "local_focused": {
+    "status": "passed",
+    "top_level_passes": 10,
+    "subcase_passes": 59,
+    "failures": 0,
+    "skips": 0,
+    "log": "work/reports/phase-6-agent-bounds/runtime.log",
+    "sha256": "539fa1218803de7f6014b724fdcc0ebc906825a00b9702c08d75b8a6b0d8facc",
+    "initramfs_sha256": "604a4adb4d579158306ce23dd122d62d2f322a0de696a4e341e3ae4adff84356"
+  },
+  "local_integration": {
+    "status": "passed",
+    "top_level_passes": 1,
+    "subcase_passes": 10,
+    "failures": 0,
+    "skips": 0,
+    "seconds": 197.12,
+    "log": "work/reports/phase-6-agent-enrollment-pairing/runtime.log",
+    "sha256": "91e877f97ee6de9361ffb56c19451d33610cda4f8900d04af49746f11f95e72b",
+    "initramfs_sha256": "752a59f97ca83a9cc2552759cc91d85d89e29c61be7437873b1283390797d697",
+    "earlier_failed_log": "work/reports/phase-6-agent-enrollment/runtime.log",
+    "earlier_failed_log_sha256": "a966c39358c1d4f3009d6de3fa6aa0b5e4a51fb1ae94f48f5c3749495d11c824",
+    "earlier_failure_cause": "Undetermined; the successful run's 425.660908 ms gap was below the original two-second fixture pairing window"
+  },
+  "native": {
+    "status": "passed",
+    "log": "work/reports/agent-native-checks.log",
+    "sha256": "b2b3d0ce69342b69e27dd072eecda5c9c676dc7b4942add698f145b906d321ce",
+    "fuzz_executions": 26808,
+    "fuzz_log": "work/reports/agent-fuzz.log",
+    "fuzz_sha256": "c817bc728d6015285b57dc7602c8ee3234a2406ea22ef5d05bf1ae84791355a2"
+  },
+  "limitations": [
+    "Catalog source only; resource streaming is a later increment",
+    "Host root and same effective UID are trusted",
+    "No browser origin, installed service, platform keystore or physical suspend qualification",
+    "Seven acceptance scenarios implemented; 84 planned"
+  ]
+}

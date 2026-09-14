@@ -18,6 +18,7 @@ import (
 	"net"
 	"net/http"
 	"net/url"
+	"slices"
 	"time"
 
 	jose "github.com/go-jose/go-jose/v4"
@@ -111,12 +112,12 @@ func (c *Client) Issue(ctx context.Context, r pki.IssuanceRequest) ([]byte, erro
 	if e != nil || r.DeploymentID != c.trust.DeploymentID() || r.IssuerID != c.trust.IssuerID() || r.Profile != c.trust.Profile() || !pki.ValidID(r.AttemptID) {
 		return nil, ErrRejected
 	}
-	uri, e := pki.IdentityURI(r.DeploymentID, r.Profile, r.PrincipalID)
+	sans, e := pki.IdentitySANs(r.DeploymentID, r.Profile, r.PrincipalID)
 	if e != nil {
 		return nil, ErrRejected
 	}
 	now := time.Now().UTC()
-	claims := Claims{Claims: jwt.Claims{Issuer: c.provisioner, Subject: r.PrincipalID, Audience: jwt.Audience{c.endpoint}, ID: r.AttemptID, IssuedAt: jwt.NewNumericDate(now), NotBefore: jwt.NewNumericDate(now), Expiry: jwt.NewNumericDate(now.Add(time.Minute))}, SANs: []string{uri.String()}, Approval: Approval{r.DeploymentID, r.IssuerID, r.PrincipalID, r.Profile, r.NotBefore, r.NotAfter}}
+	claims := Claims{Claims: jwt.Claims{Issuer: c.provisioner, Subject: r.PrincipalID, Audience: jwt.Audience{c.endpoint}, ID: r.AttemptID, IssuedAt: jwt.NewNumericDate(now), NotBefore: jwt.NewNumericDate(now), Expiry: jwt.NewNumericDate(now.Add(time.Minute))}, SANs: sans, Approval: Approval{r.DeploymentID, r.IssuerID, r.PrincipalID, r.Profile, r.NotBefore, r.NotAfter}}
 	sum := sha256.Sum256(csr.Raw)
 	claims.Confirmation.Fingerprint = base64.RawURLEncoding.EncodeToString(sum[:])
 	if claims.ValidateApproval(c.trust, now) != nil {
@@ -166,8 +167,8 @@ func (c *Client) Issue(ctx context.Context, r pki.IssuanceRequest) ([]byte, erro
 // substitute for it. The restricted service also verifies issuer and audience.
 func (c Claims) ValidateApproval(trust *pki.Trust, now time.Time) error {
 	a := c.Approval
-	u, e := pki.IdentityURI(a.DeploymentID, a.Profile, a.PrincipalID)
-	if e != nil || trust == nil || a.DeploymentID != trust.DeploymentID() || a.IssuerID != trust.IssuerID() || a.Profile != trust.Profile() || !pki.ValidID(c.ID) || c.Subject != a.PrincipalID || len(c.SANs) != 1 || c.SANs[0] != u.String() || len(c.Confirmation.Fingerprint) != 43 || c.IssuedAt == nil || c.NotBefore == nil || c.Expiry == nil {
+	sans, e := pki.IdentitySANs(a.DeploymentID, a.Profile, a.PrincipalID)
+	if e != nil || trust == nil || a.DeploymentID != trust.DeploymentID() || a.IssuerID != trust.IssuerID() || a.Profile != trust.Profile() || !pki.ValidID(c.ID) || c.Subject != a.PrincipalID || !slices.Equal(c.SANs, sans) || len(c.Confirmation.Fingerprint) != 43 || c.IssuedAt == nil || c.NotBefore == nil || c.Expiry == nil {
 		return ErrRejected
 	}
 	if c.IssuedAt.Time().After(now) || now.Sub(c.IssuedAt.Time()) > time.Minute || c.Expiry.Time().Sub(c.IssuedAt.Time()) != time.Minute || c.NotBefore.Time() != c.IssuedAt.Time() || !now.Before(c.Expiry.Time()) {

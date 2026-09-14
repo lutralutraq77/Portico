@@ -1,0 +1,157 @@
+{
+  "schema": 1,
+  "status": "SSH and Arch service cases passed on both sources; main full Linux passed, dashboard full Linux failed during daemon shutdown",
+  "records": [
+    {
+      "source_revision": "b7161efa9593431e6a3d03c72d43555ea7a7fd01",
+      "tested_merge": "766f7f82e4afa94206c53e5aed93428d6aaf79b4",
+      "tested_tree": "9ba2fa1f9d05f5b300f4af1c6d01e4f1303c60df",
+      "parents": [
+        "1a4332095eb4b9c4975bbe6e712301a8468738f6",
+        "b7161efa9593431e6a3d03c72d43555ea7a7fd01"
+      ],
+      "service": {
+        "run_id": "34794162701",
+        "artifact_id": 10329157449,
+        "archive_sha256": "sha256:8e1388c51932e6e81ef224dfded65fa76a9f362d10c1c3d260bcbf5ab8e01893",
+        "archive_bytes": 457419024,
+        "cases": {
+          "TestArchGuestApplicationSSH": {
+            "passed": 17,
+            "failed": 0
+          },
+          "TestArchGuestApplicationHTTPS": {
+            "passed": 21,
+            "failed": 0
+          },
+          "TestSystemdGuestAgentEnrollmentAndRevocation": {
+            "passed": 4,
+            "failed": 0
+          }
+        },
+        "evidence_sha256": {
+          "ssh-binaries.sha256": "3f1fe4776e6a0f0d3a86aca5e953cfb9e799a7907c4b37e1d1c2710aba9a1b03",
+          "rootfs-build.log": "371e60c89a742d8a8a6b6b758b236e4fe6c1671fda7e33bfc1bb3c0d4212382c",
+          "environment.json": "ce4d86f21b21b290abd58385cad8983a586d9bcc2bb0a9cb7692d0ed5ffc65e8",
+          "runtime.log": "1f54aba5b3b77780d9a1f42e0f50ab21bcac3b8574d029a7483b65258399d143"
+        },
+        "environment": {
+          "schema": 1,
+          "source_revision": "766f7f82e4afa94206c53e5aed93428d6aaf79b4",
+          "image": "quay.io/archlinux/archlinux@sha256:2685bf92cc6215cc922488ae8e80b4875f4bdf19fef648818b1742517ce27077",
+          "package_sha256": "1b2c168402c0db48d2664affe8bc17be3c225006f5e3665c87a40836f0765f18",
+          "unit_sha256": "29a26f3c83e42a72d214d3c79b07939d7e9da1229b904c2e98e393508bfe39fc",
+          "binary_sha256": "6fcdbef23079fa24514e1ba9f1cdd9c32e403f32ca902b0808a8fcbb94758e3c",
+          "controller_test_sha256": "995569cc7a1bafc318a719d543da36af98c7e561d7ad738e2284945f454c22bd",
+          "qemu_version": "QEMU emulator version 11.1.1",
+          "qemu_sha256": "2aa2409f942b1bcdf47ad695658a25528d38c1e7a0555569256dcfb0bedf8635",
+          "kernel_sha256": "1e6bf9027720c75c3ed0d79171f21b5791ee40ca9795d07c7c6e04dc5ea2ae90",
+          "initramfs_sha256": "be34a6f54a41aceb7721ff2d2880724835e986bae421e555eaa5447e15e501dd",
+          "acceleration": "tcg",
+          "virtual_cpus": 2,
+          "memory_mib": 3072,
+          "network_devices": 0,
+          "host_filesystem_shares": 0,
+          "issuer_binary_sha256": "e9de6a2cb60551b812ea00da5eb87b0fdb4b87e5f85da9a0fcdc58446cd9b8a2",
+          "ssh_package_lock_sha256": "24f20e29f06516768a8d67af1797fbd9381449c85b501e8b8efa62db8787d51a",
+          "ssh_binaries_manifest_sha256": "3f1fe4776e6a0f0d3a86aca5e953cfb9e799a7907c4b37e1d1c2710aba9a1b03"
+        }
+      },
+      "full_linux": {
+        "run_id": "34794162686",
+        "artifact_id": 10329990113,
+        "archive_sha256": "sha256:9c893538f71722dc277312fcc6169e44182198ca70b67e60ad571cd4eaffdd99",
+        "counts": {
+          "sub_pass": 1130,
+          "top_pass": 233,
+          "top_fail": 0,
+          "top_skip": 5,
+          "sub_fail": 0,
+          "sub_skip": 0
+        },
+        "runtime_sha256": "0626e12dbecf047905c8fdd500045a438de3ebfbe1d99f2b9259334843a5c42c"
+      }
+    },
+    {
+      "source_revision": "2b39bf645aac361798cade5dd7236b5dcd4e29f3",
+      "tested_merge": "4032d9fd2e25fd440aad9a57f1e7fa7d90c81d3d",
+      "tested_tree": "2eb361aaf907021964b662fd2d82f8e417fbb85c",
+      "parents": [
+        "b7161efa9593431e6a3d03c72d43555ea7a7fd01",
+        "2b39bf645aac361798cade5dd7236b5dcd4e29f3"
+      ],
+      "service": {
+        "run_id": "34794378191",
+        "artifact_id": 10328838905,
+        "archive_sha256": "sha256:d5f3ee14bf6791581f5b26976f238dd7c55ea86be45a12b982fea883455bc83d",
+        "archive_bytes": 457697515,
+        "cases": {
+          "TestArchGuestApplicationSSH": {
+            "passed": 17,
+            "failed": 0
+          },
+          "TestArchGuestApplicationHTTPS": {
+            "passed": 21,
+            "failed": 0
+          },
+          "TestSystemdGuestAgentEnrollmentAndRevocation": {
+            "passed": 4,
+            "failed": 0
+          }
+        },
+        "evidence_sha256": {
+          "ssh-binaries.sha256": "3f1fe4776e6a0f0d3a86aca5e953cfb9e799a7907c4b37e1d1c2710aba9a1b03",
+          "rootfs-build.log": "f035b7b612be54a0e77f52f5e92e15f7b5f794ea9bca8d976e15f50ddb13704c",
+          "environment.json": "868e78fc929f982774f8c5640aa33cd8b7f5cd25fb435134ff3def1c153939f2",
+          "runtime.log": "6bcc38293ccc41bbd37dddf4d82cfe5097c7e1a4a34d59862bb8cd218b196a8e"
+        },
+        "environment": {
+          "schema": 1,
+          "source_revision": "4032d9fd2e25fd440aad9a57f1e7fa7d90c81d3d",
+          "image": "quay.io/archlinux/archlinux@sha256:2685bf92cc6215cc922488ae8e80b4875f4bdf19fef648818b1742517ce27077",
+          "package_sha256": "0ca560cdbaa3f31d1975f8bdb282dce7a269a442a9588c6245f3836c03672543",
+          "unit_sha256": "29a26f3c83e42a72d214d3c79b07939d7e9da1229b904c2e98e393508bfe39fc",
+          "binary_sha256": "6fcdbef23079fa24514e1ba9f1cdd9c32e403f32ca902b0808a8fcbb94758e3c",
+          "controller_test_sha256": "f5453f7d2fdb8b8dae1cb49c9a348a092a9bb7221ac56a1334acf0a65745bfc1",
+          "qemu_version": "QEMU emulator version 11.1.1",
+          "qemu_sha256": "2aa2409f942b1bcdf47ad695658a25528d38c1e7a0555569256dcfb0bedf8635",
+          "kernel_sha256": "1e6bf9027720c75c3ed0d79171f21b5791ee40ca9795d07c7c6e04dc5ea2ae90",
+          "initramfs_sha256": "c9ddf9782b7a11d76dd2b2f65bfee1236cd4aaf299deefebed9618ad385f7bdd",
+          "acceleration": "tcg",
+          "virtual_cpus": 2,
+          "memory_mib": 3072,
+          "network_devices": 0,
+          "host_filesystem_shares": 0,
+          "issuer_binary_sha256": "e9de6a2cb60551b812ea00da5eb87b0fdb4b87e5f85da9a0fcdc58446cd9b8a2",
+          "ssh_package_lock_sha256": "24f20e29f06516768a8d67af1797fbd9381449c85b501e8b8efa62db8787d51a",
+          "ssh_binaries_manifest_sha256": "3f1fe4776e6a0f0d3a86aca5e953cfb9e799a7907c4b37e1d1c2710aba9a1b03"
+        }
+      },
+      "full_linux": {
+        "run_id": "34794378166",
+        "artifact_id": 10329013715,
+        "archive_sha256": "sha256:465c9307abd9d931b1f6b4303b7ba5badff798b6233c92c9f5c4e8e6ee4e0df4",
+        "counts": {
+          "sub_pass": 1171,
+          "top_pass": 250,
+          "top_fail": 1,
+          "top_skip": 5,
+          "sub_fail": 0,
+          "sub_skip": 0
+        },
+        "runtime_sha256": "2f646284dcaaa0a8bfe59d7bbfb032bfcaff8eb39c68fcb86ca4c7458a985b53"
+      }
+    }
+  ],
+  "limitations": [
+    "Five explicit platform/isolation skips in each full Linux run.",
+    "Dashboard daemon test passed its 17 functional subcases, then exited with Local agent daemon failed during requested shutdown. Cause under investigation.",
+    "Earlier local descriptor deadline and intermittent authenticated HTTPS failures remain separately recorded; subsequent passes do not establish their causes.",
+    "No physical hardware-key, platform custody, SSH CA or full phase completion evidence."
+  ],
+  "canonical_acceptance": {
+    "implemented": 7,
+    "planned": 84,
+    "total": 91
+  }
+}

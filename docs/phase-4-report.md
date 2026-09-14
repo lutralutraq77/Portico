@@ -22,6 +22,8 @@ The Linux VM passed 62 top-level tests, 203 subtests and 26 fuzz seeds on kernel
 
 Hosted [quality](https://github.com/lutralutraq77/Portico/actions/runs/34158541441) and [CodeQL](https://github.com/lutralutraq77/Portico/actions/runs/34158541393) were running when this report was created; [dependency review](https://github.com/lutralutraq77/Portico/actions/runs/34158541367) had passed. These links describe the implementation commit, not future branch heads. [Draft PR 3](https://github.com/lutralutraq77/Portico/pull/3) is stacked on the unmerged Phase 3 PR; current-head checks are visible there.
 
+Subsequent verification: the Phase 4 documentation head `1a4332095eb4b9c4975bbe6e712301a8468738f6` passed hosted [Windows/Ubuntu quality](https://github.com/lutralutraq77/Portico/actions/runs/34158651389), [CodeQL](https://github.com/lutralutraq77/Portico/actions/runs/34158651399) and [dependency review](https://github.com/lutralutraq77/Portico/actions/runs/34158651507). These results were rechecked before continuing Phase 5; they do not qualify later carrier changes.
+
 ## Remaining scope
 
 The main executable remains a development version/help command. There is no deployed controller/client/connector system, public listener, finished dashboard or supported release. Real socket proxying, cancellation delivery/acknowledgments, request-anchored leases and platform enforcement follow in Phase 5 and later phases. Administrative tests use signed virtual authenticators and isolated .test origins; physical keys, actual sign-in hostname, browser/native isolation and recovery remain unqualified.

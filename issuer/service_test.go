@@ -82,9 +82,9 @@ func (l *lab) token(t *testing.T, change func(*issuer.Claims)) string {
 	t.Helper()
 	r := l.request
 	now := time.Now().UTC()
-	uri, e := pki.IdentityURI(r.DeploymentID, r.Profile, r.PrincipalID)
+	sans, e := pki.IdentitySANs(r.DeploymentID, r.Profile, r.PrincipalID)
 	testfixture.Must(t, e)
-	c := issuer.Claims{Claims: jwt.Claims{Issuer: l.config.Provisioner, Subject: r.PrincipalID, Audience: jwt.Audience{l.config.Endpoint + issuer.SignPath}, ID: uuid.NewString(), IssuedAt: jwt.NewNumericDate(now), NotBefore: jwt.NewNumericDate(now), Expiry: jwt.NewNumericDate(now.Add(time.Minute))}, SANs: []string{uri.String()}, Approval: issuer.Approval{DeploymentID: r.DeploymentID, IssuerID: r.IssuerID, PrincipalID: r.PrincipalID, Profile: r.Profile, NotBefore: r.NotBefore, NotAfter: r.NotAfter}}
+	c := issuer.Claims{Claims: jwt.Claims{Issuer: l.config.Provisioner, Subject: r.PrincipalID, Audience: jwt.Audience{l.config.Endpoint + issuer.SignPath}, ID: uuid.NewString(), IssuedAt: jwt.NewNumericDate(now), NotBefore: jwt.NewNumericDate(now), Expiry: jwt.NewNumericDate(now.Add(time.Minute))}, SANs: sans, Approval: issuer.Approval{DeploymentID: r.DeploymentID, IssuerID: r.IssuerID, PrincipalID: r.PrincipalID, Profile: r.Profile, NotBefore: r.NotBefore, NotAfter: r.NotAfter}}
 	h := sha256.Sum256(r.CSR)
 	c.Confirmation.Fingerprint = base64.RawURLEncoding.EncodeToString(h[:])
 	if change != nil {

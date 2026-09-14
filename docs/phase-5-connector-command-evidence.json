@@ -1,0 +1,71 @@
+{
+  "schema": 1,
+  "phase": 5,
+  "date": "2026-09-08",
+  "source_commit": "7ddb5c8143acd3cb653dc5ef023c4e61d0e754b0",
+  "application_version": "0.5.0-dev",
+  "status": "development Linux connector command verified; full phase incomplete",
+  "windows_full_check": {
+    "status": "passed",
+    "skip_flags": [],
+    "workload_open_fuzz_executions": 92693,
+    "sha256": "E8CA7577DDE258E49335BA266D81559C74224327C9DB2F2F72C0235CE26D0F37"
+  },
+  "linux_full": {
+    "status": "passed",
+    "top_level_tests": 139,
+    "subtests": 480,
+    "fuzz_targets": 7,
+    "seeds": 36,
+    "intentional_helper_skips": 1,
+    "race_instrumented": false,
+    "marker": "PORTICO_LINUX_ALL_PASS",
+    "sha256": "CC7BCBF65A12D8BAE0A76C0F11D3C6F0422062C7D9D5AAA31C116DFD97D0AE7E"
+  },
+  "linux_focused": {
+    "status": "passed",
+    "top_level_tests": 37,
+    "subtests": 103,
+    "fuzz_targets": 1,
+    "seeds": 2,
+    "skips": 0,
+    "marker": "PORTICO_LINUX_WORKLOAD_PASS",
+    "sha256": "F54D60C3FA28239788E2D8E0E09B23A3D2825E0D9B8F8FD618B5CD5BF2D9CCA9"
+  },
+  "hosted": {
+    "status": "all completed successfully",
+    "quality_run": 34176662453,
+    "windows_job": 101907309504,
+    "ubuntu_job": 101907309595,
+    "codeql_run": 34176662439,
+    "dependency_review_run": 34176662446
+  },
+  "observations": {
+    "revocation_to_destination_closed_and_receipt_ms": 166.534298,
+    "withheld_renewal_start_to_destination_closed_ms": 1942.25097,
+    "positive_command_clock_bound_ms": 20.001,
+    "positive_command_clock_source": "synthetic metadata in disposable kernel; original unsynchronized state restored",
+    "host_clock_changed": false,
+    "UTC_changed": false,
+    "upstream_time_accuracy_qualified": false,
+    "Q05_accepted": false
+  },
+  "artifact_directory": "work/reports/phase-5-config-7ddb5c8",
+  "development_binaries": {
+    "windows_sha256": "D694B65E972EA9D9690AFF98C601D723EAFA5A2BEC6F3A37C428D59E0C34C029",
+    "linux_sha256": "23E376E929FC99EA78F50870BC7EE25D3A76AC425C72AD758E66C7748F55AF70"
+  },
+  "retained_failures": [
+    {
+      "source_commit": "40145a0568ceb25bb450302f0b730bf58f81a71a",
+      "reason": "second sequential fixture open outlasted idle binding",
+      "sha256": "2137797BB6206AA6709D76CEE66B5621D720E5807D387991DE9D3D6DCBAC425A"
+    },
+    {
+      "source_commit": "ef52a9ae4ec0612802eb5a87e2fa83b7942f1d87",
+      "reason": "temporary guest root mode 01777 correctly rejected by protected path loader",
+      "sha256": "489606A155F7949F415D2556E99D3973CF8873A9687C590EC694DEE70127431A"
+    }
+  ],
+  "canonical_acceptance": { "total": 91, "implemented": 1, "planned": 90 }
+}

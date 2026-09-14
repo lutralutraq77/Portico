@@ -6,12 +6,14 @@ import (
 	"encoding/json"
 	"net/netip"
 	"sort"
+	"sync"
 	"time"
 
+	"portico.local/portico/internal/control"
 	"portico.local/portico/internal/pki"
 )
 
-const PolicyProtocol = 1
+const PolicyProtocol = control.Version
 
 type PolicyConfig struct {
 	DeviceTrust, ConnectorTrust                          *pki.Trust
@@ -24,9 +26,12 @@ type PolicyConfig struct {
 // destination. Connector transport must verify the client's inner TLS proof
 // before reporting its leaf; a compromised connector already owns its sockets.
 type PolicyEngine struct {
-	store  *Store
-	config PolicyConfig
-	hash   string
+	store     *Store
+	config    PolicyConfig
+	hash      string
+	waitMu    sync.Mutex
+	waits     map[string]int
+	waitCount int
 }
 
 func NewPolicyEngine(s *Store, c PolicyConfig) (*PolicyEngine, error) {
@@ -46,7 +51,7 @@ func NewPolicyEngine(s *Store, c PolicyConfig) (*PolicyEngine, error) {
 		Global, Device, Connector                                                                   int
 		Session, Lease, Activation                                                                  time.Duration
 	}{c.DeviceTrust.DeploymentID(), c.DeviceTrust.IssuerID(), c.ConnectorTrust.IssuerID(), c.DeviceTrust.RootFingerprint(), c.DeviceTrust.IssuerFingerprint(), c.ConnectorTrust.RootFingerprint(), c.ConnectorTrust.IssuerFingerprint(), c.ProtectedNetworks, c.MaxSessions, c.MaxDeviceSessions, c.MaxConnectorSessions, c.SessionLifetime, c.LeaseLifetime, c.ActivationLifetime})
-	return &PolicyEngine{store: s, config: c, hash: pki.Hash(b)}, nil
+	return &PolicyEngine{store: s, config: c, hash: pki.Hash(b), waits: make(map[string]int)}, nil
 }
 
 func (p *PolicyEngine) destination(address string) bool {
@@ -63,31 +68,10 @@ func (p *PolicyEngine) destination(address string) bool {
 	return true
 }
 
-type AuthorizeRequest struct {
-	Version       int
-	ClientLeafDER []byte
-	ResourceID    string
-	Revision      int64
-}
-type SessionRequest struct {
-	Version   int
-	SessionID string
-	Sequence  int64
-}
-type ResourceAccess struct {
-	ID                                                  string
-	Revision                                            int64
-	Name, ConnectorID, ConnectorName, Address, Protocol string
-	Port                                                int
-	Until                                               time.Time
-}
-type Authorization struct {
-	Version                                                                 int
-	SessionID, DeviceID, ConnectorID, CertificateID, ConnectorCertificateID string
-	Resource                                                                ResourceAccess
-	Sequence, PolicyRevision                                                int64
-	IssuedAt, LeaseUntil, ActivateUntil, SessionUntil                       time.Time
-}
+type AuthorizeRequest = control.AuthorizeRequest
+type SessionRequest = control.SessionRequest
+type ResourceAccess = control.ResourceAccess
+type Authorization = control.Authorization
 type policyMatch struct {
 	resource          ResourceAccess
 	user, grant, host string

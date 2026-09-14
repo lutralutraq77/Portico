@@ -27,7 +27,7 @@ func enrolledPolicyPeer(t *testing.T, f *enrollmentFixture, principal string) (*
 	s := f.f.s
 	now := s.now()
 	id, attempt := NewID(), NewID()
-	secret, e := s.Invite(ctx, f.f.actor, InvitationSpec{ID: id, IssuerID: f.trust.IssuerID(), PrincipalID: principal, Profile: f.trust.Profile(), ExpiresAt: now.Add(10 * time.Minute), NotAfter: now.Add(time.Hour)})
+	secret, e := s.Invite(ctx, f.f.actor, InvitationSpec{ID: id, IssuerID: f.trust.IssuerID(), PrincipalID: principal, Profile: f.trust.Profile(), ExpiresAt: now.Add(10 * time.Minute), NotAfter: now.Add(time.Hour).Truncate(time.Second)})
 	must(t, e)
 	key := newKey(t)
 	csr := csrFor(t, key)

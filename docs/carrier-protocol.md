@@ -1,0 +1,31 @@
+# Isolated connector carrier
+
+This is a Phase 5 transport component. It carries standard mutual TLS between an enrolled device and an enrolled connector. It does not authorize a resource, dial a workload, deliver controller revocations or provide a supported application service. Those layers remain required by [ADR-006](../ADR-006-connector-transport.md).
+
+## Authentication and routing
+
+The relay accepts an explicitly supplied loopback TCP listener. Its outer TLS 1.3 endpoint accepts only the configured pinned device and connector profiles. Each admitted data RPC rechecks the live registry through the required trusted admission callback. A device can Dial a connector ID; a connector can Bind only its own ID. Metadata headers do not provide identity. The peer and global quotas apply across outer connections, before live registry admission. The controller fixture exercises this callback against real enrolled, activated certificates and the transactional registry; there is not yet a production service composition.
+
+The client uses a private server root, normal TLS hostname/chain verification and an explicit server SPKI pin. It disables proxy discovery, retries and service configuration. Inner TLS retains normal server-name verification through the connector's deterministic private certificate name and verifies the typed profile and issuer pin in both directions. The relay receives inner TLS records, not application plaintext. A successful inner handshake is still not a current grant: the client's online check of the actual connector leaf and the connector's exact resource authorization are subsequent required boundaries.
+
+## Messages and bounds
+
+The generated [protobuf definition](../proto/carrier.proto) has version 1 and HELLO, READY and DATA messages. A control message has an exact connector UUID, a 32-byte random stream correlation ID and no payload. A DATA message has 1–32 KiB of opaque bytes and no connector or stream ID. Unknown fields, message kinds and versions reject. Messages are limited to 32 KiB plus 256 bytes before application decoding. Protobuf's standard singular-field decoding applies; there is no second parser interpreting raw fields as authority.
+
+Dial and Bind each use one bidirectional DATA RPC. Every DATA RPC also has exactly one server-streaming Watch RPC, bound to the same actual TLS leaf and correlation ID. A Watch checks live registry authority again. Its sole response is READY. The relay forwards payload only after both endpoints' watches are established; any subsequent watch message or termination closes the local DATA connection. Duplicate, missing, foreign or expired watches fail closed.
+
+The Watch has a separate HTTP/2 stream flow-control window and is continuously read. This is necessary because terminal status on a DATA RPC can be queued behind unread payload. Merely waiting for the public gRPC stream context or terminal trailers does not provide prompt notification to an application blocked on its local read path. Tests reproduce that condition with a 32 MiB writer and a non-consuming peer, then verify closure for context cancellation, peer/client shutdown, relay shutdown and simultaneous close. A close on one logical stream preserves another stream sharing the outer connection.
+
+Explicit configuration caps outer connections at 128, logical relay streams at 1024, logical streams per principal at 64 and logical streams per Client instance at 64. Deployments should choose smaller limits. There are at most two admitted RPCs per logical stream, one data reader, one forwarding worker per active direction and bounded setup workers. The server's HTTP/2 per-connection stream cap allows the data/watch pair. Static per-stream and per-connection receive windows are 64 KiB and 1 MiB. There is no unbounded payload queue, unbounded reconnect loop or queued waiting client. A client with no waiting connector slot fails.
+
+HELLO and watch setup are bounded by at most five seconds; unpaired Bind by at most thirty seconds; every RPC by at most one hour and the peer certificate expiry. The client also bounds its whole open operation and call lifetime. These are transport limits, not authorization leases or an accepted revocation SLA. Workload authority must use the tighter request-start-anchored lease and cancellation rules in ADR-006. An arbitrary hostile implementation of the required local admission callback is outside the network boundary; implementations must obey their context.
+
+## Local byte connection and testing
+
+The adapter presents net.Conn through net.Pipe, preserving deadlines and backpressure. Full close cancels both RPCs and closes both pipe ends. Done closes after the adapter's workers stop. TLS CloseWrite remains an encrypted close-notify record, so the reverse direction can still deliver a response before full close. There is no new cryptography or generic destination in the carrier protocol.
+
+The controller integration tests use actual loopback TLS/gRPC connections, real activation and live registry changes. They cover inner mutual authentication, ciphertext observation, large bidirectional traffic, half-close, wrong peer name/root/SPKI/profile, malicious fields and identity headers, cross-connection quotas, watch ownership/revocation, blocked readers, independent streams, repeated teardown and listener limits. The protobuf fuzzer checks decoder/validator composition, round-trip meaning and rejection of preserved future fields. These tests are included in the native checks and NIC-less Linux VM. They do not replace the complete 91-scenario acceptance manifest or prove hostile-load memory behavior, physical hardware backing or production isolation.
+
+## Reproducible generation
+
+The toolchain lock pins protoc archives by SHA-256 for Windows and Linux x86_64. Go tool declarations pin both generator plugins. Run scripts/bootstrap.ps1 and scripts/generate.ps1; scripts/check.ps1 runs generation with -Check and rejects differing generated bytes. All local caches, generated comparison files, reports and builds stay under the project's E: work directory on this machine. The protocol is an unreleased development interface; deployment compatibility must be designed before supported updates.

@@ -1,0 +1,125 @@
+{
+  "schema": 1,
+  "phase": 5,
+  "status": "control transport and native clock components; full phase incomplete",
+  "date": "2026-09-07",
+  "control": {
+    "source_commit": "518f13992b75692b92de21e5c10a2f348eab37f9",
+    "windows_full_check": "passed",
+    "skip_flags": [],
+    "carrier_fuzz_executions": 20361,
+    "linux": {
+      "status": "passed",
+      "top_level_tests": 101,
+      "subtests": 377,
+      "fuzz_targets": 6,
+      "fuzz_seeds": 34,
+      "skipped_helper_tests": 1,
+      "network_devices": 0,
+      "kernel": "6.18.35-0-virt",
+      "qemu": "11.1.0",
+      "accelerator": "TCG",
+      "race_run": false
+    },
+    "artifact_directory": "work/reports/phase-5-control-518f139",
+    "artifacts": [
+      {
+        "name": "build-hashes.json",
+        "sha256": "C0588B2E32C0209B96D7B1DAB54D0B368F7FCB4C2BB8191B31612AC2674BA069"
+      },
+      {
+        "name": "coverage.out",
+        "sha256": "25E164872AA8969EDE69BB5734F3D01894C08591D4B58DA887B6F56B901F352B"
+      },
+      {
+        "name": "issuer-coverage.out",
+        "sha256": "3248B68F9B3ADF93F1C21B52147B8587DD542E7758DA59492E184A68C32DB14C"
+      },
+      {
+        "name": "issuer-linux-buildinfo.json",
+        "sha256": "3B3DD38D2ECB83ED8F538E9E374EAF2637B52F59F2B6CBFC0C79F708142E762C"
+      },
+      {
+        "name": "issuer-linux-sbom.cdx.json",
+        "sha256": "3F6CD1C4ECD7A2C488D56637D71B54E2AD938CEC0019F9064A8176706C2B2619"
+      },
+      {
+        "name": "issuer-windows-buildinfo.json",
+        "sha256": "8EED62C7D981F3991F03F06D76B8134066D7B70CE6BB90A8004B606B0EE9D5A5"
+      },
+      {
+        "name": "issuer-windows-sbom.cdx.json",
+        "sha256": "4C482034C80604B7C3D3B1C32D21C8BA23459297A75289E7B1BC50EC1D9855AD"
+      },
+      {
+        "name": "phase-5-control-518f139-linux-runtime.log",
+        "sha256": "DAC09B19482CFE31024106F48B2146812413E60760CE729191D427234E1D185E"
+      },
+      {
+        "name": "phase-5-control-final-check.log",
+        "sha256": "516E4EEDB315AF64B1536E5CED483612EBBFC49739684FF16DD88D6B7089691A"
+      },
+      {
+        "name": "sbom.cdx.json",
+        "sha256": "836F684AD751E0CA07BE71BE6CBA7321AF392131ABF625CB01CBFEE26B9B454E"
+      }
+    ]
+  },
+  "native_clock": {
+    "source_commit": "854a9e134b39643ab7f5160e5d9cdc67dfebe2ee",
+    "windows_unit_race": "passed",
+    "vet": "passed",
+    "static_analysis": "passed",
+    "windows_log_sha256": "EC4A2C122ECA90073D378283136B43803B4A15275CA2996F40C7D03A7E7F0E2F",
+    "linux_native_tests": "passed",
+    "full_linux_runtime": {
+      "status": "passed",
+      "top_level_tests": 103,
+      "subtests": 377,
+      "fuzz_targets": 6,
+      "fuzz_seeds": 34,
+      "skipped_helper_tests": 1,
+      "network_devices": 0,
+      "race_run": false,
+      "log": "work/reports/phase-5-clock-854a9e1/linux-runtime.log",
+      "log_sha256": "C40422DE21D4626686147CA2548943746CAE0A0D97726B74FF4FAE9D7ECE20F6"
+    },
+    "physical_suspend_qualification": "pending",
+    "socket_lease_enforcement": "unimplemented"
+  },
+  "package_vulnerability_scan": {
+    "source_commit": "854a9e134b39643ab7f5160e5d9cdc67dfebe2ee",
+    "packages": [
+      "internal/controller",
+      "internal/control",
+      "internal/boottime"
+    ],
+    "result": "no affected imported packages; one unimported module advisory remains visible",
+    "log_sha256": "7D56FB899320157ACBCC24562F5D1C0914E5A6E2AB17825CB6B01C32545027DD"
+  },
+  "hosted": {
+    "source_commit": "518f13992b75692b92de21e5c10a2f348eab37f9",
+    "quality": {
+      "status": "in progress",
+      "url": "https://github.com/lutralutraq77/Portico/actions/runs/34164040900"
+    },
+    "codeql": {
+      "status": "passed",
+      "url": "https://github.com/lutralutraq77/Portico/actions/runs/34164040895"
+    },
+    "dependency_review": {
+      "status": "passed",
+      "url": "https://github.com/lutralutraq77/Portico/actions/runs/34164040849"
+    }
+  },
+  "acceptance": {
+    "total": 91,
+    "implemented": 1,
+    "planned": 90
+  },
+  "limitations": [
+    "Actual workload sockets and lease enforcement remain unimplemented",
+    "Authenticated receipts alone cannot prove socket closure",
+    "Physical hardware, platform, deployment and independent audit requirements remain"
+  ]
+}

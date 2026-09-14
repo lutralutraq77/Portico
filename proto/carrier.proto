@@ -1,0 +1,30 @@
+syntax = "proto3";
+
+package portico.carrier.v1;
+option go_package = "portico.local/portico/internal/carrierpb";
+
+// The relay carries opaque inner TLS, never a caller-specified destination.
+message Frame {
+  uint32 version = 1;
+  Kind kind = 2;
+  string connector_id = 3;
+  bytes data = 4;
+  // Correlates a single authenticated data RPC with its cancellation watch.
+  // It is not a bearer credential or a resource/destination identifier.
+  bytes stream_id = 5;
+}
+
+enum Kind {
+  KIND_UNSPECIFIED = 0;
+  KIND_HELLO = 1;
+  KIND_READY = 2;
+  KIND_DATA = 3;
+}
+
+service Carrier {
+  rpc Dial(stream Frame) returns (stream Frame);
+  rpc Bind(stream Frame) returns (stream Frame);
+  // A separate flow-control window keeps cancellation out of unread payload.
+  // The only response is READY; any end closes the data RPC.
+  rpc Watch(Frame) returns (stream Frame);
+}

@@ -1,0 +1,122 @@
+{
+  "schema": 1,
+  "phase": 6,
+  "date": "2026-09-10",
+  "application_version": "0.6.0-dev",
+  "verification_source": "a1e284ca09b71c7acedb73fb16e4fd5bf222ee6a",
+  "tested_pr_merge": "12f6ee4ec78aa2b202c34e1972d7e3d1df759dfc",
+  "identical_source_and_merge_tree": "16d2915035a588b659cbb029597bb6e181e75fcf",
+  "scope": "Ordinary enrollment transport and complete regression suite; excludes later durable localfile and encrypted-state changes.",
+  "hosted_jobs": [
+    {
+      "run": 34474851954,
+      "job": 102863061447,
+      "name": "complete isolated Linux guest",
+      "conclusion": "success",
+      "log_sha256": "868545e7c574815ae3d4cb6a4f64805e317ac09b0a723b18f524730e9123a564"
+    },
+    {
+      "run": 34474852002,
+      "job": 102863061384,
+      "name": "Windows quality",
+      "conclusion": "success",
+      "log_sha256": "8bf78df5696f77fe72c4552163d4f1476a5838d36f1768e6baecd148e0dbcc5e"
+    },
+    {
+      "run": 34474852002,
+      "job": 102863061690,
+      "name": "Ubuntu quality",
+      "conclusion": "success",
+      "log_sha256": "7515de091a36ccb42f907b8d04d03a6fe64eece9e339e52f17e68289697f6f5b"
+    },
+    {
+      "run": 34474851880,
+      "job": 102863060668,
+      "name": "CodeQL",
+      "conclusion": "success",
+      "log_sha256": "a7befbd2a7113b798df3e79591f74ecd18a0f8df1b07b1d14b6702da5cb3f647"
+    },
+    {
+      "run": 34474851844,
+      "job": 102863060674,
+      "name": "dependency review",
+      "conclusion": "success",
+      "log_sha256": "054874179444625ee573ae2dc9c4360147b79f8f3c45c592e581b669367bbb2e"
+    }
+  ],
+  "artifacts": [
+    {
+      "id": 10151415167,
+      "name": "isolated-linux-runtime",
+      "sha256": "50892b07baaa44a4a40ee158759b7ac4ba5c861db60682ab7c721b47721674ea",
+      "local_zip_digest_verified": true
+    },
+    {
+      "id": 10151404077,
+      "name": "Ubuntu quality",
+      "sha256": "7c2aaee807f3458c72bc855d49aa73f8060f6142a738a0bcc509a748cb54b25c",
+      "local_zip_digest_verified": false
+    },
+    {
+      "id": 10151366967,
+      "name": "Windows quality",
+      "sha256": "6b4f5eb738da3fd116acd0bec914bc58b078dee5697dad1df1d2a88a80897cdc",
+      "local_zip_digest_verified": false
+    }
+  ],
+  "linux": {
+    "complete_suite": true,
+    "race_instrumented": false,
+    "top_level_tests_passed": 172,
+    "test_subcases_passed": 792,
+    "fuzz_targets": 7,
+    "fuzz_seeds_passed": 36,
+    "intentional_skips": 1,
+    "failures": 0,
+    "marker": "PORTICO_LINUX_ALL_PASS",
+    "log_sha256": "3e82af29c0534ccfbe6b39effa1a24d44269c78e2547bc0a6218aef686bfb8a6",
+    "environment_sha256": "64ccd7d08e035023b20d61c238d9ec92e54be8b6e5694553e761944ca85b3c78",
+    "host": "Ubuntu 24.04.5 LTS",
+    "qemu": "11.1.1",
+    "qemu_sha256": "2aa2409f942b1bcdf47ad695658a25528d38c1e7a0555569256dcfb0bedf8635",
+    "kernel_sha256": "1e6bf9027720c75c3ed0d79171f21b5791ee40ca9795d07c7c6e04dc5ea2ae90",
+    "initramfs_sha256": "65f76696d15250b5d3d7aefc31d53958379fb26b99624a87891ac735400a624f",
+    "acceleration": "tcg",
+    "virtual_cpus": 2,
+    "memory_mib": 1536,
+    "network_devices": 0,
+    "host_filesystem_shares": 0,
+    "specific_passes": [
+      "TestRequestBodyCancellationPreservesReadBytesAndErasesSource",
+      "TestWorkloadGuestConnectorRevocationRestartAndReplay/connector",
+      "TestWorkloadGuestConnectorRevocationRestartAndReplay/certificate",
+      "TestOrdinaryHTTPSWorkflowThroughRealIssuer/device",
+      "TestOrdinaryHTTPSWorkflowThroughRealIssuer/connector"
+    ]
+  },
+  "archive": "work/reports/phase-6-enrollment-resumed",
+  "retained_failed_local_run": {
+    "source": "ffed109c8e06ca8aec9ff04b6c8010bd447011ba",
+    "log_sha256": "028dbbef7695693d7a98be1a03e47bf3b23c5a2a0e9888b6e7ff60730c882644",
+    "failure": "Both connector revocation subcases failed initial setup before revocation; no deadline or clock check was weakened.",
+    "all_causes_established": false
+  },
+  "acceptance": {
+    "total": 91,
+    "implemented": 7,
+    "planned": 84,
+    "promoted_by_this_report": []
+  },
+  "remaining": [
+    "Encrypted durable local enrollment key/attempt storage and CLI",
+    "Installed enrollment service",
+    "Platform keystore and IPC custody",
+    "Desktop/browser resource workflows and Arch packages",
+    "Windows and Android integration",
+    "Physical administrator keys, hostname and recovery qualification",
+    "Independent network isolation and qualified time services",
+    "Authenticated updates",
+    "Full acceptance and independent security review"
+  ],
+  "master_brief_sha256": "653b502484f8932c9b2a4faa40b02248c0215407996882e74fbfb3adeef6b37f"
+}

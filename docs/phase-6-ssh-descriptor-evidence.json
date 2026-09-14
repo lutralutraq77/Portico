@@ -1,0 +1,269 @@
+{
+  "schema": 1,
+  "source_base_commit": "30974c80315956c465ac84ce5396ba6054be7fd8",
+  "scope": "Linux OpenSSH descriptor adapter, invocation boundary and unchanged application supervision; actual OpenSSH runtime not yet qualified",
+  "status": "Focused native, CLI fuzz, final NIC-less Linux and Windows/Linux static checks passed; actual OpenSSH runtime and final hosted source qualification pending",
+  "linux": {
+    "top_pass": 6,
+    "subcase_pass": 40,
+    "failures": 0,
+    "skips": 0,
+    "environment": {
+      "base_commit": "30974c80315956c465ac84ce5396ba6054be7fd8",
+      "source_files": [
+        {
+          "path": "internal/localipc/fdpass_linux.go",
+          "sha256": "5fabc085e2615aa2fca85255d3f3ecec07c50c91f87db63c6e2fdef0f13f5af7"
+        },
+        {
+          "path": "internal/localipc/fdpass_linux_test.go",
+          "sha256": "b87a8e320bd4b75010a4f9186697741ab78c770561bdbee6afcc502a371c1bd7"
+        },
+        {
+          "path": "internal/localipc/localipc_linux.go",
+          "sha256": "40183c689d8bad798bfdf6f37ed2a1cd4ddc964bf560092ef91eacbbc4ac6417"
+        },
+        {
+          "path": "internal/agent/application.go",
+          "sha256": "15cef0cc39a4f29497566b5e5cbcc5801a094b486b0db455fe058f905e75fec7"
+        },
+        {
+          "path": "internal/agent/application_linux.go",
+          "sha256": "79bad47b4a24ba3a1b9b6271b5a70ec2cd19c27b765a0c55976006bb2c02bc18"
+        },
+        {
+          "path": "internal/agent/application_linux_test.go",
+          "sha256": "be205d7eb7b75ef445d50d23e37a9a0b575c50b4745ab60ed1215b471014bd8d"
+        },
+        {
+          "path": "internal/agent/ssh.go",
+          "sha256": "9b62adccb8fca02129766d07d8884d262ff35df453c1c89d3dc5f4f00d2db0a2"
+        },
+        {
+          "path": "internal/agent/ssh_config_linux.go",
+          "sha256": "a9a4313bf311b54777050d2736bf5eacd237d7675a113b5636994caf85a8414b"
+        },
+        {
+          "path": "internal/agent/ssh_linux.go",
+          "sha256": "156b070f28f1f86423b48091c3482182f2fccb88bb28757ef5b6a48150aa0bc1"
+        },
+        {
+          "path": "internal/agent/ssh_linux_test.go",
+          "sha256": "15b1f1644c5fc41e2e315dba0dc8d9369850ebda41e408b5e50e1cd1c7e0f838"
+        },
+        {
+          "path": "internal/cli/run.go",
+          "sha256": "924f9bf3ccea6dfddb6685bc6698d8c560c75b38e57b3f0a1ed930e024f2e26d"
+        },
+        {
+          "path": "internal/cli/ssh_test.go",
+          "sha256": "5821a50aa3670b639212429a70fc4a66beb3f30f0a5b6b8d471db167b4551373"
+        },
+        {
+          "path": "internal/cli/run_test.go",
+          "sha256": "f02a50e10256ca2ee0c5c8029dc8eeb74b1865139c4dca72281bed0a493c1cf4"
+        }
+      ],
+      "artifacts": [
+        {
+          "path": "init",
+          "sha256": "d0ef0d7ac0fd96af35d475dc59eebdf8eb5d8ff6ee7f0718e1cab3e260dc7a93"
+        },
+        {
+          "path": "localipc",
+          "sha256": "7d0a79e7de4a8b132c49a969dcb7dfd9f257ddaa38b8a33620a864f0f00378a5"
+        },
+        {
+          "path": "cli",
+          "sha256": "2f1a7e510971cdbabf23aba6b7795fd87130a3e50d10be974ecd81072fec0601"
+        },
+        {
+          "path": "agent",
+          "sha256": "0fe3eee1cafee8c194221bd52d47eec8c9f88596afe24e46d1bb5d741c9c6058"
+        },
+        {
+          "path": "portico",
+          "sha256": "9c73a7654f07d9398c7f62461de6cbf1a0c9ca4871484e0e115db4c90379b284"
+        },
+        {
+          "path": "initramfs.cpio.gz",
+          "sha256": "f1a1d5542f017a8e79efd8114b56260093dfcedcf18b1e424a5070424f42aff5"
+        }
+      ],
+      "kernel_sha256": "1E6BF9027720C75C3ED0D79171F21B5791EE40CA9795D07C7C6E04DC5EA2AE90",
+      "qemu": "QEMU emulator version 11.1.0 (v11.1.0-12130-ge470268ff4)",
+      "network_devices": 0,
+      "host_filesystem_shares": 0,
+      "memory_mib": 2048,
+      "virtual_cpus": 2,
+      "production_overlay": false
+    }
+  },
+  "native": {
+    "fuzz_executions": 13160,
+    "fuzz_seconds": 5,
+    "final_cli_after_fuzz_seed": {
+      "failed": 0,
+      "subcase_pass": 44,
+      "top_pass": 9,
+      "skipped": 0
+    },
+    "initial": {
+      "failed": 0,
+      "subcase_pass": 89,
+      "top_pass": 23,
+      "skipped": 0
+    }
+  },
+  "initial_failure": {
+    "subcase_fail": 1,
+    "skips": 0,
+    "top_fail": 1,
+    "subcase_pass": 39,
+    "top_pass": 5,
+    "cause": "Other-UID fixture attempted to read root-only isolation marker after dropping privilege; corrected fixture relies on already-guarded root parent and creates its own protected endpoint."
+  },
+  "artifacts": [
+    {
+      "path": "E:/Portico/work/reports/ssh-descriptor-linux/runtime/runtime.log",
+      "sha256": "89abf47e1467811f066e9ca690d8a98405891c3d48bb0fc79e80df5b437deedf"
+    },
+    {
+      "path": "E:/Portico/work/reports/ssh-descriptor-linux/runtime/environment.json",
+      "sha256": "52ed93b6b093622fd8a088f96a22b27702303a774108fbf5a9a58f70723f9362"
+    },
+    {
+      "path": "E:/Portico/work/reports/ssh-descriptor-linux/runtime-fixed/runtime.log",
+      "sha256": "8ee86a8b914fd022981cad34717075fe600ce1b67139de1fde9448e9648a1805"
+    },
+    {
+      "path": "E:/Portico/work/reports/ssh-descriptor-linux/runtime-fixed/environment.json",
+      "sha256": "ce91630f91d41c70698ce842ff5c3a22511f98df6f99e1aef76315cf6fa28e2d"
+    },
+    {
+      "path": "E:/Portico/work/reports/ssh-descriptor-native.jsonl",
+      "sha256": "bea0cf6abefdfcb1bf4f53d4160eaea98c06698044cf88f2d728b2911b4bcfbd"
+    },
+    {
+      "path": "E:/Portico/work/reports/ssh-descriptor-cli-final.jsonl",
+      "sha256": "b6bfcfca284223b29a275600aef192937e8a496e3b0455a2336cd8dae192ee6f"
+    },
+    {
+      "path": "E:/Portico/work/reports/ssh-descriptor-fuzz.log",
+      "sha256": "010d63d4b07b882077d5203a5e8d6459a3e4d07c04d1d88f805166a61d9aca3a"
+    },
+    {
+      "sha256": "0dfeabfed5d17876b5a332857721495bb5206fd41129e563bd0c10472ea0fd13",
+      "path": "E:/Portico/work/reports/ssh-descriptor-linux/runtime-final/runtime.log"
+    },
+    {
+      "sha256": "055f3d1b6b450d98f797918fc13713ff73754f76dc7e7d8bbed0e3efd0486613",
+      "path": "E:/Portico/work/reports/ssh-descriptor-linux/runtime-final/environment.json"
+    },
+    {
+      "sha256": "e79f00193135c60c5af5622a583bd886265018989afb9e114a76f3e5c059b27b",
+      "path": "E:/Portico/work/reports/ssh-descriptor-static.log"
+    },
+    {
+      "sha256": "6d13aeb4041566b4b0366882ec405abde63bd64e5269c013257d07dfac6d6c3e",
+      "path": "E:/Portico/work/reports/ssh-descriptor-static-final.log"
+    }
+  ],
+  "limitations": [
+    "No actual OpenSSH binary, SSH host-key/user-key authentication, full controller/issuer/connector SSH flow or hardware qualification in this component run.",
+    "Neither Phase 6 nor Phase 7 is complete; canonical acceptance remains seven implemented and 84 planned."
+  ],
+  "pre_platform_split_linux": {
+    "environment": {
+      "base_commit": "30974c80315956c465ac84ce5396ba6054be7fd8",
+      "source_files": [
+        {
+          "sha256": "5fabc085e2615aa2fca85255d3f3ecec07c50c91f87db63c6e2fdef0f13f5af7",
+          "path": "internal/localipc/fdpass_linux.go"
+        },
+        {
+          "sha256": "b87a8e320bd4b75010a4f9186697741ab78c770561bdbee6afcc502a371c1bd7",
+          "path": "internal/localipc/fdpass_linux_test.go"
+        },
+        {
+          "sha256": "40183c689d8bad798bfdf6f37ed2a1cd4ddc964bf560092ef91eacbbc4ac6417",
+          "path": "internal/localipc/localipc_linux.go"
+        },
+        {
+          "sha256": "15cef0cc39a4f29497566b5e5cbcc5801a094b486b0db455fe058f905e75fec7",
+          "path": "internal/agent/application.go"
+        },
+        {
+          "sha256": "79bad47b4a24ba3a1b9b6271b5a70ec2cd19c27b765a0c55976006bb2c02bc18",
+          "path": "internal/agent/application_linux.go"
+        },
+        {
+          "sha256": "be205d7eb7b75ef445d50d23e37a9a0b575c50b4745ab60ed1215b471014bd8d",
+          "path": "internal/agent/application_linux_test.go"
+        },
+        {
+          "sha256": "8a05ea876d9cf8af5e568658390ce8be24ca1d9ef16e9c56f7130f8c4cf93ed3",
+          "path": "internal/agent/ssh.go"
+        },
+        {
+          "sha256": "156b070f28f1f86423b48091c3482182f2fccb88bb28757ef5b6a48150aa0bc1",
+          "path": "internal/agent/ssh_linux.go"
+        },
+        {
+          "sha256": "15b1f1644c5fc41e2e315dba0dc8d9369850ebda41e408b5e50e1cd1c7e0f838",
+          "path": "internal/agent/ssh_linux_test.go"
+        },
+        {
+          "sha256": "924f9bf3ccea6dfddb6685bc6698d8c560c75b38e57b3f0a1ed930e024f2e26d",
+          "path": "internal/cli/run.go"
+        },
+        {
+          "sha256": "5821a50aa3670b639212429a70fc4a66beb3f30f0a5b6b8d471db167b4551373",
+          "path": "internal/cli/ssh_test.go"
+        },
+        {
+          "sha256": "f02a50e10256ca2ee0c5c8029dc8eeb74b1865139c4dca72281bed0a493c1cf4",
+          "path": "internal/cli/run_test.go"
+        }
+      ],
+      "artifacts": [
+        {
+          "sha256": "d0ef0d7ac0fd96af35d475dc59eebdf8eb5d8ff6ee7f0718e1cab3e260dc7a93",
+          "path": "init"
+        },
+        {
+          "sha256": "7d0a79e7de4a8b132c49a969dcb7dfd9f257ddaa38b8a33620a864f0f00378a5",
+          "path": "localipc"
+        },
+        {
+          "sha256": "5aeda08f71529d0814c9dfde6e8ba590607fc3d2957cc40da0c13847118b5a36",
+          "path": "cli"
+        },
+        {
+          "sha256": "9062bf5f9ad3a079f7a6500b088f4b5f0feb3c2c9933331263451cccfe1daf31",
+          "path": "agent"
+        },
+        {
+          "sha256": "85b141d854fa54ab9faf462991b22c2070405ce0e3675ff49a8800b5dc11e453",
+          "path": "portico"
+        },
+        {
+          "sha256": "8e7526e5b5746bc0f03557e6de159aa9a04e0f46480153024678b377dc418668",
+          "path": "initramfs.cpio.gz"
+        }
+      ],
+      "kernel_sha256": "1E6BF9027720C75C3ED0D79171F21B5791EE40CA9795D07C7C6E04DC5EA2AE90",
+      "qemu": "QEMU emulator version 11.1.0 (v11.1.0-12130-ge470268ff4)",
+      "network_devices": 0,
+      "host_filesystem_shares": 0,
+      "memory_mib": 2048,
+      "virtual_cpus": 2,
+      "production_overlay": false
+    },
+    "subcase_pass": 40,
+    "top_pass": 6,
+    "skips": 0,
+    "failures": 0
+  },
+  "platform_split": "Initial Windows staticcheck detected unused Linux-only configuration helpers. Helpers now compile only on Linux; final Linux component run repeated on the final source and passed. Shared SSH input type remains available for the rejecting non-Linux stub."
+}

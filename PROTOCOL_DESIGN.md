@@ -1,24 +1,24 @@
 # Protocol and API design
 
-Status: candidate end-to-end contract with implemented restricted issuer and Phase 4 private policy HTTP components. The [policy API](docs/policy-api.md) lists actual routes and limits. Q01 still gates the reverse-stream adapter and Q02 gates browser/device binding; no complete data plane exists yet.
+Status: target contract with implemented restricted issuer, private policy HTTP, bounded carrier and development workload components. The [policy API](docs/policy-api.md), [carrier contract](docs/carrier-protocol.md) and [workload contract](docs/workload-runtime.md) list actual routes, framing and limits. [ADR-006](ADR-006-connector-transport.md) resolves Q01 for the isolated prototype. Q02 still gates browser/device binding; supported service, platform and deployment qualification remains incomplete.
 
 ## Established layers, Portico application messages
 Use standard TLS 1.3 through reviewed libraries. TLS is designed for a reliable ordered stream; Portico must not implement key exchange, record encryption, nonce schemes or custom secure handshakes. Current RFC Editor material identifies RFC 9846 as the updated TLS 1.3 specification. [TLS 1.3](https://www.rfc-editor.org/info/rfc9846/).
 
-Proposed carrier: HTTP/2 gRPC bidirectional streams initiated outbound by clients/connectors. gRPC supplies framed RPCs and streaming; Portico pairing, stream adapters, quotas and authorization state are still custom security-sensitive code requiring review. [gRPC concepts](https://grpc.io/docs/what-is-grpc/core-concepts/).
+The prototype carrier uses HTTP/2 gRPC bidirectional streams initiated outbound by clients/connectors. gRPC supplies framed RPCs and streaming; Portico pairing, stream adapters, quotas and authorization state are custom security-sensitive code requiring review. [gRPC concepts](https://grpc.io/docs/what-is-grpc/core-concepts/).
 
 Outer TLS authenticates the ingress and enrolled infrastructure peers. Inner TLS between the client and connector protects resource transport from the relay. Do not replace it with claims in relay headers. For server-name validation, use an exact expected service name in a Portico-only certificate profile, plus typed immutable URI identity; name validation is explicit and does not require a global DNS change. Never disable chain/name verification as a shortcut.
 
 ## Transport options
-| Option | Benefit | Cost / risk | Phase 0 decision |
+| Option | Benefit | Cost / risk | Prototype assessment |
 |---|---|---|---|
-| Embed OpenZiti fabric/SDK | Existing identity/service transport and dial/bind separation | Two policy/identity authorities, certificate enrollment integration, dependency footprint and revocation parity need proof | Serious reuse alternative; Q01 must compare before finalizing a custom adapter |
-| Standard TLS over bounded gRPC reverse stream | One TCP ingress, mature crypto/RPC, Portico controls precise resource semantics | Custom reliable-stream adapter, cancellation and nested flow control; TCP head-of-line behavior | Preferred prototype candidate, not a production transport verdict |
+| Embed OpenZiti fabric/SDK | Existing identity/service transport and dial/bind separation | Two policy/identity authorities, certificate enrollment integration, dependency footprint and revocation parity need proof | Compared in ADR-006; retain as a reuse alternative |
+| Standard TLS over bounded gRPC reverse stream | One TCP ingress, mature crypto/RPC, Portico controls precise resource semantics | Custom reliable-stream adapter, cancellation and nested flow control; TCP head-of-line behavior | Selected for the isolated prototype; production qualification remains open |
 | Generic HTTP CONNECT proxy | Standard tunnel semantics | Generic authority target is dangerous; outbound connector pairing still needed | No arbitrary CONNECT host:port API; only consider fixed server-derived routes |
 | QUIC / HTTP/3 | Multiplexing with different loss behavior | UDP reachability, mobile/library testing, NAT profile and added exposed protocol | Defer; mature library only if added |
 | Layer-3/WireGuard overlay | Mature encrypted IP transport | More routing/DNS/OS privilege surface than initial resource proxy needs | Not the initial model; no mesh or default route |
 
-Embedding a mature fabric is not exempt from tests: its control plane defaults and direct APIs must not bypass Portico. Q01 records a re-evaluation gate rather than pretending a custom carrier has been reviewed.
+Embedding a mature fabric is not exempt from tests: its control plane defaults and direct APIs must not bypass Portico. ADR-006 resolves the prototype comparison while retaining production and independent review gates for custom code.
 
 ## Endpoint classes
 One public infrastructure listener may expose a fixed method allowlist:
@@ -47,7 +47,7 @@ Proposed starting limits: enrollment body 16 KiB, ordinary control request 64 Ki
 
 Use generated protobuf or reviewed JSON decoders; unknown security-critical enums/fields are rejected. Public JSON mutation handlers reject unknown fields and duplicate keys, use explicit DTOs and never mass-assign domain objects. Preserve limits through decompression or disable compression on sensitive methods. No unlimited messages, recursion, queues, goroutines or retry loops.
 
-Treat HTTP/2 reset floods, slow reads, abandoned streams, malformed CSRs, duplicate messages and reconnect storms as adversarial. cancellation must unblock readers/writers and release sockets. No TCP half-close behavior is promised until end-to-end stream tests define it; preserve graceful completion where compatible with hard revocation.
+Treat HTTP/2 reset floods, slow reads, abandoned streams, malformed CSRs, duplicate messages and reconnect storms as adversarial. Cancellation must unblock readers/writers and release sockets. The development workload uses bounded DATA/FIN/ACK framing inside inner TLS to preserve tested TCP half-close while waiting for remote consumption before graceful carrier teardown. Hard revocation closes both handles without waiting for this graceful exchange; broader application/platform behavior remains under qualification.
 
 ## Versioned API sketch
 The following table covers the full target surface. Only the subset explicitly listed in [the policy API](docs/policy-api.md) and [issuer guide](docs/issuer.md) is implemented; remaining routes are design work.

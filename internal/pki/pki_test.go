@@ -72,6 +72,10 @@ func setup(t testing.TB, profile Profile) fixture {
 		usages = append(usages, x509.ExtKeyUsageServerAuth)
 	}
 	l := &x509.Certificate{SerialNumber: big.NewInt(3), NotBefore: now.Add(-time.Minute), NotAfter: now.Add(time.Hour), BasicConstraintsValid: true, KeyUsage: x509.KeyUsageDigitalSignature, ExtKeyUsage: usages, URIs: []*url.URL{uri}}
+	if profile == Connector {
+		name, _ := ConnectorName(tr.DeploymentID(), id)
+		l.DNSNames = []string{name}
+	}
 	return fixture{tr, l, i, ik, dk, now, id}
 }
 

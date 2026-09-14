@@ -55,6 +55,35 @@ func IdentityURI(deployment string, profile Profile, principal string) (*url.URL
 	return &url.URL{Scheme: "portico", Host: deployment, Path: "/" + string(profile) + "/" + principal}, nil
 }
 
+// ConnectorName is a certificate name, never a DNS lookup or public endpoint.
+// It enables ordinary TLS hostname verification on an already paired stream.
+const ConnectorProfileVersion = "connector-dns-v1"
+
+func ConnectorName(deployment, principal string) (string, error) {
+	if !ValidID(deployment) || !ValidID(principal) {
+		return "", ErrInvalid
+	}
+	return principal + "." + deployment + ".connector.portico.invalid", nil
+}
+
+// IdentitySANs derives every signed name from server-approved immutable IDs.
+// Enrolling clients still submit an empty, proof-only CSR.
+func IdentitySANs(deployment string, profile Profile, principal string) ([]string, error) {
+	u, e := IdentityURI(deployment, profile, principal)
+	if e != nil {
+		return nil, e
+	}
+	names := []string{u.String()}
+	if profile == Connector {
+		name, e := ConnectorName(deployment, principal)
+		if e != nil {
+			return nil, e
+		}
+		names = append(names, name)
+	}
+	return names, nil
+}
+
 func p256(key any) bool {
 	k, ok := key.(*ecdsa.PublicKey)
 	if !ok || k == nil || k.Curve != elliptic.P256() {
@@ -159,7 +188,11 @@ func (t *Trust) Verify(der []byte, principal string, now time.Time) (Credential,
 		return zero, ErrDenied
 	}
 	u, _ := IdentityURI(t.deployment, t.profile, principal)
-	if c.IsCA || !c.BasicConstraintsValid || c.KeyUsage != x509.KeyUsageDigitalSignature || !p256(c.PublicKey) || c.SignatureAlgorithm != x509.ECDSAWithSHA256 || c.SerialNumber == nil || c.SerialNumber.Sign() <= 0 || c.SerialNumber.BitLen() > 159 || !bytes.Equal(c.RawSubject, []byte{0x30, 0}) || len(c.UnhandledCriticalExtensions) != 0 || len(c.UnknownExtKeyUsage) != 0 || !c.NotAfter.After(now) || now.Before(c.NotBefore) || c.NotBefore.Before(t.issuer.NotBefore) || c.NotAfter.After(t.NotAfter()) || !exactSAN(c, u.String()) {
+	dns := ""
+	if t.profile == Connector {
+		dns, _ = ConnectorName(t.deployment, principal)
+	}
+	if c.IsCA || !c.BasicConstraintsValid || c.KeyUsage != x509.KeyUsageDigitalSignature || !p256(c.PublicKey) || c.SignatureAlgorithm != x509.ECDSAWithSHA256 || c.SerialNumber == nil || c.SerialNumber.Sign() <= 0 || c.SerialNumber.BitLen() > 159 || !bytes.Equal(c.RawSubject, []byte{0x30, 0}) || len(c.UnhandledCriticalExtensions) != 0 || len(c.UnknownExtKeyUsage) != 0 || !c.NotAfter.After(now) || now.Before(c.NotBefore) || c.NotBefore.Before(t.issuer.NotBefore) || c.NotAfter.After(t.NotAfter()) || !exactSAN(c, u.String(), dns) {
 		return zero, ErrDenied
 	}
 	want := []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth}
@@ -184,7 +217,11 @@ func (t *Trust) Verify(der []byte, principal string, now time.Time) (Credential,
 	intermediates.AddCert(t.issuer)
 	// Verify treats KeyUsages as alternatives. Check each required usage separately.
 	for _, usage := range want {
-		chains, err := c.Verify(x509.VerifyOptions{Roots: t.roots, Intermediates: intermediates, CurrentTime: now, KeyUsages: []x509.ExtKeyUsage{usage}})
+		options := x509.VerifyOptions{Roots: t.roots, Intermediates: intermediates, CurrentTime: now, KeyUsages: []x509.ExtKeyUsage{usage}}
+		if usage == x509.ExtKeyUsageServerAuth {
+			options.DNSName = dns
+		}
+		chains, err := c.Verify(options)
 		if err != nil {
 			return zero, ErrDenied
 		}
@@ -201,8 +238,17 @@ func (t *Trust) Verify(der []byte, principal string, now time.Time) (Credential,
 	return Credential{t.deployment, t.issuerID, principal, t.profile, c.SerialNumber.Text(16), Hash(c.Raw), Hash(c.RawSubjectPublicKeyInfo), c.NotBefore, c.NotAfter}, nil
 }
 
-func exactSAN(c *x509.Certificate, want string) bool {
-	if len(c.URIs) != 1 || c.URIs[0].String() != want || len(c.DNSNames)+len(c.EmailAddresses)+len(c.IPAddresses) != 0 {
+func exactSAN(c *x509.Certificate, want, dns string) bool {
+	if len(c.URIs) != 1 || c.URIs[0].String() != want || len(c.EmailAddresses)+len(c.IPAddresses) != 0 {
+		return false
+	}
+	nameCount := 1
+	if dns != "" {
+		if len(c.DNSNames) != 1 || c.DNSNames[0] != dns {
+			return false
+		}
+		nameCount++
+	} else if len(c.DNSNames) != 0 {
 		return false
 	}
 	found := false
@@ -215,7 +261,30 @@ func exactSAN(c *x509.Certificate, want string) bool {
 			found = true
 			var names []asn1.RawValue
 			rest, e := asn1.Unmarshal(ext.Value, &names)
-			if e != nil || len(rest) != 0 || len(names) != 1 || names[0].Class != 2 || names[0].Tag != 6 || names[0].IsCompound || string(names[0].Bytes) != want {
+			if e != nil || len(rest) != 0 || len(names) != nameCount {
+				return false
+			}
+			seenURI, seenDNS := false, false
+			for _, n := range names {
+				if n.Class != 2 || n.IsCompound {
+					return false
+				}
+				switch n.Tag {
+				case 6:
+					if seenURI || string(n.Bytes) != want {
+						return false
+					}
+					seenURI = true
+				case 2:
+					if seenDNS || dns == "" || string(n.Bytes) != dns {
+						return false
+					}
+					seenDNS = true
+				default:
+					return false
+				}
+			}
+			if !seenURI || (dns != "" && !seenDNS) {
 				return false
 			}
 		case "2.5.29.15", "2.5.29.37", "2.5.29.19", "2.5.29.14", "2.5.29.35":

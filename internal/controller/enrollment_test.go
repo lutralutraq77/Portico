@@ -96,6 +96,9 @@ func (f *enrollmentFixture) sign(t *testing.T, r IssuanceRequest) []byte {
 	tmpl := &x509.Certificate{SerialNumber: n, NotBefore: r.NotBefore, NotAfter: r.NotAfter, KeyUsage: x509.KeyUsageDigitalSignature, ExtKeyUsage: []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth}, BasicConstraintsValid: true, URIs: []*url.URL{u}}
 	if r.Profile == pki.Connector {
 		tmpl.ExtKeyUsage = append(tmpl.ExtKeyUsage, x509.ExtKeyUsageServerAuth)
+		name, e := pki.ConnectorName(r.DeploymentID, r.PrincipalID)
+		must(t, e)
+		tmpl.DNSNames = []string{name}
 	}
 	return cert(t, tmpl, f.ca, csr.PublicKey, f.caKey)
 }

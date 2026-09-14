@@ -1,0 +1,171 @@
+{
+  "schema": 1,
+  "phase": 5,
+  "date": "2026-09-08",
+  "status": "workload library verified; full phase incomplete",
+  "workload": {
+    "source_commit": "809c0df4f2a2f18c49eb74db4381f85c3f314c21",
+    "windows_full_check": "passed",
+    "skip_flags": [],
+    "workload_fuzz_executions": 65579,
+    "linux": {
+      "source_commit": "809c0df4f2a2f18c49eb74db4381f85c3f314c21",
+      "status": "passed",
+      "top_level_tests": 120,
+      "subtests": 425,
+      "fuzz_targets": 7,
+      "fuzz_seeds": 36,
+      "skipped": 1,
+      "marker": true,
+      "sha256": "3A8262434B06635F16D54AEAE1499B0D8EB7EF4332353FD84E6BC1CFEBC9E504"
+    },
+    "artifact_directory": "work/reports/phase-5-workload-809c0df",
+    "observations": {
+      "revocation_to_destination_closed_and_receipt_ms": 437.089681,
+      "withheld_renewal_start_to_destination_closed_ms": 1838.611043,
+      "qualified_Q05_acceptance": false
+    },
+    "artifacts": [
+      {
+        "name": "build-hashes.json",
+        "sha256": "C0588B2E32C0209B96D7B1DAB54D0B368F7FCB4C2BB8191B31612AC2674BA069"
+      },
+      {
+        "name": "coverage.out",
+        "sha256": "C2ECBF1AB644381D28568DFBBFA7F2221A7D46DFCB92B595F0842A46D81B1D10"
+      },
+      {
+        "name": "documentation.json",
+        "sha256": "D61152B9AA67FBA51A2C8681F3AF8BD6364454FFC3A96A026DAED83E15445F9D"
+      },
+      {
+        "name": "gitleaks.json",
+        "sha256": "37517E5F3DC66819F61F5A7BB8ACE1921282415F10551D2DEFA5C3EB0985B570"
+      },
+      {
+        "name": "issuer-coverage.out",
+        "sha256": "3248B68F9B3ADF93F1C21B52147B8587DD542E7758DA59492E184A68C32DB14C"
+      },
+      {
+        "name": "issuer-linux-buildinfo.json",
+        "sha256": "3B3DD38D2ECB83ED8F538E9E374EAF2637B52F59F2B6CBFC0C79F708142E762C"
+      },
+      {
+        "name": "issuer-linux-sbom.cdx.json",
+        "sha256": "56980A114E1D65A60460F16502BDC3FA4284B925FE4335E4678383EB613A0127"
+      },
+      {
+        "name": "issuer-windows-buildinfo.json",
+        "sha256": "8EED62C7D981F3991F03F06D76B8134066D7B70CE6BB90A8004B606B0EE9D5A5"
+      },
+      {
+        "name": "issuer-windows-sbom.cdx.json",
+        "sha256": "32E5768865A526150ACFBE9CBDFD4CB3655767F28D21678908E58D5E3005FDE5"
+      },
+      {
+        "name": "linux-runtime.log",
+        "sha256": "3A8262434B06635F16D54AEAE1499B0D8EB7EF4332353FD84E6BC1CFEBC9E504"
+      },
+      {
+        "name": "linux-summary.json",
+        "sha256": "5FABE56965505964307ABA3E7D8C00D3BB531C95A35BF15EA4A70AE85E7FFA00"
+      },
+      {
+        "name": "phase-5-workload-809c0df-check.log",
+        "sha256": "4C659CF82E4A7076E347C534A6C4C3A8420FC55453328CF35CEC22BB105A7556"
+      },
+      {
+        "name": "sbom.cdx.json",
+        "sha256": "49ECB96FA2E133E91AC14CF1F3F918D0FEB3CB9C0A354BB424684997C031F083"
+      }
+    ]
+  },
+  "followup": {
+    "source_commit": "8ecad6de55dfb6ebe17334686bdbbfbf84b87dd7",
+    "change": "pin authorizations to the newest hosting policy revision",
+    "windows_workload_race": "passed",
+    "vet": "passed",
+    "static_analysis": "passed",
+    "linux": {
+      "source_commit": "8ecad6de55dfb6ebe17334686bdbbfbf84b87dd7",
+      "status": "passed",
+      "mode": "workload only",
+      "top_level_tests": 19,
+      "subtests": 49,
+      "fuzz_targets": 1,
+      "fuzz_seeds": 2,
+      "skipped": 0,
+      "marker": true,
+      "sha256": "6D4B4D72BB0E525D640D77CC6F75D774301B2CDE66BDF612BFE0480CB1D2F58D"
+    },
+    "artifact_directory": "work/reports/phase-5-workload-8ecad6d",
+    "windows_race_log_sha256": "8E1918AFCDFA4FED968E3649CE68EECFC1D9791329DBB5CBC7689966100FC400",
+    "package_scan": {
+      "packages": [
+        "internal/workload",
+        "internal/controller",
+        "internal/control"
+      ],
+      "result": "no affected imported packages; one required-module advisory outside these imports",
+      "log_sha256": "7D56FB899320157ACBCC24562F5D1C0914E5A6E2AB17825CB6B01C32545027DD"
+    }
+  },
+  "hosted": {
+    "source_commit": "809c0df4f2a2f18c49eb74db4381f85c3f314c21",
+    "quality": {
+      "status": "passed",
+      "platforms": [
+        "windows-2022",
+        "ubuntu-24.04"
+      ],
+      "url": "https://github.com/lutralutraq77/Portico/actions/runs/34173551487"
+    },
+    "codeql": {
+      "status": "passed",
+      "url": "https://github.com/lutralutraq77/Portico/actions/runs/34173551521"
+    },
+    "dependency_review": {
+      "status": "passed",
+      "url": "https://github.com/lutralutraq77/Portico/actions/runs/34173551484"
+    }
+  },
+  "linux_environment": {
+    "kernel": "6.18.35-0-virt",
+    "qemu": "11.1.0",
+    "accelerator": "TCG",
+    "network_devices": 0,
+    "guest_destination": "192.0.2.10/32 on loopback",
+    "host_filesystem_shares": false,
+    "race_instrumented": false
+  },
+  "acceptance": {
+    "total": 91,
+    "implemented": 1,
+    "planned": 90
+  },
+  "limitations": [
+    "Development CLI remains help/version only; supported service and client composition pending",
+    "Clock-health callbacks use explicit fixture estimates; production OS providers and physical suspend pending",
+    "Complete hostile-load, packet, restart, platform and independent egress scenarios pending",
+    "Receipts are connector testimony and cannot prove behavior of a compromised connector",
+    "Q05 timing acceptance, physical hardware and remaining fifteen-phase deliverables retain their scope"
+  ],
+  "development_failures": {
+    "source": "uncommitted development predecessors to 809c0df",
+    "archive": "work/reports/phase-5-workload-809c0df",
+    "artifacts": [
+      {
+        "name": "phase-5-workload-half-close-failure.log",
+        "sha256": "3DE270F669073EEC9088AC97AE72E4E6B6EB5F33FE25085F9E37FF71A1B318C5"
+      },
+      {
+        "name": "phase-5-workload-linux-initial-runtime.log",
+        "sha256": "A8264B817BD45314E7C9A5676EA26E3D6B0DB8B2BD1B53112DBA48DDA5073B74"
+      }
+    ],
+    "resolutions": [
+      "Increased controller test-process timeout from 300 to 600 seconds after observed exhaustion",
+      "Added inner TLS DATA/FIN/ACK framing to prevent final-byte truncation during graceful carrier shutdown"
+    ]
+  }
+}

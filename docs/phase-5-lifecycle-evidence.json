@@ -1,0 +1,45 @@
+{
+  "schema": 1,
+  "phase": 5,
+  "date": "2026-09-08",
+  "full_verification_source": "33696ddf9610bb8afb5f72b45e9110027360ca9c",
+  "production_code_changed": false,
+  "canonical_cases_added": ["CONN-04", "PROTO-03"],
+  "canonical_acceptance": {"total": 91, "implemented": 5, "planned": 86},
+  "test_files_sha256": {
+    "internal/controller/connector_revocation_linux_test.go": "CB523398D54CD41711DDDBE33CC2652406ECB4408FD5095FC0B00A208A39010C",
+    "internal/controller/workload_protocol_test.go": "9E16326CCACF6C9175F548C4FE494F578E7550B79EE845E6AA45E52A620C942D",
+    "internal/controller/workload_test.go": "B1583F873B0EB1EA6095184373C7080B924DCD4012FF7E9740A1EA5B233C829A"
+  },
+  "windows_full_check": {
+    "status": "passed",
+    "skip_flags": [],
+    "guest_only_tests": "excluded by Linux build tags or explicitly skipped outside the guarded guest",
+    "fuzz_targets": 7,
+    "workload_fuzz_executions": 90504,
+    "application_and_issuer_race_checks": "passed",
+    "sha256": "A0AA24A33C69B95EE0BD644036E0AD3D1DA413B36D9CED79A0C6CFA340AE8B22",
+    "terminal_marker": "Selected checks passed. See the acceptance manifest for implemented versus planned runtime cases."
+  },
+  "linux_full": {
+    "status": "passed", "top_level_tests": 143, "subtests": 494,
+    "fuzz_targets": 7, "seeds": 36, "intentional_helper_skips": 1, "failures": 0,
+    "race_instrumented": false, "marker": "PORTICO_LINUX_ALL_PASS",
+    "sha256": "BC97730142816DFC0648039E6C107C99F1AB81A5E55D182E3FC8F8D1A438BBD8"
+  },
+  "observed_closure_ms": {
+    "connector_disable_both_destinations": 762.284458,
+    "connector_certificate_revoke_both_destinations": 656.5196,
+    "existing_revocation_and_receipt": 167.491925,
+    "existing_withheld_renewal": 1945.717303,
+    "scope": "fixture observations including replay checks and traffic joins; not exact packet timestamps or production bounds"
+  },
+  "local_artifact_directory": "work/reports/phase-5-lifecycle-33696dd",
+  "guest": {"kernel": "6.18.35-0-virt", "qemu": "11.1.0 TCG", "network_interfaces": "loopback only", "host_filesystem_shares": false},
+  "qualification_limits": {
+    "Q05_accepted": false, "physical_suspend_qualified": false,
+    "independent_egress_qualified": false, "upstream_time_accuracy_qualified": false,
+    "phase_5_complete": false, "fifteen_phase_objective_complete": false,
+    "final_pr_head_hosted_status": "tracked separately in draft PR 4"
+  }
+}

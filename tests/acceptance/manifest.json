@@ -1,6 +1,6 @@
 {
   "schema": 2,
-  "phase": 4,
+  "phase": 6,
   "cases": [
     {
       "id": "AUTH-01",
@@ -115,7 +115,9 @@
     {
       "id": "CONN-01",
       "earliest_phase": 5,
-      "status": "planned"
+      "status": "implemented",
+      "test_file": "internal/controller/connector_isolation_test.go",
+      "test_name": "TestWorkloadGuestTwoConnectorHostingIsolation"
     },
     {
       "id": "CONN-02",
@@ -125,12 +127,16 @@
     {
       "id": "CONN-03",
       "earliest_phase": 5,
-      "status": "planned"
+      "status": "implemented",
+      "test_file": "internal/controller/connector_isolation_test.go",
+      "test_name": "TestConnectorControlCrossScopeIsolation"
     },
     {
       "id": "CONN-04",
       "earliest_phase": 5,
-      "status": "planned"
+      "status": "implemented",
+      "test_file": "internal/controller/connector_revocation_linux_test.go",
+      "test_name": "TestWorkloadGuestConnectorRevocationRestartAndReplay"
     },
     {
       "id": "ADMIN-01",
@@ -405,17 +411,23 @@
     {
       "id": "PROTO-03",
       "earliest_phase": 5,
-      "status": "planned"
+      "status": "implemented",
+      "test_file": "internal/controller/workload_protocol_test.go",
+      "test_name": "TestWorkloadGuestIndependentStreamLifecycles"
     },
     {
       "id": "PROTO-04",
       "earliest_phase": 5,
-      "status": "planned"
+      "status": "implemented",
+      "test_file": "internal/controller/workload_hostile_test.go",
+      "test_name": "TestWorkloadGuestHostileProtocolInputs"
     },
     {
       "id": "PROTO-05",
       "earliest_phase": 5,
-      "status": "planned"
+      "status": "implemented",
+      "test_file": "internal/controller/workload_overload_linux_test.go",
+      "test_name": "TestWorkloadGuestBackpressureQuotasAndReconnectFlood"
     },
     {
       "id": "AUDIT-01",

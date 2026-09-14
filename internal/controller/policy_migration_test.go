@@ -37,7 +37,7 @@ func TestVersionThreeMigrationPreservesFactorsAndInvalidatesChallenges(t *testin
 				_, e = s.db.Exec(`DROP TRIGGER "` + strings.ReplaceAll(name, `"`, `""`) + `"`)
 				must(t, e)
 			}
-			_, e = s.db.Exec("DROP TABLE session_cancellations; DROP TABLE authorized_sessions; DROP TABLE policy_previews; DROP TABLE policy_meta; PRAGMA user_version=3")
+			_, e = s.db.Exec("DROP TABLE session_closure_receipts; DROP TABLE session_cancellations; DROP TABLE authorized_sessions; DROP TABLE policy_previews; DROP TABLE policy_meta; PRAGMA user_version=3")
 			must(t, e)
 			hash := sha256.Sum256([]byte(schema + enrollmentSchema + adminSchema))
 			old := hex.EncodeToString(hash[:])

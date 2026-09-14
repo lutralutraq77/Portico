@@ -1,6 +1,6 @@
 # Development environment
 
-Phase 3 adds PKI/enrollment components and real TLS tests to the Phase 2 controller domain. See [the progress report](phase-3-report.md) for integration gates. The executable has only help/version commands and no listener, route, DNS or credential behavior. Runtime network labs are deferred until the connector phase.
+The authenticated forwarding runtime now has a [development Linux connector command](connector-configuration.md) and [Phase 6 client command](client-configuration.md) for fresh catalog selection and application pipes. Both use explicit protected local files and loopback control/carrier endpoints. Actual destination tests run only in the guarded NIC-less Linux guest. See [the delivery ledger](delivery-status.md) for remaining integration and deployment gates.
 
 On this machine the project is E:\Portico. Portable Go, compiler, module/build caches, temporary files and reports live under its ignored work/ directory. Existing Git/PowerShell may be read from their installed locations; setup writes no global PATH, Go configuration or machine settings.
 

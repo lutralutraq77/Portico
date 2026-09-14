@@ -32,6 +32,22 @@ if ($IsWindows) {
     }
     . (Join-Path $PSScriptRoot 'env.ps1') -WorkRoot $WorkRoot
 }
+if ([Runtime.InteropServices.RuntimeInformation]::ProcessArchitecture -ne 'X64' -or (-not $IsWindows -and -not $IsLinux)) {
+    throw 'The pinned generator currently supports Windows and Linux x86_64 hosts.'
+}
+$protocPlatform='linux_amd64'; $protocSuffix=''
+if ($IsWindows) { $protocPlatform='windows_amd64'; $protocSuffix='.exe' }
+$protocArchive=Join-Path $PorticoWork ('downloads/protoc-'+$lock.protoc.version+'-'+$protocPlatform+'.zip')
+Get-VerifiedArchive $lock.protoc.$protocPlatform.url $lock.protoc.$protocPlatform.sha256 $protocArchive
+$protocRoot=Join-Path $PorticoWork ('toolchains/protoc-'+$lock.protoc.version)
+$protocBinary=Join-Path $protocRoot ('bin/protoc'+$protocSuffix)
+if (-not (Test-Path -LiteralPath $protocBinary)) {
+    [IO.Compression.ZipFile]::ExtractToDirectory($protocArchive,$protocRoot)
+}
+if ($IsLinux) {
+    [IO.File]::SetUnixFileMode($protocBinary,[IO.UnixFileMode]::UserRead -bor [IO.UnixFileMode]::UserWrite -bor [IO.UnixFileMode]::UserExecute)
+}
+if ((& $protocBinary --version) -ne ('libprotoc '+$lock.protoc.version)) { throw 'Pinned protoc version mismatch' }
 $actualVersion = & go env GOVERSION
 if ($LASTEXITCODE -ne 0 -or $actualVersion -ne ('go' + $lock.go.version)) {
     throw ('Expected Go ' + $lock.go.version + '; use the pinned SDK.')

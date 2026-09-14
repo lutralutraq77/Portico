@@ -1,0 +1,142 @@
+.TH PORTICO 1 "September 2026" "Portico development" "User Commands"
+.SH NAME
+portico \- development access to individually authorized private resources
+.SH SYNOPSIS
+.B portico version
+.RB [ --json ]
+.br
+.B portico help
+.br
+.B portico enroll prepare|redeem|activate --config
+.I FILE
+.RB ( "--secrets-fd 3" " | " --prompt )
+.br
+.B portico client catalog --config
+.I FILE
+.RB [ "--secrets-fd 3" " | " --prompt ]
+.br
+.B portico client connect --config
+.I FILE
+.B --resource
+.I UUID
+.B --revision
+.I N
+.RB [ "--secrets-fd 3" " | " --prompt ]
+.br
+.B portico agent run --config
+.I FILE
+.B --socket
+.I SOCKET
+.RB ( "--secrets-fd 3" " | " --prompt )
+.br
+.B portico agent catalog --socket
+.I SOCKET
+.br
+.B portico agent daemon --config
+.I FILE
+.B --socket
+.I SOCKET
+.br
+.B portico agent unlock --socket
+.I SOCKET
+.RB ( "--secrets-fd 3" " | " --prompt )
+.br
+.B portico agent lock|status --socket
+.I SOCKET
+.br
+.B portico agent connect --socket
+.I SOCKET
+.B --resource
+.I UUID
+.B --revision
+.I N
+.br
+.B portico agent exec --socket
+.I SOCKET
+.B --resource
+.I UUID
+.B --revision
+.I N
+.B --endpoint
+.I SOCKET
+.B --
+.I /absolute/program
+.B {socket}
+.RI [ arguments ]
+.SH DESCRIPTION
+This development binary uses approved local configuration and pinned private
+services. It is not a supported distribution or a self-configuring installer.
+The package creates no identities, trust roots, accounts, listeners or services.
+It changes no routes, DNS, firewall rules, VPN configuration or system clock.
+.PP
+Enrollment prepares an encrypted local key, redeems an invitation for its
+certificate, and activates that certificate with fresh private-key proof.
+Retry the original state after an uncertain response; do not replace the key.
+Resource access requires a current device identity, an exact resource revision
+and live authorization. Catalog entries alone grant no connection authority.
+.PP
+The Linux agent retains an explicitly unlocked encrypted identity for at most
+fifteen minutes, including suspend, and serves that user's protected Unix socket.
+Its private mode-0700 parent must already exist. Both peers' kernel UIDs are
+checked; other applications sharing that UID are trusted. Agent catalog fetches
+fresh inventory; agent connect selects an exact resource and performs fresh
+remote authorization. Output half-close is distinct from final command success.
+Blocked application output fails after a five-second per-write deadline.
+.PP
+Agent daemon starts locked. Unlock explicitly decrypts the configured identity;
+lock cancels its active resource operations and joins old key users. A pending
+password calculation may finish before it joins, but cannot reopen a locked
+session. Status returns locked, unlocking, unlocked or draining. Daemon mode
+admits six resource streams, leaving room for normal control requests.
+.PP
+The development package includes an inactive systemd user unit. It contains no
+password and starts locked after every restart. Its fixed configuration path is
+~/.config/portico/client.json; its socket is in the user's private runtime
+directory under portico-agent/agent.sock. Installation does not enable it.
+.SH SECRET INPUT
+Enrollment and version-2 encrypted client configuration require one explicit
+secret source. Do not put passwords or invitation secrets in command arguments,
+environment variables, configuration or application payloads.
+.PP
+.B --prompt
+reads hidden input from the foreground controlling terminal. Prepare asks for
+a passphrase and confirmation; redeem asks for the passphrase and invitation
+secret; activate and client commands ask for the passphrase only. Finish each
+entry with Enter. Input has a two-minute total bound. Ctrl+C cancels. EOF,
+invalid input, missing terminal and background execution reject. Handled
+completion restores saved terminal settings; uncatchable termination cannot
+guarantee cleanup.
+.PP
+.B --secrets-fd 3
+requires a trusted launcher to provide a separate inherited read pipe containing
+one strict JSON secret object and to close its writer. Input is bounded to
+4096 bytes and 30 seconds. The command does not fall back between sources.
+.SH APPLICATION INPUT AND OUTPUT
+Connect requires separate application stdin and stdout pipes. It writes resource
+bytes only to stdout. Terminal prompts use the controlling terminal independently
+of those pipes. Catalog writes JSON; enrollment writes fixed status messages.
+Errors are fixed messages on stderr.
+.PP
+Agent exec creates a new private Unix endpoint bound to one exact resource
+ID and revision, then starts the explicitly named local executable. Its parent
+directory must already be owned by the user with mode 0700. A standalone
+{socket} argument is replaced with that endpoint; other arguments remain literal.
+No implicit shell or PATH search is used. The selected application's standard
+input, output and error streams are passed through unchanged.
+.PP
+Success requires the application to exit successfully and every accepted stream
+to finish with successful final RPC status. At least one stream must succeed.
+There are at most six active streams and one pending accept. Application exit
+allows five seconds for active streams to finish. The launcher has a fifteen-minute
+limit including suspend; cancellation closes streams and joins the direct child.
+The local application keeps its normal OS permissions and network access.
+.SH FILES
+Configuration and referenced files require canonical absolute paths, protected
+ownership and permissions, and no symbolic-link components. Shared temporary
+directories reject. Configuration contains public approved trust material and
+paths; it is not a password store. Obtain deployment values independently.
+.SH LIMITATIONS
+Private service endpoints are restricted to loopback in this development build.
+The OS user and host administrator remain trusted. Software encryption does not
+establish hardware key custody, same-user process isolation or forensic erasure.
+See DEVELOPMENT.txt for the exact source revision and remaining release gates.

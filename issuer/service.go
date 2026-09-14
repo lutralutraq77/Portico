@@ -155,7 +155,11 @@ func New(c Config) (*Service, error) {
 	if database.CreateTable(receiptTable) != nil || database.CreateTable(bindingTable) != nil {
 		return nil, issuer.ErrRejected
 	}
-	binding, _ := json.Marshal([]string{trust.DeploymentID(), trust.IssuerID(), string(trust.Profile()), trust.RootFingerprint(), trust.IssuerFingerprint(), c.Provisioner, c.KeyID, pki.Hash(publicJSON)})
+	identityBinding := []string{trust.DeploymentID(), trust.IssuerID(), string(trust.Profile()), trust.RootFingerprint(), trust.IssuerFingerprint(), c.Provisioner, c.KeyID, pki.Hash(publicJSON)}
+	if trust.Profile() == pki.Connector {
+		identityBinding = append(identityBinding, pki.ConnectorProfileVersion)
+	}
+	binding, _ := json.Marshal(identityBinding)
 	stored, swapped, e := database.CmpAndSwap(bindingTable, []byte("identity"), nil, binding)
 	if e != nil || (!swapped && !bytes.Equal(stored, binding)) {
 		return nil, issuer.ErrRejected

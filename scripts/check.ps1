@@ -44,6 +44,7 @@ try {
     if ($LASTEXITCODE -ne 0) { throw 'Cannot enumerate repository source' }
     $unformatted = @(& gofmt -l @sources)
     if ($LASTEXITCODE -ne 0 -or $unformatted.Count -gt 0) { throw ('Unformatted Go files: ' + ($unformatted -join ', ')) }
+    & (Join-Path $PSScriptRoot 'generate.ps1') -Check -WorkRoot $PorticoWork
     Invoke-Check 'module verification' 'go' @('mod','verify')
     Invoke-Check 'vet' 'go' @('vet','./...')
     Invoke-Check 'shuffled unit tests and coverage' 'go' @('test','-count=1','-shuffle=on',('-coverprofile=' + (Join-Path $reportRoot 'coverage.out')),'./...')
@@ -57,6 +58,10 @@ try {
     Invoke-Check 'bounded PKI fuzzing' 'go' @('test','./internal/pki','-run=^$','-fuzz=FuzzPKIInputs','-fuzztime=5s','-parallel=2')
     Invoke-Check 'bounded WebAuthn fuzzing' 'go' @('test','./internal/adminauth','-run=^$','-fuzz=FuzzWebAuthnResponses','-fuzztime=5s','-parallel=2')
     Invoke-Check 'bounded control JSON fuzzing' 'go' @('test','./internal/wire','-run=^$','-fuzz=FuzzControlJSON','-fuzztime=5s','-parallel=2')
+    Invoke-Check 'bounded carrier protobuf fuzzing' 'go' @('test','./internal/carrier','-run=^$','-fuzz=FuzzCarrierFrames','-fuzztime=5s','-parallel=2')
+    Invoke-Check 'bounded agent protobuf fuzzing' 'go' @('test','./internal/agent','-run=^$','-fuzz=FuzzAgentCatalog','-fuzztime=5s','-parallel=2')
+    Invoke-Check 'bounded agent tunnel fuzzing' 'go' @('test','./internal/agent','-run=^$','-fuzz=FuzzAgentTunnel','-fuzztime=5s','-parallel=2')
+    Invoke-Check 'bounded workload framing fuzzing' 'go' @('test','./internal/workload','-run=^$','-fuzz=FuzzWorkloadOpen','-fuzztime=5s','-parallel=2')
     Push-Location (Join-Path $PorticoRoot 'issuer')
     try {
         Invoke-Check 'issuer module verification' 'go' @('mod','verify')

@@ -1,0 +1,55 @@
+{
+  "schema": 1,
+  "phase": 5,
+  "date": "2026-09-08",
+  "full_verification_source": "160911ce5f602c142f1834d5bdea06756fdc7059",
+  "final_test_source": "48b991b9c5688fb531987618cea43b8022f08b10",
+  "final_test_file_sha256": "BADAB01A626C34BB8509E41A14F840AA914875DF7E639D7FACC2011489E8BC7C",
+  "production_code_changed": false,
+  "canonical_cases_added": ["CONN-01", "CONN-03"],
+  "canonical_acceptance": {"total": 91, "implemented": 3, "planned": 88},
+  "windows_full_check_160911c": {
+    "status": "passed",
+    "skip_flags": [],
+    "workload_fuzz_executions": 91589,
+    "sha256": "2E3B9A5FAA47E9F02F88DF2241560E7C04D13CC26715658B242DACC375A5DD4C"
+  },
+  "linux_full_160911c": {
+    "status": "passed", "top_level_tests": 141, "subtests": 492,
+    "fuzz_targets": 7, "seeds": 36, "intentional_helper_skips": 1,
+    "race_instrumented": false, "marker": "PORTICO_LINUX_ALL_PASS",
+    "sha256": "0350405D92CB6C52CCDEAB6503A603CD4850A9A3EB513FB3023A2A158BC51DEE"
+  },
+  "linux_focused_160911c": {
+    "status": "passed", "top_level_tests": 38, "subtests": 107,
+    "fuzz_targets": 1, "seeds": 2, "skips": 0,
+    "sha256": "BFC5E69B57E4795F1A6F095CCFABE6AC048204C79785C4E9FBBB3B1D3795EF90"
+  },
+  "linux_focused_48b991b": {
+    "status": "passed", "top_level_tests": 38, "subtests": 107,
+    "fuzz_targets": 1, "seeds": 2, "skips": 0,
+    "race_instrumented": false, "marker": "PORTICO_LINUX_WORKLOAD_PASS",
+    "sha256": "0EF6B79E3AAA3618C018C4867AD8CD83F7E999C87C962E59EAF49A1507B7CA1D"
+  },
+  "hosted_160911c": {
+    "status": "all completed successfully, including both full checks and evidence uploads",
+    "quality_run": 34178533304,
+    "windows_job": 101912667012, "ubuntu_job": 101912667294,
+    "codeql_run": 34178533409, "dependency_review_run": 34178533342,
+    "windows_log_sha256": "031EB6A727FA711C6F014CF69472CE5B51122B1CE445271C70A7DE76C8721ADB",
+    "ubuntu_log_sha256": "0A328F409F2E33F48DFA8014D51FF945A6C931AEB145152CBB4EBA89E61D84B0"
+  },
+  "retained_failure": {
+    "reason": "second connector fixture used fractional-second certificate expiry; production validation correctly denied enrollment",
+    "directory": "work/reports/phase-5-isolation-initial",
+    "log_sha256": "38F8EB193FE5BD0E5B2CC671557F073B02D0514F1870A4059FB77F5CD8D681F7",
+    "new_test_source_sha256": "ECD1B00F19136BB61EAD00F16D6A123A956B041B8C97A69A10D62EA2C0D82E87"
+  },
+  "guest": {"kernel": "6.18.35-0-virt", "qemu": "11.1.0 TCG", "network_interfaces": "loopback only", "host_filesystem_shares": false},
+  "qualification_limits": {
+    "Q05_accepted": false, "physical_suspend_qualified": false,
+    "independent_egress_qualified": false, "upstream_time_accuracy_qualified": false,
+    "CONN-04_complete": false, "phase_5_complete": false, "fifteen_phase_objective_complete": false,
+    "final_pr_head_hosted_status": "tracked separately in draft PR 4"
+  }
+}

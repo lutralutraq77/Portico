@@ -1,0 +1,116 @@
+{
+  "schema": 1,
+  "phase": 5,
+  "date": "2026-09-08",
+  "full_verification_source": "1ab549832faac5d56f290d56014562f94689268b",
+  "runtime_code_changed": false,
+  "dependency_change": "Promote already-pinned golang.org/x/net v0.57.0 to direct test dependency; no version change",
+  "source_file_hashes": [
+    {
+      "file": "go.mod",
+      "sha256": "770B372978F998900B07603449A1C62DF1DF49A33FBE9D5EC7A6FC90A99171F1"
+    },
+    {
+      "file": "internal/controller/protocol_hostile_test.go",
+      "sha256": "4010D55DFCD3BB492BB311BAA58468487CF2452BF580F481769E66B7550BAB47"
+    },
+    {
+      "file": "internal/controller/workload_hostile_test.go",
+      "sha256": "8B409E42E09614C519F47532905307DD272B8F75A4F24C16983C3E1561AA1D9F"
+    },
+    {
+      "file": "requirements/PORTICO_MASTER_PROMPT.md",
+      "sha256": "653B502484F8932C9B2A4FAA40B02248C0215407996882E74FBFB3ADEEF6B37F"
+    }
+  ],
+  "canonical_cases_added": [
+    "PROTO-04"
+  ],
+  "canonical_acceptance": {
+    "total": 91,
+    "implemented": 7,
+    "planned": 84
+  },
+  "windows_full_check": {
+    "sha256": "89BB89CF25190CAEF94D0D389149226D5E422E13025C6B4D21EC026CAA37144F",
+    "workload_fuzz_inputs": 59365,
+    "status": "passed",
+    "scanners_and_positive_controls": "passed",
+    "GOMAXPROCS": 2,
+    "advisories_in_required_modules_outside_affected_imports": 1,
+    "fuzz_targets": 7,
+    "unit_and_race_modules": 2,
+    "affected_code": 0,
+    "skip_flags": []
+  },
+  "linux_full_check": {
+    "source_commit": "1ab549832faac5d56f290d56014562f94689268b",
+    "status": "passed",
+    "top_level_pass": 147,
+    "subtest_pass": 713,
+    "fuzz_targets": 7,
+    "fuzz_seeds": 36,
+    "failures": 0,
+    "skips": 1,
+    "pass_marker": true,
+    "sha256": "F3D3EA225BC8D792457ACDAB28E19C1BD2CFEFE4AE06720A37CE4CAEEF8B36DE"
+  },
+  "linux_focused_check": {
+    "sha256": "D182F70A396A794A96EDBBA7D7D64F22250E5246C24EFC5DBC1F5B9556FDD750",
+    "failures": 0,
+    "status": "passed",
+    "top_level_pass": 43,
+    "subtest_pass": 233,
+    "skips": 0,
+    "fuzz_seeds": 2
+  },
+  "reset_negative_control": {
+    "oracle": "Cleanup must finish in two seconds, before fallback expiry",
+    "mutation": "Omit actual RST_STREAM write, retain SETTINGS barrier",
+    "status": "failed_as_required",
+    "archive": "work/reports/phase-5-protocol-initial",
+    "sha256": "9BAAE5E78296C2D55781B30A9B6B9047E5AFF1C6600AFD7BFD6F49C2E7FF7916"
+  },
+  "scenario": {
+    "unexpected_destinations": 0,
+    "http_bodies": 18,
+    "csr_mutations": "DER truncations, eight signature-bit changes, concatenation/oversize and signed subject/SAN/extension claims; count depends on DER length",
+    "grpc_messages": 9,
+    "expected_destination_connections": 8,
+    "reset_waves": 8,
+    "malformed_inner_opens": 15,
+    "unexpected_authority": 0,
+    "reset_cases_per_wave": 3,
+    "retained_stream_workers": 0,
+    "expected_closure_receipts": 8,
+    "unexpected_application_bytes": 0,
+    "additional_positive_bind_resets": 2,
+    "malformed_payloads_after_valid_open": 7
+  },
+  "builds": [
+    {
+      "Path": "E:\\Portico\\build\\portico-windows-amd64.exe",
+      "Hash": "30DB24C88B611875C75E0DC63C67B63FC004857B68AE369193232A6A3D9AF757"
+    },
+    {
+      "Path": "E:\\Portico\\build\\portico-linux-amd64",
+      "Hash": "A790D3A75959353B5BB27760F3E2375416685D01383F2F9BE724995A5728A18B"
+    },
+    {
+      "Path": "E:\\Portico\\build\\portico-issuer-windows-amd64.exe",
+      "Hash": "535E2E49853C28AEF7BE0D62711B0D340CFFFAE13E4966F4490044936E8E13FF"
+    },
+    {
+      "Path": "E:\\Portico\\build\\portico-issuer-linux-amd64",
+      "Hash": "C43D15BEC2725286C142050CF96BBDF51D7BFE1D6641C1BC479F85F602028049"
+    }
+  ],
+  "artifact_archive": "work/reports/phase-5-protocol-1ab5498",
+  "final_head_hosted_evidence": "Tracked separately in draft PR 4 after final documentation commit",
+  "limits": [
+    "Finite corpus, fuzz and timing observations do not prove absence of all parser or exhaustion bugs or accept Q05",
+    "Destination tests run only in guarded NIC-less Linux; ordinary hosts skip them",
+    "Enrollment/controller-provider fixture is not a physical issuer custody or deployment claim",
+    "Full fifteen-phase delivery and 84 other acceptance scenarios remain open"
+  ]
+}

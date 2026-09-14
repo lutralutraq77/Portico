@@ -1,0 +1,156 @@
+{
+  "schema": 1,
+  "base_commit": "159e1c0bfcd19fc77f6e5ffedbaf801381513a58",
+  "qualification": "native and targeted diagnostic Linux passed; full hosted current-source qualification pending",
+  "source_files": [
+    {
+      "sha256": "1d43e1f25675f2a61bd412f9f914e32b4d4e020b5ce3f38764eb546133a808d8",
+      "path": "internal/agent/daemon_linux_test.go"
+    },
+    {
+      "sha256": "24eaf824ce30af6eba56f4f4b433954f1959e64baf33c835ecd074d0cef6b14d",
+      "path": "internal/controller/workload_test.go"
+    },
+    {
+      "sha256": "4c0a4c3f6809679b9fdd8f6d67b91b88a048c9e8527b3af238efbb588483b534",
+      "path": "internal/workload/client.go"
+    },
+    {
+      "sha256": "7f73b623f9bcf8b033acd0f828d707a6ffae1ef1c6a972e271b4c73a03da95f0",
+      "path": "internal/workload/stream.go"
+    },
+    {
+      "sha256": "80dd46c1850f27d7d4514b2ea0ec2e407ca1e7d2b8866fca5a5315ca48037730",
+      "path": "internal/workload/stream_test.go"
+    },
+    {
+      "sha256": "cb23352b59806e29f150113f14d322262a64aa7deaa1ce5160633fdd20820d3c",
+      "path": "internal/workload/completion_test.go"
+    }
+  ],
+  "checks": {
+    "final_read_negative_control": {
+      "observed": "connector closed before the final read returned",
+      "expected": "failure"
+    },
+    "native": {
+      "client_seconds": 39.046,
+      "workload_seconds": 12.545,
+      "skip": 0,
+      "agent_seconds": 13.341,
+      "top_pass": 35,
+      "fail": 0,
+      "subcase_pass": 121
+    },
+    "daemon": {
+      "before": {
+        "pass": 0,
+        "fail": 10
+      },
+      "host_filesystem_shares": 0,
+      "production_timeouts_changed": false,
+      "child_lifetime_seconds": 30,
+      "startup_budget_seconds": 10,
+      "fixture_permission_delay_ms": 50,
+      "three_second_startup": {
+        "pass": 2,
+        "fail": 8
+      },
+      "network_devices": 0,
+      "final": {
+        "fail": 0,
+        "pass": 10,
+        "process_starts": 20
+      }
+    },
+    "static": {
+      "windows": "passed",
+      "linux": "passed"
+    },
+    "source_secret_scan": "passed; zero findings",
+    "secret_positive_control": "passed; expected scanner exit 1 was initially mistaken for wrapper failure; detection and redaction confirmed without rerunning"
+  },
+  "artifacts": [
+    {
+      "sha256": "b6164d41b2dbf4dd2ce9dd1a6094331b960cc46a1cfdf7156f4e19202d260991",
+      "path": "reports/final-read-before.log"
+    },
+    {
+      "sha256": "49c25f4b50a2de0892b182a362beebd72d8a3c4dea20ac8b981ef85dc08606a6",
+      "path": "reports/final-read-after-native.log"
+    },
+    {
+      "sha256": "682e53630f30a6256adc00e3f28193129d5cc9e3c1122b366d74b0b91ade3ed0",
+      "path": "reports/final-read-final-native.jsonl"
+    },
+    {
+      "sha256": "896eecdf3a28f501b228bf049358d8401d1281f05b4fd7f25a3a7d54602d01cc",
+      "path": "reports/final-read-static.log"
+    },
+    {
+      "sha256": "a239fd29d8153a0fec75e40eae7e6f5a71fc5b1da87e39cf31a0786cb4c26246",
+      "path": "reports/daemon-readiness-diagnostic/before/runtime.log"
+    },
+    {
+      "sha256": "9a5a8a7f85f72b52d557a852889c15f71940b2f04206a0135bf2f20fb0522107",
+      "path": "reports/daemon-readiness-diagnostic/before/environment.json"
+    },
+    {
+      "sha256": "a49152c6775a1d86e9351085f9e302451b258d570e0bff7634fd87a9dc362013",
+      "path": "reports/daemon-readiness-diagnostic/after/runtime.log"
+    },
+    {
+      "sha256": "930b1e3c819caf82896193edfd6d9dc2ef9fe2ecf3ec68ff3750b18e84288fc5",
+      "path": "reports/daemon-readiness-diagnostic/after/environment.json"
+    },
+    {
+      "sha256": "5a1a0d9e7b7ae9123e82376abf8434aa37e587fa3365de7ea9802f62be5913ef",
+      "path": "reports/daemon-readiness-diagnostic/after-bounded/runtime.log"
+    },
+    {
+      "sha256": "54d23f8ecb590df1eeee99af2cd1f8d4ce42237be993fb62f8253a6a6b98f68e",
+      "path": "reports/daemon-readiness-diagnostic/after-bounded/environment.json"
+    },
+    {
+      "sha256": "555274bca86e6c0ff753b1da07a28c2d713a6a720cbccb2ef8a83c7c690adbe8",
+      "path": "reports/daemon-readiness-diagnostic/localipc_linux.go"
+    },
+    {
+      "sha256": "77a4675268c7993b37574e7b376c5f813ddf8ab5fc02f9c12e4b43889de5b744",
+      "path": "reports/daemon-readiness-diagnostic/init.go"
+    },
+    {
+      "sha256": "9836e7f5a6abd672893922ea1994fb7d953257bb4563a01b735cb6f47256eb08",
+      "path": "reports/daemon-readiness-diagnostic/archive.go"
+    },
+    {
+      "sha256": "3999317ee0239c0e14702941ab4270c6696880fa8cbb20e42bf08ab0cdb301f2",
+      "path": "reports/daemon-readiness-diagnostic/run-bounded.ps1"
+    },
+    {
+      "sha256": "a2eca74647e8bf8abda96f86e14cbac2fe63d354688514a561840afa0e25da8b",
+      "path": "reports/final-ack-hosted/592-evidence.json"
+    },
+    {
+      "sha256": "37ed953f94685f8ca89e5b88701cd6033d64166383264c5a197c3c3c53bbe3fa",
+      "path": "reports/final-read-docs.json"
+    },
+    {
+      "sha256": "d7cdf903d4f170183563dc78df55c7633f8e677da627bf19f0220780a63345b5",
+      "path": "reports/final-read-gitleaks.log"
+    },
+    {
+      "sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+      "path": "reports/final-read-gitleaks.json"
+    },
+    {
+      "sha256": "60a0ffac09af4750e23dcc6ceae6d5f096d5c3ab032ff4c6939e7d95b7506746",
+      "path": "reports/final-read-secret-positive.log"
+    }
+  ],
+  "acceptance": {
+    "implemented": 7,
+    "planned": 84,
+    "total": 91
+  }
+}

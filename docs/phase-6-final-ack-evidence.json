@@ -1,0 +1,260 @@
+{
+  "schema": 1,
+  "source": {
+    "source_base": "1c1bd605ab51a4d7c60f168d474a569c3594eaa6",
+    "uncommitted_changes": true,
+    "files": [
+      {
+        "sha256": "22851de2803096de7d8f12f59288a0956b7d9e280d8474012b86fa17b9348c0d",
+        "path": "internal/workload/stream.go"
+      },
+      {
+        "sha256": "6455ee434e1b5ebaf2d152c2dc0e9f074095e444544a47afb55385e4435cd249",
+        "path": "internal/workload/server.go"
+      },
+      {
+        "sha256": "5d824da2a55e4490b6af9a5d2223f51729bc5798f076abc24fecc92ba208e8f4",
+        "path": "internal/workload/client.go"
+      },
+      {
+        "sha256": "1711bfa8cd6d5dfd1f3258ef290b1245a24675db793e956d776c77650376ee1e",
+        "path": "internal/client/stream.go"
+      },
+      {
+        "sha256": "feba6ff6667e6c2b4f638d57673a8134435d3ce93d2035528ab56e293ced23cd",
+        "path": "internal/workload/stream_test.go"
+      },
+      {
+        "sha256": "7d000d6ad7c001baab76c6479eb597c87cc4ac90868e7d92e6d4f52241ca0d9b",
+        "path": "internal/controller/application_https_linux_test.go"
+      }
+    ]
+  },
+  "status": "native checks passed; local Arch HTTPS failed; hosted qualification pending",
+  "native": {
+    "status": "passed",
+    "top_pass": 33,
+    "sub_pass": 121,
+    "fail": 0,
+    "skip": 0,
+    "log": {
+      "path": "work/reports/final-ack-forwarding-native.log",
+      "sha256": "bd9b956db8976ce610ba6af3bfe30a996a860538f28b33f5a410cc0ebf52e9de"
+    }
+  },
+  "static": {
+    "status": "passed",
+    "platforms": [
+      "windows",
+      "linux"
+    ],
+    "checks": [
+      "vet",
+      "staticcheck"
+    ],
+    "log": {
+      "path": "work/reports/final-ack-forwarding-static.log",
+      "sha256": "66d8c1c1f3b3b85f9cbcca0308b97dacb6708f80c1455321b56a03d27c224aef"
+    }
+  },
+  "secrets": {
+    "status": "passed",
+    "log": {
+      "path": "work/reports/final-ack-forwarding-gitleaks.log",
+      "sha256": "1ec29d9c9d17ccfbbdf6745ae3f475dc49d5145b06e6585da4556acddd3a8175"
+    },
+    "report": {
+      "path": "work/reports/final-ack-forwarding-gitleaks.json",
+      "sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570"
+    }
+  },
+  "negative_controls": [
+    {
+      "mutation": "ordering",
+      "status": "expected_failure",
+      "log": {
+        "path": "work/reports/final-ack-negative-controls/ordering.log",
+        "sha256": "3ea312b621e5a3f15c8a73bc8ca74c1181a4965dde2f1e96259616196074c2f1"
+      },
+      "overlay": {
+        "path": "work/reports/final-ack-negative-controls/ordering.json",
+        "sha256": "d8341e5bcb025364f12388169a12d67ffb3f30d4841feb3ee1aa84d2174c7621"
+      },
+      "source": {
+        "path": "work/reports/final-ack-negative-controls/ordering.go",
+        "sha256": "e0317db5fb39dec89c4d79f16649767c84aa33c1a10db1dd0097fa16edce58f5"
+      }
+    },
+    {
+      "mutation": "forwarding",
+      "status": "expected_failure",
+      "log": {
+        "path": "work/reports/final-ack-negative-controls/forwarding.log",
+        "sha256": "6b3e97618c582bf4fd0d0bc1c785585d90cfd3bc2e3ff9326a7c7eca9ca46248"
+      },
+      "overlay": {
+        "path": "work/reports/final-ack-negative-controls/forwarding.json",
+        "sha256": "1d24d04264a2733478dfca79c62b00fc012c6d3466137aa88f136e3f1a313cef"
+      },
+      "source": {
+        "path": "work/reports/final-ack-negative-controls/forwarding.go",
+        "sha256": "650103d49e08ad977e09bb2f2383adf9046ffcc6923241785ac633c5f51957c1"
+      }
+    }
+  ],
+  "local_arch": {
+    "status": "failed",
+    "seconds": 173.83,
+    "passed": 18,
+    "failed": 3,
+    "successful_authenticated_controls": 11,
+    "cases": [
+      {
+        "name": "authenticated_https",
+        "status": "pass",
+        "seconds": 5.9
+      },
+      {
+        "name": "wrong_hostname",
+        "status": "pass",
+        "seconds": 3.84
+      },
+      {
+        "name": "untrusted_certificate",
+        "status": "pass",
+        "seconds": 4.09
+      },
+      {
+        "name": "missing_application_authentication",
+        "status": "pass",
+        "seconds": 3.67
+      },
+      {
+        "name": "wrong_resource_revision",
+        "status": "pass",
+        "seconds": 1.49
+      },
+      {
+        "name": "ungranted_resource",
+        "status": "pass",
+        "seconds": 1.31
+      },
+      {
+        "name": "positive_control_after_denials",
+        "status": "pass",
+        "seconds": 3.74
+      },
+      {
+        "name": "positive_control_repeat_00",
+        "status": "pass",
+        "seconds": 3.93
+      },
+      {
+        "name": "positive_control_repeat_01",
+        "status": "pass",
+        "seconds": 3.74
+      },
+      {
+        "name": "positive_control_repeat_02",
+        "status": "pass",
+        "seconds": 3.85
+      },
+      {
+        "name": "positive_control_repeat_03",
+        "status": "pass",
+        "seconds": 3.92
+      },
+      {
+        "name": "positive_control_repeat_04",
+        "status": "pass",
+        "seconds": 4.01
+      },
+      {
+        "name": "positive_control_repeat_05",
+        "status": "pass",
+        "seconds": 3.71
+      },
+      {
+        "name": "positive_control_repeat_06",
+        "status": "pass",
+        "seconds": 3.56
+      },
+      {
+        "name": "positive_control_repeat_07",
+        "status": "pass",
+        "seconds": 3.46
+      },
+      {
+        "name": "positive_control_repeat_08",
+        "status": "pass",
+        "seconds": 3.74
+      },
+      {
+        "name": "positive_control_repeat_09",
+        "status": "fail",
+        "seconds": 3.28
+      },
+      {
+        "name": "positive_control_repeat_10",
+        "status": "fail",
+        "seconds": 4.37
+      },
+      {
+        "name": "positive_control_repeat_11",
+        "status": "fail",
+        "seconds": 4.05
+      },
+      {
+        "name": "revoked_enrollment_has_no_new_destination",
+        "status": "pass",
+        "seconds": 1.26
+      },
+      {
+        "name": "routing_dns_and_forwarding_unchanged",
+        "status": "pass",
+        "seconds": 0.44
+      }
+    ],
+    "log": {
+      "path": "work/reports/application-https-forwarding-ack/runtime.log",
+      "sha256": "fd648693bb8b523cf9bb3339e8b669008d1f69f05387815d3a7dbfa6dd85a383"
+    },
+    "environment": {
+      "diagnostic_only": true,
+      "base_initramfs_sha256": "5890b005cfd0704dfbbbff1483533763a8885941acf98ebaf5c3acc372bf80ab",
+      "qemu_version": "QEMU emulator version 11.1.0 (v11.1.0-12130-ge470268ff4)",
+      "kernel_sha256": "1E6BF9027720C75C3ED0D79171F21B5791EE40CA9795D07C7C6E04DC5EA2AE90",
+      "network_devices": 0,
+      "host_filesystem_shares": 0,
+      "memory_mib": 3072,
+      "virtual_cpus": 2,
+      "controller_sha256": "9f1d9f9a675fa1782630e4ec86cad9dd7ae014656260305706dcd59cab3de0b5",
+      "portico_sha256": "2d4e2439e858a711780fdb364d72b3680629f0152d997bc664ecc81f2b21584c",
+      "issuer_sha256": "e9de6a2cb60551b812ea00da5eb87b0fdb4b87e5f85da9a0fcdc58446cd9b8a2",
+      "application-initramfs.cpio.gz_sha256": "c4dfe34722aae5bbc0fd6321fcbad01f816961397ab21082aeaff1bd5695890e"
+    },
+    "observed": "Repeats09/10/11 failed before destination/HTTP/authentication; connector returned ErrDenied at cleanup",
+    "inference": "Connector Run has a terminal clock-health rejection path; the exact clock sample failure is not established by this uninstrumented run."
+  },
+  "earlier_closure_diagnostic": {
+    "status": "failed",
+    "seconds": 132.6,
+    "passed": 19,
+    "failed": 2,
+    "log": {
+      "path": "work/reports/application-https-final-ack-closure-diagnostic/runtime.log",
+      "sha256": "a4fcf4f6c02d8ca062a5205543ad9b962f2d090e65531b7d602d4b4bf05067c8"
+    },
+    "source_manifest": {
+      "path": "work/reports/application-https-final-ack-closure-diagnostic-source/source-manifest.json",
+      "sha256": "8861aa2b725a4ff9d77dc4ceb67bc80f6a234e16d644fd52d5f38bc5c169fe4d"
+    },
+    "finding": "Connector destination CloseWrite failures occurred before its Serve rejection. Earlier client successes could race that rejection because the ACK was sent before forwarding completed."
+  },
+  "limitations": [
+    "No full current-source qualification yet",
+    "The local guest clock-health failure remains unresolved",
+    "No physical hardware, production origin or deployment qualification",
+    "Canonical acceptance remains7implemented84planned91total"
+  ]
+}

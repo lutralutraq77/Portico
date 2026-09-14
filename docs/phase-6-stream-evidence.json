@@ -1,0 +1,72 @@
+{
+  "schema": 1,
+  "source_commit": "84f1f5a4de3224b25e2466ff6c4715698ac24589",
+  "verified_on": "2026-09-10",
+  "status": "passed",
+  "tested_merge": "aeb86bab9b3f73c0206fb9c54aa774da3cb71dcf",
+  "source_and_merge_tree": "8d0d45105a329c1c703347be2a2c961c397af565",
+  "hosted": {
+    "quality_run": 34538302291,
+    "ubuntu_job": 103074912866,
+    "windows_job": 103074913032,
+    "linux_runtime_run": 34538302192,
+    "linux_runtime_job": 103074912169,
+    "codeql_run": 34538302166,
+    "codeql_job": 103074912172,
+    "arch_run": 34538302201,
+    "arch_job": 103074912319,
+    "dependency_review_run": 34538302202,
+    "top_level_passes": 214,
+    "subcase_passes": 1051,
+    "failures": 0,
+    "skips": [
+      "TestLocalIPCProcessHelper",
+      "TestIssuerProcessFixture"
+    ],
+    "archive_directory": "work/reports/phase-6-stream-hosted",
+    "artifact_id": 10176699798,
+    "artifact_zip_sha256": "45e81ba0cd826b9552acb92c8c6f8422b42df67eee3c19b0e9ecae15f7171865",
+    "runtime_log_sha256": "cd839535836748770703ae126dce95c7b0c06cd91991bbae43bbf908c222a254",
+    "environment_sha256": "eebf03669fe9434e2db9d611d7bcba9a1c2eaa403c71d647d3e5e9edae3d3b56",
+    "ubuntu_log_sha256": "3bfb39453580901111fe4207985491b3c9a66f3c4b5d9629b856cbc4f739ce6e",
+    "windows_log_sha256": "d1859b3abb14f47014297a57771488b2254e611ab42d9b576723988fc7616c2d",
+    "codeql_log_sha256": "bd6048715fb87515a878ed76276a2300a0a47173cf4eda510aa565f819d4f806",
+    "arch_log_sha256": "364146269c2ef31e9104cab5dfa33809d210a4094696724dcdc985608208576d",
+    "arch_artifact_id": 10176280626,
+    "arch_artifact_zip_sha256": "d70c8ef6b0480138ac5904fe76198d8cf08198fa3f7678a77c052e17030c31f9",
+    "arch_package_sha256": "98dbb41b0355254e7ae1882c8792c8ebeccf53cbbfd118f037423c9782e10553",
+    "marker": "PORTICO_LINUX_ALL_PASS"
+  },
+  "local_focused": {
+    "status": "passed",
+    "top_level_passes": 15,
+    "subcase_passes": 92,
+    "failures": 0,
+    "skips": 0,
+    "log": "work/reports/phase-6-agent-stream-delivery/runtime.log",
+    "sha256": "45d0fdeeab9dd0a60b0a13dac7b90b47541ce9ab6706336c60940021a97cb022",
+    "initramfs_sha256": "7a01c604ee90e6f32a2fd82504212fa010d06ac4aa9102fcf98fc5ca0d4a892f"
+  },
+  "local_integration": {
+    "status": "passed",
+    "top_level_passes": 1,
+    "subcase_passes": 13,
+    "failures": 0,
+    "skips": 0,
+    "seconds": 213.61,
+    "log": "work/reports/phase-6-agent-resource-integration/runtime.log",
+    "sha256": "2cc3bad78b99f56670ec798342134ff6285bb5690978fc3d7971f3fc3dcbedca",
+    "initramfs_sha256": "d8a957f0f2f3611b5ff1e16b859fbdcf4b1efdc9d46ffac53b080ff5699be831"
+  },
+  "fuzz": {
+    "executions": 16236,
+    "log": "work/reports/agent-stream-fuzz.log",
+    "sha256": "8d09b68cf1a2f871ced98c419c84c34b6067f14cfc274f589db71cbc2f42e933"
+  },
+  "limitations": [
+    "Foreground unlocked agent only; this source predates locked daemon/service",
+    "Same UID and host root remain trusted",
+    "No platform key store, browser bridge or physical suspend qualification",
+    "Seven acceptance scenarios implemented; 84 planned"
+  ]
+}
