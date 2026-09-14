@@ -20,4 +20,6 @@ Earlier failed browser runs remain recorded. The first two stopped during assert
 
 The factor source `e3e79c5` subsequently passed all six hosted PR workflows, including 256 top-level Linux tests and 1,182 subcases with five explicit skips, plus four installed-service, 21 HTTPS and 17 SSH cases. See the [verified hosted artifacts](phase-7-factor-hosted-evidence.json). The later [user/device/connector lifecycle component](dashboard-lifecycle.md) adds record creation, rename and revocation with its own source-bound qualification.
 
+The [initial key browser qualification](dashboard-initial-keys.md) now covers positive native registration and separate tests for the first two keys, starting without imported credentials. This supplements the earlier replacement-registration evidence.
+
 The later [invitation administration component](dashboard-invitations.md) uses tested-key approval for ordinary device and connector enrollment creation and revocation. Complete secure bootstrap and native administrator bridge, platform key custody, encrypted backup and independent physical-console recovery, accessibility qualification and real key/private-origin tests remain required. Phases 6 and 7 and the canonical 91-case acceptance objective remain incomplete.

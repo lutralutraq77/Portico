@@ -47,6 +47,10 @@ func TestDashboardFactorBrowser(t *testing.T) {
 	testDashboardBrowser(t, "factors")
 }
 
+func TestDashboardInitialFactorBrowser(t *testing.T) {
+	testDashboardBrowser(t, "initial-factors")
+}
+
 func TestDashboardLifecycleBrowser(t *testing.T) {
 	testDashboardBrowser(t, "lifecycle")
 }
@@ -57,6 +61,7 @@ func TestDashboardInvitationBrowser(t *testing.T) {
 func testDashboardBrowser(t *testing.T, mode string) {
 	t.Helper()
 	management, factors := mode == "policy", mode == "factors"
+	initialFactors := mode == "initial-factors"
 	lifecycle := mode == "lifecycle"
 	invitations := mode == "invitations"
 	node, browser, report := os.Getenv("PORTICO_BROWSER_NODE"), os.Getenv("PORTICO_BROWSER_EXECUTABLE"), os.Getenv("PORTICO_BROWSER_REPORT")
@@ -94,6 +99,9 @@ func testDashboardBrowser(t *testing.T, mode string) {
 	if factors {
 		backup := a.keys[1]
 		models = append(models, adminauth.Model{AAGUID: backup.AAGUID.String(), RootsDER: [][]byte{backup.Root.Raw}}, chromiumBrowserModel(t))
+	}
+	if initialFactors {
+		models = []adminauth.Model{chromiumBrowserModel(t)}
 	}
 	verifier, err := adminauth.New(adminauth.Config{Origin: origin, ValidUntil: time.Now().Add(time.Hour), Models: models})
 	must(t, err)
@@ -188,6 +196,9 @@ func testDashboardBrowser(t *testing.T, mode string) {
 		config.BackupCredentialID = base64.StdEncoding.EncodeToString(backup.ID)
 		config.BackupCredentialKey = base64.StdEncoding.EncodeToString(backupDER)
 		config.BackupSignCount = backup.Counter
+	}
+	if initialFactors {
+		script = "test-dashboard-initial-factor-browser.cjs"
 	}
 	must(t, a.f.f.s.db.QueryRow("SELECT id FROM certificates WHERE leaf_sha256=?", pki.Hash(policy.deviceLeaf)).Scan(&config.DeviceCertificateID))
 	must(t, a.f.f.s.db.QueryRow("SELECT id FROM certificates WHERE leaf_sha256=?", pki.Hash(policy.connectorLeaf)).Scan(&config.ConnectorCertificateID))
@@ -295,7 +306,7 @@ func testDashboardBrowser(t *testing.T, mode string) {
 			}
 			must(t, json.NewEncoder(in).Encode(snapshot))
 		case "PORTICO_BROWSER_FACTOR_STATE":
-			if !factors {
+			if !factors && !initialFactors {
 				t.Fatal("factor state requested outside factor fixture")
 			}
 			var snapshot struct{ Total, Enabled, Tested, Registered, Retired, Tests int }
