@@ -25,6 +25,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/go-webauthn/webauthn/protocol"
+
 	"portico.local/portico/internal/adminauth"
 	"portico.local/portico/internal/pki"
 	"portico.local/portico/internal/testfixture"
@@ -34,21 +36,26 @@ import (
 // SQLite state. The exact-host CONNECT fixture avoids host DNS/certificate-store
 // changes. Browser credentials are ephemeral software fixtures, not hardware.
 func TestDashboardBrowser(t *testing.T) {
-	testDashboardBrowser(t, false)
+	testDashboardBrowser(t, "inventory")
 }
 
 func TestDashboardPolicyBrowser(t *testing.T) {
-	testDashboardBrowser(t, true)
+	testDashboardBrowser(t, "policy")
 }
 
-func testDashboardBrowser(t *testing.T, management bool) {
+func TestDashboardFactorBrowser(t *testing.T) {
+	testDashboardBrowser(t, "factors")
+}
+
+func testDashboardBrowser(t *testing.T, mode string) {
 	t.Helper()
+	management, factors := mode == "policy", mode == "factors"
 	node, browser, report := os.Getenv("PORTICO_BROWSER_NODE"), os.Getenv("PORTICO_BROWSER_EXECUTABLE"), os.Getenv("PORTICO_BROWSER_REPORT")
 	if !filepath.IsAbs(node) || !filepath.IsAbs(browser) || !filepath.IsAbs(report) {
 		t.Fatal("browser qualification requires absolute node, browser and report paths")
 	}
 	a := adminSeed(t)
-	if management {
+	if management || factors {
 		a.setupFactors(t)
 	}
 	for i := range 54 {
@@ -69,7 +76,12 @@ func testDashboardBrowser(t *testing.T, management bool) {
 	host := net.JoinHostPort("admin.portico.test", strconv.Itoa(ln.Addr().(*net.TCPAddr).Port))
 	origin := "https://" + host
 	key := a.keys[0]
-	verifier, err := adminauth.New(adminauth.Config{Origin: origin, ValidUntil: time.Now().Add(time.Hour), Models: []adminauth.Model{{AAGUID: key.AAGUID.String(), RootsDER: [][]byte{key.Root.Raw}}}})
+	models := []adminauth.Model{{AAGUID: key.AAGUID.String(), RootsDER: [][]byte{key.Root.Raw}}}
+	if factors {
+		backup := a.keys[1]
+		models = append(models, adminauth.Model{AAGUID: backup.AAGUID.String(), RootsDER: [][]byte{backup.Root.Raw}}, chromiumBrowserModel(t))
+	}
+	verifier, err := adminauth.New(adminauth.Config{Origin: origin, ValidUntil: time.Now().Add(time.Hour), Models: models})
 	must(t, err)
 	root, rootKey := testfixture.Root(t)
 	serverKey := newKey(t)
@@ -124,6 +136,8 @@ func testDashboardBrowser(t *testing.T, management bool) {
 		Origin, Proxy, Certificate, Key, Browser, Report, DeviceCertificateID, ConnectorCertificateID, ResourceID string
 		ConnectorID, DeviceID, UserID, CredentialID, CredentialKey, UserHandle                                    string
 		SignCount                                                                                                 uint32
+		PrimaryFactorID, BackupFactorID, BackupCredentialID, BackupCredentialKey                                  string
+		BackupSignCount                                                                                           uint32
 	}{
 		Origin: origin, Proxy: proxy.URL, Browser: browser, Report: report,
 		ResourceID:  a.f.f.resource.ID,
@@ -131,7 +145,7 @@ func testDashboardBrowser(t *testing.T, management bool) {
 		Key:         string(pem.EncodeToMemory(&pem.Block{Type: "PRIVATE KEY", Bytes: privateDER})),
 	}
 	script := "test-dashboard-browser.cjs"
-	if management {
+	if management || factors {
 		script = "test-dashboard-policy-browser.cjs"
 		config.ConnectorID, config.DeviceID, config.UserID = a.f.f.connector.ID, a.f.f.device.ID, a.f.f.user.ID
 		credentialDER, err := x509.MarshalPKCS8PrivateKey(key.Private)
@@ -140,6 +154,16 @@ func testDashboardBrowser(t *testing.T, management bool) {
 		config.CredentialKey = base64.StdEncoding.EncodeToString(credentialDER)
 		config.UserHandle = base64.StdEncoding.EncodeToString([]byte(a.f.f.user.ID))
 		config.SignCount = key.Counter
+	}
+	if factors {
+		script = "test-dashboard-factor-browser.cjs"
+		backup := a.keys[1]
+		backupDER, err := x509.MarshalPKCS8PrivateKey(backup.Private)
+		must(t, err)
+		config.PrimaryFactorID, config.BackupFactorID = a.factors[0], a.factors[1]
+		config.BackupCredentialID = base64.StdEncoding.EncodeToString(backup.ID)
+		config.BackupCredentialKey = base64.StdEncoding.EncodeToString(backupDER)
+		config.BackupSignCount = backup.Counter
 	}
 	must(t, a.f.f.s.db.QueryRow("SELECT id FROM certificates WHERE leaf_sha256=?", pki.Hash(policy.deviceLeaf)).Scan(&config.DeviceCertificateID))
 	must(t, a.f.f.s.db.QueryRow("SELECT id FROM certificates WHERE leaf_sha256=?", pki.Hash(policy.connectorLeaf)).Scan(&config.ConnectorCertificateID))
@@ -160,6 +184,22 @@ func testDashboardBrowser(t *testing.T, management bool) {
 	for scanner.Scan() {
 		line := scanner.Text()
 		switch line {
+		case "PORTICO_BROWSER_FACTOR_STATE":
+			if !factors {
+				t.Fatal("factor state requested outside factor fixture")
+			}
+			var snapshot struct{ Total, Enabled, Tested, Registered, Retired, Tests int }
+			for query, target := range map[string]*int{
+				"SELECT count(*) FROM admin_factors":                                     &snapshot.Total,
+				"SELECT count(*) FROM admin_factors WHERE enabled=1":                     &snapshot.Enabled,
+				"SELECT count(*) FROM admin_factors WHERE enabled=1 AND tested=1":        &snapshot.Tested,
+				"SELECT count(*) FROM audit_events WHERE action='admin.factor.register'": &snapshot.Registered,
+				"SELECT count(*) FROM audit_events WHERE action='admin.factor.disable'":  &snapshot.Retired,
+				"SELECT count(*) FROM audit_events WHERE action='admin.factor.test'":     &snapshot.Tests,
+			} {
+				must(t, a.f.f.s.db.QueryRow(query).Scan(target))
+			}
+			must(t, json.NewEncoder(in).Encode(snapshot))
 		case "PORTICO_BROWSER_POLICY_STATE":
 			if !management {
 				t.Fatal("policy state requested outside management fixture")
@@ -175,7 +215,7 @@ func testDashboardBrowser(t *testing.T, management bool) {
 			}
 			must(t, json.NewEncoder(in).Encode(snapshot))
 		case "PORTICO_BROWSER_POLICY_CHANGE":
-			if !management {
+			if !management && !factors {
 				t.Fatal("policy mutation requested outside management fixture")
 			}
 			must(t, a.f.f.s.Update(ctx, a.f.f.actor, func(tx *Tx) error { return tx.AddUser(User{NewID(), "Concurrent policy change", true}) }))
@@ -196,6 +236,29 @@ func testDashboardBrowser(t *testing.T, management bool) {
 		case "PORTICO_DASHBOARD_BROWSER_PASS":
 			passed = true
 		default:
+			if factors && strings.HasPrefix(line, "PORTICO_BROWSER_FACTOR_DIAG ") {
+				var request finishApprovalRequest
+				must(t, json.Unmarshal([]byte(strings.TrimPrefix(line, "PORTICO_BROWSER_FACTOR_DIAG ")), &request))
+				parsed, err := protocol.ParseCredentialCreationResponseBytes(request.Response)
+				must(t, err)
+				att := parsed.Response.AttestationObject
+				diagnostic := map[string]any{"format": att.Format, "aaguid": fmt.Sprintf("%x", att.AuthData.AttData.AAGUID), "flags": att.AuthData.Flags}
+				if chain, ok := att.AttStatement["x5c"].([]any); ok && len(chain) > 0 {
+					leaf, err := x509.ParseCertificate(chain[0].([]byte))
+					must(t, err)
+					root, err := x509.ParseCertificate(models[len(models)-1].RootsDER[0])
+					must(t, err)
+					pool := x509.NewCertPool()
+					pool.AddCert(root)
+					_, chainErr := leaf.Verify(x509.VerifyOptions{Roots: pool, KeyUsages: []x509.ExtKeyUsage{x509.ExtKeyUsageAny}})
+					diagnostic["subject"], diagnostic["issuer"], diagnostic["is_ca"] = leaf.Subject.String(), leaf.Issuer.String(), leaf.IsCA
+					diagnostic["issuer_matches"], diagnostic["signature_valid"] = bytes.Equal(leaf.RawIssuer, root.RawSubject), leaf.CheckSignatureFrom(root) == nil
+					if chainErr != nil {
+						diagnostic["chain_error"] = chainErr.Error()
+					}
+				}
+				must(t, json.NewEncoder(in).Encode(diagnostic))
+			}
 			if strings.HasPrefix(line, "BROWSER_CHECK ") {
 				t.Log(line)
 			}

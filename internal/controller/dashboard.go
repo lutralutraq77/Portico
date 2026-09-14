@@ -114,6 +114,8 @@ func (s *Store) DashboardInventory(ctx context.Context, conn *tls.Conn, trust *p
 			result.Items, result.Next, err = dashboardAudit(tx, request)
 		case "security":
 			result.Items, result.Next, err = dashboardSecurity(tx, request, peer, trust, der)
+		case "factors":
+			result.Items, result.Next, err = dashboardFactors(tx, request, peer)
 		case "users":
 			result.Items, result.Next, err = dashboardRows(tx, request, "SELECT id,name,enabled FROM users WHERE id>? ORDER BY id LIMIT ?", func(rows *sql.Rows) (DashboardUser, string, error) {
 				var v DashboardUser
@@ -193,8 +195,10 @@ func (s *Store) DashboardInventory(ctx context.Context, conn *tls.Conn, trust *p
 
 // Query text is selected only by the fixed switch above. Reading one extra row
 // lets the response provide an exact continuation without an unbounded count.
-func dashboardRows[T any](tx *Tx, request DashboardRequest, query string, scan func(*sql.Rows) (T, string, error)) ([]T, string, error) {
-	rows, err := tx.tx.QueryContext(tx.ctx, query, request.After, request.Limit+1)
+func dashboardRows[T any](tx *Tx, request DashboardRequest, query string, scan func(*sql.Rows) (T, string, error), scope ...any) ([]T, string, error) {
+	args := append([]any{request.After}, scope...)
+	args = append(args, request.Limit+1)
+	rows, err := tx.tx.QueryContext(tx.ctx, query, args...)
 	if err != nil {
 		return nil, "", tx.fail(ErrStorage)
 	}

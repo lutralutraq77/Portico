@@ -253,7 +253,7 @@ func (p *PolicyEngine) BeginPolicyApproval(ctx context.Context, c *tls.Conn, tru
 }
 
 func (p *PolicyEngine) FinishPolicyApproval(ctx context.Context, c *tls.Conn, trust *pki.Trust, v *adminauth.Verifier, id string, response []byte) error {
-	_, e := p.store.finishAdminOperation(ctx, c, trust, v, id, response, func(t *Tx, admin adminPeer, op AdminOperation) error {
+	_, e := p.store.finishAdminOperation(ctx, c, trust, v, id, response, false, func(t *Tx, admin adminPeer, op AdminOperation) error {
 		change, e := p.preview(t, admin, op.TargetID, op.PolicyHash)
 		if e != nil {
 			return e

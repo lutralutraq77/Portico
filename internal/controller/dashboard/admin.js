@@ -2,6 +2,7 @@
 
 (() => {
   const sections = {
+    factors: { title: "Security keys", description: "Attested keys registered to the administrator using this connection.", columns: [["Key record", "ID"], ["Attested model", "ModelID"], ["Configuration", "Enabled"], ["Key test", "Tested"]], fields: { ID: "string", ModelID: "string", Enabled: "boolean", Tested: "boolean" }, scopeTitle: "Keep a tested backup key available.", scopeDescription: "Retiring a key requires a different tested key. Registration must be followed by a separate key test. These records do not prove physical recovery readiness.", loaded: "Your security-key records loaded." },
     users: { title: "Users", description: "People registered in this deployment.", columns: [["Person", "Name", "ID"], ["Configuration", "Enabled"]], fields: { ID: "string", Name: "string", Enabled: "boolean" } },
     devices: { title: "Devices", description: "Registered devices and the identities they belong to.", columns: [["Device", "Name", "ID"], ["User", "UserID"], ["Platform", "Platform"], ["Identity expires", "NotAfter"], ["Configuration", "Enabled"]], fields: { ID: "string", UserID: "string", Name: "string", Platform: "string", Enabled: "boolean", NotAfter: "date" } },
     resources: { title: "Resources", description: "The current revision of each explicitly defined destination.", columns: [["Resource", "Name", "ID"], ["Destination", "Address", "Port"], ["Connector", "ConnectorID"], ["Kind / protocol", "Kind", "Protocol"], ["Revision", "Revision"], ["Configuration", "Enabled"]], fields: { ID: "string", Revision: "number", Name: "string", ConnectorID: "string", Kind: "string", Address: "string", Port: "number", Protocol: "string", Enabled: "boolean" } },
@@ -23,6 +24,7 @@
   let section = "users", revision = 0, next = "", cursors = [""], pageIndex = 0;
   let pending, generation = 0;
   const accessViews = ["access", "grants", "hosting"];
+  const securityViews = ["security", "factors"];
   const choiceTypes = {
     device: { label: "Device certificate", section: "certificates", profile: "device" },
     connector: { label: "Connector certificate", section: "certificates", profile: "connector" },
@@ -30,6 +32,7 @@
   };
   let choices = {};
   let policy = null;
+  let factor = null;
 
   function element(tag, text, className) {
     const node = document.createElement(tag);
@@ -43,6 +46,7 @@
   }
   function clear() {
     policy = null;
+    factor = null;
     records.replaceChildren();
     byID("revision").textContent = "";
     byID("page-summary").textContent = "Inventory unavailable";
@@ -71,12 +75,14 @@
       return typeof value === type && (type !== "string" || value.length <= 4096);
     }));
     if (!validItems) return false;
+    if (requestedSection === "factors") return data.Items.every((item) => uuid(item.ID) && uuid(item.ModelID));
     const hash = (value) => /^[0-9a-f]{64}$/.test(value);
     if (requestedSection === "security") return data.Items.length === 1 && data.Next === "" && data.Items.every((item) => hash(item.CertificateFingerprint) && item.TestedEnabledFactors <= item.EnabledFactors && Date.parse(item.CertificateExpiresAt) > Date.parse(data.ObservedAt));
     if (requestedSection === "audit") return (!data.Next || data.Next === data.Items.at(-1)?.ID) && data.Items.every((item, index) => item.Sequence > 0 && item.Generation > 0 && hash(item.Hash) && (item.Sequence === 1 ? item.PreviousHash === "" : hash(item.PreviousHash)) && (index === 0 || (item.Sequence === data.Items[index-1].Sequence + 1 && item.PreviousHash === data.Items[index-1].Hash)));
     return true;
   }
   function display(item, key) {
+    if (key === "Tested") return item[key] ? "Test recorded" : "Needs key test";
     if (key === "Enabled") return item[key] ? "Enabled" : "Disabled";
     if (key === "Revoked") return item[key] ? "Revoked" : "Not revoked";
     if (sections[section].fields[key] === "date") return new Date(item[key]).toISOString().replace("T", " ").replace(/\.\d{3}Z$/, " UTC");
@@ -90,7 +96,7 @@
     for (const [label] of view.columns) {
       const cell = element("th", label); cell.scope = "col"; header.append(cell);
     }
-    if (section === "resources") { const cell = element("th", "Manage"); cell.scope = "col"; header.append(cell); }
+    if (section === "resources" || section === "factors") { const cell = element("th", "Manage"); cell.scope = "col"; header.append(cell); }
     const head = element("thead"); head.append(header); table.append(head);
     const body = element("tbody");
     for (const item of data.Items) {
@@ -108,6 +114,15 @@
         revise.setAttribute("aria-label", `Revise ${item.Name}`);
         revise.addEventListener("click", () => startPolicy("revise-resource", item)); cell.append(revise); row.append(cell);
       }
+      if (section === "factors") {
+        const cell = element("td"); cell.dataset.label = "Manage";
+        for (const [kind, label] of [["test-factor", "Test key"], ["disable-factor", "Retire key"]]) {
+          const button = element("button", label); button.type = "button"; button.disabled = !item.Enabled;
+          button.setAttribute("aria-label", `${label} ${item.ID}`);
+          button.addEventListener("click", () => startFactor(kind, item)); cell.append(button);
+        }
+        row.append(cell);
+      }
       body.append(row);
     }
     table.append(body);
@@ -118,6 +133,14 @@
       const [label, kind] = actions[section], bar = element("div", undefined, "policy-actions");
       const button = element("button", label, "primary-action"); button.type = "button";
       button.addEventListener("click", () => startPolicy(kind)); bar.append(button); records.prepend(bar);
+    }
+    if (section === "factors") {
+      const bar = element("div", undefined, "policy-actions");
+      for (const [kind, label] of [["register-factor", "Add security key"], ["bootstrap-factor", "Initial key registration"]]) {
+        const button = element("button", label); button.type = "button";
+        button.addEventListener("click", () => startFactor(kind)); bar.append(button);
+      }
+      records.prepend(bar);
     }
     byID("page-summary").textContent = `${data.Items.length} ${data.Items.length === 1 ? "record" : "records"} on this page`;
     byID("revision").textContent = `Policy revision ${data.PolicyRevision}`;
@@ -477,16 +500,111 @@
       if (attempt === generation) pending = undefined;
     }
   }
+  const factorTitles = { "bootstrap-factor": "Initial key registration", "register-factor": "Add security key", "test-factor": "Test security key", "disable-factor": "Retire security key" };
+  function startFactor(kind, item) {
+    if (pending || document.hidden || !revision) return;
+    cancel(); policy = null;
+    const state = { kind, item, revision, factorID: item?.ID || "", userID: "", expires: 0, registration: null };
+    factor = state;
+    document.querySelector(".pagination").hidden = true;
+    const panel = element("section", undefined, "access-result policy-preview"); panel.id = "factor-preview";
+    const heading = element("h2", factorTitles[kind]); heading.tabIndex = -1; panel.append(heading);
+    if (item) {
+      const details = element("dl");
+      for (const [label, value] of [["Key record", item.ID], ["Attested model", item.ModelID], ["Key test", item.Tested ? "Test recorded" : "Needs key test"]]) details.append(element("dt", label), element("dd", value));
+      panel.append(details);
+    }
+    const explanation = {
+      "bootstrap-factor": "Initial registration is available only during the server's local registration window and for its first two key records. Register each physical key separately, then test it. This step does not complete deployment bootstrap or recovery setup.",
+      "register-factor": "First approve with a tested registered key. Then switch to the new key for registration. Test the new key afterward before relying on it for administration or recovery.",
+      "test-factor": "Connect the exact key shown above and complete its user verification. A successful test records that this credential worked now.",
+      "disable-factor": "Approve with a different tested key. The selected key will lose administrator authority. Keep the approving backup key available; a retired key cannot be used to authorize its own replacement."
+    };
+    panel.append(element("p", explanation[kind]), element("p", `Policy revision ${state.revision}`));
+    const label = kind === "bootstrap-factor" ? "Register initial key" : kind === "test-factor" ? "Test this key" : kind === "disable-factor" ? "Approve retirement with backup key" : "Approve adding a key";
+    factorButtons(state, panel, label);
+    records.replaceChildren(panel); heading.focus(); message("Review the key operation before continuing.");
+  }
+  function factorButtons(state, panel, label) {
+    const actions = element("div", undefined, "policy-actions"), button = element("button", label, "primary-action"), cancelButton = element("button", "Cancel key operation");
+    button.type = cancelButton.type = "button";
+    button.addEventListener("click", () => { if (!pending && state === factor && !document.hidden) void performFactor(state, panel, button); });
+    cancelButton.addEventListener("click", policyCancel);
+    actions.append(button, cancelButton); panel.append(actions);
+  }
+  function validFactorCeremony(challenge, registration, state) {
+    if (!exact(challenge, ["ID", registration ? "Registration" : "Approval"]) || !uuid(challenge.ID)) return false;
+    const options = (registration ? challenge.Registration : challenge.Approval)?.publicKey;
+    if (!options || typeof options.challenge !== "string" || options.challenge.length < 16 || options.challenge.length > 1024) return false;
+    if (!registration) return options.rpId === location.hostname && options.userVerification === "required" && Array.isArray(options.allowCredentials) && options.allowCredentials.length > 0 && (state.kind !== "test-factor" || options.allowCredentials.length === 1);
+    const handle = btoa(state.userID).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+    return options.rp?.id === location.hostname && options.user?.id === handle && options.attestation === "direct" && options.authenticatorSelection?.authenticatorAttachment === "cross-platform" && options.authenticatorSelection?.userVerification === "required";
+  }
+  async function performFactor(state, panel, button) {
+    cancel(); const attempt = generation, controller = new AbortController(); pending = controller;
+    button.disabled = true; let submitted = false;
+    const timeout = setTimeout(() => controller.abort(), 60000);
+    const active = () => attempt === generation && state === factor && !document.hidden && !controller.signal.aborted && (!state.expires || Date.now() < state.expires);
+    try {
+      if (!active() || !globalThis.PublicKeyCredential?.parseRequestOptionsFromJSON || !PublicKeyCredential.parseCreationOptionsFromJSON || !PublicKeyCredential.prototype.toJSON) throw new Error("WebAuthn unavailable");
+      let challenge = state.registration;
+      const registering = !!challenge || state.kind === "bootstrap-factor";
+      if (!challenge) {
+        message("Checking the administrator identity and current key policy…");
+        const security = await privateJSON("/api/v1/admin/dashboard/inventory", { Section: "security", Limit: 1, PolicyRevision: state.revision }, controller.signal);
+        if (!active()) return;
+        if (!validPage(security, "security", state.revision) || !uuid(security.Items[0].ID)) throw new Error("Invalid administrator identity");
+        state.userID = security.Items[0].ID;
+        const request = { Kind: state.kind, FactorID: state.factorID, PolicyRevision: state.revision };
+        const result = await privateJSON("/api/v1/admin/factors/challenge", request, controller.signal);
+        if (!active()) return;
+        if (!exact(result, ["Kind", "FactorID", "PolicyRevision", "ExpiresAt", "Challenge"]) || result.Kind !== state.kind || result.PolicyRevision !== state.revision || !uuid(result.FactorID) || (request.FactorID && result.FactorID !== request.FactorID) || !date(result.ExpiresAt) || Date.parse(result.ExpiresAt) <= Date.now() || Date.parse(result.ExpiresAt) > Date.now() + 121000) throw new Error("Changed key operation");
+        state.factorID = result.FactorID; state.expires = Date.parse(result.ExpiresAt); challenge = result.Challenge;
+      }
+      if (!validFactorCeremony(challenge, registering, state)) throw new Error("Invalid key ceremony");
+      message(registering ? "Connect the new key and complete registration and user verification." : state.kind === "disable-factor" ? "Use a different tested key to approve retirement." : "Use the selected registered key and complete its user verification.");
+      const options = (registering ? challenge.Registration : challenge.Approval).publicKey;
+      const credential = registering
+        ? await navigator.credentials.create({ publicKey: PublicKeyCredential.parseCreationOptionsFromJSON(options), signal: controller.signal })
+        : await navigator.credentials.get({ publicKey: PublicKeyCredential.parseRequestOptionsFromJSON(options), signal: controller.signal });
+      if (!active()) return;
+      if (!credential || credential.type !== "public-key") throw new Error("No key response");
+      submitted = true; message("Submitting the security-key response…");
+      const result = await privateJSON("/api/v1/admin/factors/confirm", { ID: challenge.ID, Response: credential.toJSON() }, controller.signal);
+      if (attempt !== generation || state !== factor || document.hidden) return;
+      if (state.kind === "register-factor" && !registering) {
+        if (!exact(result, ["Registration"]) || !validFactorCeremony(result.Registration, true, state)) throw new Error("Invalid registration confirmation");
+        state.registration = result.Registration;
+        panel.replaceChildren(element("h2", "Connect the new security key"), element("p", "Adding a key was approved. Switch from the approving key to the new key, then register it. The new key is not registered or tested yet."), element("p", `New key record ${state.factorID} · finish before ${new Date(state.expires).toISOString()}`));
+        factorButtons(state, panel, "Register new key");
+        message("Approval confirmed. Register the new key before the operation expires.");
+      } else {
+        if (!exact(result, [])) throw new Error("Invalid key confirmation");
+        const title = registering ? "Security key registered" : state.kind === "test-factor" ? "Security key test passed" : "Security key retired";
+        panel.replaceChildren(element("h2", title), element("p", registering ? "The server accepted this registration. Return to the key list and test this key separately before relying on it." : "The server confirmed this key operation. Refresh the key list to check the current configuration."), element("p", `Key record ${state.factorID}`, "record-id"));
+        const back = element("button", "Return to security keys", "primary-action"); back.type = "button"; back.addEventListener("click", policyCancel); panel.append(back);
+        message(title + ".");
+      }
+      const heading = panel.querySelector("h2"); heading.tabIndex = -1; heading.focus();
+    } catch {
+      if (attempt !== generation) return;
+      message(submitted ? "The result could not be confirmed. The key operation may have been applied. Refresh and inspect the key records before starting another operation." : "No key response was submitted. The key, browser, access or policy could not be verified. Cancel and begin a fresh operation.", true);
+    } finally {
+      clearTimeout(timeout);
+      if (attempt === generation) pending = undefined;
+    }
+  }
   function select() {
     const candidate = location.hash.slice(1);
     if (candidate === "content") return;
     section = Object.hasOwn(sections, candidate) ? candidate : "users";
     for (const link of document.querySelectorAll("nav [data-section]")) {
-      if (link.dataset.section === section || (link.dataset.section === "access" && accessViews.includes(section))) link.setAttribute("aria-current", "page");
+      if (link.dataset.section === section || (link.dataset.section === "access" && accessViews.includes(section)) || (link.dataset.section === "security" && securityViews.includes(section))) link.setAttribute("aria-current", "page");
       else link.removeAttribute("aria-current");
     }
     byID("access-views").hidden = !accessViews.includes(section);
-    for (const link of document.querySelectorAll("#access-views a")) {
+    byID("security-views").hidden = !securityViews.includes(section);
+    for (const link of document.querySelectorAll("#access-views a, #security-views a")) {
       if (link.dataset.view === section) link.setAttribute("aria-current", "page");
       else link.removeAttribute("aria-current");
     }

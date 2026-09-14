@@ -176,6 +176,20 @@ func (p *PolicyEngine) NewHTTPServer(c PolicyHTTPConfig) (*PolicyHTTPServer, err
 				return
 			}
 			result, e = p.InspectAccess(r.Context(), conn, c.AdministratorTrust, request)
+		case c.Profile == pki.Administrator && r.URL.Path == "/api/v1/admin/factors/challenge":
+			var request FactorRequest
+			if wire.Decode(body, &request) != nil {
+				deny()
+				return
+			}
+			result, e = p.store.BeginFactor(r.Context(), conn, c.AdministratorTrust, c.AdministratorVerifier, request)
+		case c.Profile == pki.Administrator && r.URL.Path == "/api/v1/admin/factors/confirm":
+			var request finishApprovalRequest
+			if wire.Decode(body, &request) != nil {
+				deny()
+				return
+			}
+			result, e = p.store.FinishFactor(r.Context(), conn, c.AdministratorTrust, c.AdministratorVerifier, request.ID, request.Response)
 		case c.Profile == pki.Administrator && r.URL.Path == "/api/v1/admin/policy/preview":
 			var request PolicyDraft
 			if wire.Decode(body, &request) != nil {
