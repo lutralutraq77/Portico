@@ -29,6 +29,7 @@
     resource: { label: "Resource", section: "resources", profile: "" }
   };
   let choices = {};
+  let policy = null;
 
   function element(tag, text, className) {
     const node = document.createElement(tag);
@@ -41,6 +42,7 @@
     feedback.dataset.error = String(error);
   }
   function clear() {
+    policy = null;
     records.replaceChildren();
     byID("revision").textContent = "";
     byID("page-summary").textContent = "Inventory unavailable";
@@ -88,6 +90,7 @@
     for (const [label] of view.columns) {
       const cell = element("th", label); cell.scope = "col"; header.append(cell);
     }
+    if (section === "resources") { const cell = element("th", "Manage"); cell.scope = "col"; header.append(cell); }
     const head = element("thead"); head.append(header); table.append(head);
     const body = element("tbody");
     for (const item of data.Items) {
@@ -99,11 +102,23 @@
         if (secondary) cell.append(element("span", (secondary === "Port" ? "Port " : "") + display(item, secondary), "record-id"));
         row.append(cell);
       }
+      if (section === "resources") {
+        const cell = element("td"); cell.dataset.label = "Manage";
+        const revise = element("button", "Revise"); revise.type = "button"; revise.disabled = !item.Enabled;
+        revise.setAttribute("aria-label", `Revise ${item.Name}`);
+        revise.addEventListener("click", () => startPolicy("revise-resource", item)); cell.append(revise); row.append(cell);
+      }
       body.append(row);
     }
     table.append(body);
     const wrapper = element("div", undefined, "table-wrap"); wrapper.append(table);
     records.replaceChildren(wrapper);
+    const actions = { resources: ["Create resource", "create-resource"], grants: ["Add device grant", "grant"], hosting: ["Add hosting permission", "host"] };
+    if (Object.hasOwn(actions, section)) {
+      const [label, kind] = actions[section], bar = element("div", undefined, "policy-actions");
+      const button = element("button", label, "primary-action"); button.type = "button";
+      button.addEventListener("click", () => startPolicy(kind)); bar.append(button); records.prepend(bar);
+    }
     byID("page-summary").textContent = `${data.Items.length} ${data.Items.length === 1 ? "record" : "records"} on this page`;
     byID("revision").textContent = `Policy revision ${data.PolicyRevision}`;
     byID("page-number").textContent = `Page ${pageIndex + 1}`;
@@ -111,6 +126,7 @@
   }
   async function load() {
     if (section === "access") return loadAccess();
+    document.querySelector(".pagination").hidden = section === "security";
     cancel();
     const attempt = generation, requestedSection = section, requestedRevision = revision;
     clear();
@@ -263,6 +279,202 @@
     } finally {
       clearTimeout(timeout);
       if (attempt === generation) { pending = undefined; inventory.setAttribute("aria-busy", "false"); for (const [node, disabled] of controls) node.disabled = disabled; }
+    }
+  }
+  const policyTitles = { "create-resource": "Create resource", "revise-resource": "Revise resource", grant: "Add device grant", host: "Add hosting permission" };
+  const policyTypes = { connector: "connectors", device: "devices", resource: "resources" };
+  const uuid = (value) => typeof value === "string" && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(value) && value !== "00000000-0000-0000-0000-000000000000";
+  const exact = (value, keys) => value && typeof value === "object" && !Array.isArray(value) && Object.keys(value).length === keys.length && keys.every((key) => Object.hasOwn(value, key));
+  const date = (value) => typeof value === "string" && value.length < 64 && Number.isFinite(Date.parse(value));
+  function startPolicy(kind, previous) {
+    if (pending || document.hidden) return;
+    const keys = kind.endsWith("resource") ? ["connector"] : kind === "grant" ? ["device", "resource"] : ["resource"];
+    policy = { kind, previous, revision, fields: { Name: previous?.Name || "", Address: previous?.Address || "", Port: String(previous?.Port || ""), From: "", Until: "" }, choices: Object.fromEntries(keys.map((key) => [key, { cursors: [""], index: 0, selected: key === "connector" ? previous?.ConnectorID || "" : "" }])) };
+    void loadPolicy(policy);
+  }
+  function policyCancel() {
+    reset(); document.querySelector(".pagination").hidden = false; void load();
+  }
+  async function loadPolicy(state) {
+    cancel(); const attempt = generation;
+    records.replaceChildren(); document.querySelector(".pagination").hidden = true;
+    inventory.setAttribute("aria-busy", "true"); message("Loading current choices for this change…");
+    const controller = new AbortController(); pending = controller;
+    const timeout = setTimeout(() => controller.abort(), 8000);
+    try {
+      const pages = {};
+      // Each subsequent selector is bound to the first verified policy revision.
+      for (const [key, choice] of Object.entries(state.choices)) {
+        const page = await privateJSON("/api/v1/admin/dashboard/inventory", { Section: policyTypes[key], After: choice.cursors[choice.index], Limit: 50, PolicyRevision: state.revision }, controller.signal);
+        if (!validPage(page, policyTypes[key], state.revision)) throw new Error("Invalid policy choices");
+        state.revision = page.PolicyRevision; pages[key] = page;
+      }
+      if (attempt !== generation || state !== policy || document.hidden) return;
+      renderPolicy(state, pages);
+      byID("page-summary").textContent = policyTitles[state.kind];
+      message("Choose the exact destination and scope. Review the preview before approving with a security key.");
+    } catch {
+      if (attempt !== generation) return;
+      clear(); reset(); message("Choices could not be verified. Refresh to start again.", true);
+    } finally {
+      clearTimeout(timeout);
+      if (attempt === generation) { pending = undefined; inventory.setAttribute("aria-busy", "false"); }
+    }
+  }
+  function renderPolicy(state, pages) {
+    const form = element("form", undefined, "access-form policy-form");
+    form.setAttribute("aria-label", policyTitles[state.kind]); form.autocomplete = "off";
+    for (const [key, choice] of Object.entries(state.choices)) {
+      const page = pages[key], field = element("div", undefined, "access-choice");
+      const label = element("label", key[0].toUpperCase() + key.slice(1)); label.htmlFor = `policy-${key}`;
+      const select = element("select"); select.id = label.htmlFor; select.required = true;
+      const empty = element("option", `Choose ${key}`); empty.value = ""; select.append(empty);
+      for (const item of page.Items.filter((item) => item.Enabled)) {
+        const title = key === "resource" ? `${item.Name} · revision ${item.Revision} · ${item.Address}:${item.Port}` : `${item.Name} · ${item.ID}`;
+        const option = element("option", title); option.value = item.ID; select.append(option);
+      }
+      select.value = choice.selected; choice.selected = select.value;
+      select.addEventListener("change", () => { choice.selected = select.value; });
+      const pager = element("div", undefined, "choice-pagination");
+      for (const forward of [false, true]) {
+        const button = element("button", forward ? "Next" : "Previous"); button.type = "button";
+        button.disabled = forward ? !page.Next : choice.index === 0;
+        button.setAttribute("aria-label", `${forward ? "Next" : "Previous"} ${key} choices`);
+        button.addEventListener("click", () => {
+          if (pending || state !== policy) return;
+          if (forward) { choice.cursors = choice.cursors.slice(0, choice.index + 1); choice.cursors.push(page.Next); choice.index++; }
+          else choice.index--;
+          choice.selected = ""; void loadPolicy(state);
+        }); pager.append(button);
+      }
+      field.append(label, select, element("p", `Page ${choice.index + 1} · up to 50 records`, "record-id"), pager); form.append(field);
+    }
+    const fields = state.kind.endsWith("resource") ? [["Name", "Resource name", "text"], ["Address", "Canonical destination IP address", "text"], ["Port", "TCP port", "number"]] : [["From", "Valid from (UTC)", "datetime-local"], ["Until", "Valid until (UTC)", "datetime-local"]];
+    for (const [key, title, type] of fields) {
+      const field = element("div", undefined, "access-choice"), label = element("label", title), input = element("input");
+      label.htmlFor = `policy-${key.toLowerCase()}`; input.id = label.htmlFor; input.type = type; input.required = true; input.value = state.fields[key];
+      if (type === "text") { input.maxLength = key === "Name" ? 128 : 45; input.spellcheck = false; }
+      if (type === "number") { input.min = "1"; input.max = "65535"; input.step = "1"; }
+      if (type === "datetime-local") { input.min = "2000-01-01T00:00"; input.max = "2261-12-31T23:59"; }
+      input.addEventListener("input", () => { state.fields[key] = input.value; }); field.append(label, input); form.append(field);
+    }
+    const submit = element("button", "Review change", "primary-action"); submit.type = "submit";
+    const cancelButton = element("button", "Cancel change"); cancelButton.type = "button"; cancelButton.addEventListener("click", policyCancel);
+    form.append(submit, cancelButton);
+    form.addEventListener("submit", (event) => { event.preventDefault(); if (!pending && state === policy && form.reportValidity()) void previewPolicy(state, pages, form); });
+    const explanation = state.kind.endsWith("resource") ? "A resource defines one TCP destination. Device grants and connector hosting permissions must explicitly cover its revision." : "Enter both times in UTC. The displayed device and exact resource revision define the permission.";
+    records.replaceChildren(form, element("p", explanation, "access-explanation"));
+  }
+  function policyDraft(state, pages) {
+    if (state.kind.endsWith("resource")) {
+      const connector = pages.connector.Items.find((item) => item.ID === state.choices.connector.selected && item.Enabled);
+      if (!connector) throw new Error("Missing connector");
+      const draft = { Resource: { Name: state.fields.Name, ConnectorID: connector.ID, Address: state.fields.Address, Port: Number(state.fields.Port), Protocol: "tcp" } };
+      if (state.previous) { draft.ResourceID = state.previous.ID; draft.ExpectedRevision = state.previous.Revision; }
+      return draft;
+    }
+    const resource = pages.resource.Items.find((item) => item.ID === state.choices.resource.selected && item.Enabled);
+    if (!resource) throw new Error("Missing resource");
+    const permission = { ResourceID: resource.ID, Revision: resource.Revision, From: new Date(state.fields.From + "Z").toISOString(), Until: new Date(state.fields.Until + "Z").toISOString() };
+    if (Date.parse(permission.Until) <= Date.parse(permission.From)) throw new Error("Invalid interval");
+    if (state.kind === "host") return { Hosting: { ...permission, ConnectorID: resource.ConnectorID } };
+    const device = pages.device.Items.find((item) => item.ID === state.choices.device.selected && item.Enabled);
+    if (!device) throw new Error("Missing device");
+    return { Grant: { ...permission, UserID: device.UserID, DeviceID: device.ID } };
+  }
+  function validPolicyPreview(view, draft, state, pages) {
+    const fields = ["ID", "Digest", "Kind", "UserID", "UserName", "DeviceID", "DeviceName", "Resource", "From", "Until", "ExpiresAt", "PolicyRevision"];
+    if (state.previous) fields.push("Previous");
+    if (!exact(view, fields) || !uuid(view.ID) || !/^[0-9a-f]{64}$/.test(view.Digest) || view.Kind !== state.kind || view.PolicyRevision !== state.revision || !date(view.ExpiresAt) || Date.parse(view.ExpiresAt) <= Date.now() || Date.parse(view.ExpiresAt) > Date.now() + 301000 || !date(view.From) || !date(view.Until)) return false;
+    if (["UserID", "UserName", "DeviceID", "DeviceName"].some((key) => typeof view[key] !== "string" || view[key].length > 4096)) return false;
+    const resourceFields = ["ID", "Revision", "Name", "ConnectorID", "ConnectorName", "Address", "Port", "Protocol", "Until"];
+    function resourceMatches(actual, expected, connectorName) {
+      return exact(actual, resourceFields) && uuid(actual.ID) && Number.isSafeInteger(actual.Revision) && actual.Revision > 0 && actual.Protocol === "tcp" && date(actual.Until) && typeof actual.ConnectorName === "string" && actual.ConnectorName.length <= 4096 && (connectorName === undefined || actual.ConnectorName === connectorName) && Object.entries(expected).every(([key, value]) => actual[key] === value);
+    }
+    if (draft.Resource) {
+      const connector = pages.connector.Items.find((item) => item.ID === draft.Resource.ConnectorID);
+      const expected = { ...draft.Resource, Revision: state.previous ? state.previous.Revision + 1 : 1 };
+      if (state.previous) expected.ID = state.previous.ID;
+      if (!resourceMatches(view.Resource, expected, connector.Name)) return false;
+      if (state.previous && !resourceMatches(view.Previous, Object.fromEntries(["ID", "Revision", "Name", "ConnectorID", "Address", "Port", "Protocol"].map((key) => [key, state.previous[key]])))) return false;
+      return view.UserID === "" && view.DeviceID === "" && view.UserName === "" && view.DeviceName === "";
+    }
+    const permission = draft.Grant || draft.Hosting, resource = pages.resource.Items.find((item) => item.ID === permission.ResourceID);
+    if (!resourceMatches(view.Resource, Object.fromEntries(["ID", "Revision", "Name", "ConnectorID", "Address", "Port", "Protocol"].map((key) => [key, resource[key]]))) || Date.parse(view.From) !== Date.parse(permission.From) || Date.parse(view.Until) !== Date.parse(permission.Until)) return false;
+    if (!draft.Grant) return view.UserID === "" && view.DeviceID === "" && view.UserName === "" && view.DeviceName === "";
+    const device = pages.device.Items.find((item) => item.ID === permission.DeviceID);
+    return view.UserID === permission.UserID && view.DeviceID === permission.DeviceID && view.DeviceName === device.Name && view.UserName.length > 0;
+  }
+  async function previewPolicy(state, pages, form) {
+    cancel(); const attempt = generation, controller = new AbortController(); pending = controller;
+    inventory.setAttribute("aria-busy", "true"); message("Preparing an exact preview…");
+    for (const node of form.querySelectorAll("input, select, button")) node.disabled = true;
+    const timeout = setTimeout(() => controller.abort(), 8000);
+    try {
+      const draft = policyDraft(state, pages);
+      const view = await privateJSON("/api/v1/admin/policy/preview", draft, controller.signal);
+      if (!validPolicyPreview(view, draft, state, pages)) throw new Error("Preview differs from draft");
+      if (attempt !== generation || state !== policy || document.hidden) return;
+      renderPolicyPreview(view, state);
+      message("Review every detail. This change has not been applied.");
+    } catch {
+      if (attempt !== generation) return;
+      clear(); reset(); message("The preview could not be verified. No approval was submitted. Refresh and check the destination, dates and current policy.", true);
+    } finally {
+      clearTimeout(timeout);
+      if (attempt === generation) { pending = undefined; inventory.setAttribute("aria-busy", "false"); }
+    }
+  }
+  function renderPolicyPreview(view, state) {
+    const panel = element("section", undefined, "access-result policy-preview"); panel.id = "policy-preview";
+    const heading = element("h2", `Review: ${policyTitles[state.kind]}`); heading.tabIndex = -1; panel.append(heading);
+    function details(resource, title) {
+      panel.append(element("h3", title)); const list = element("dl");
+      for (const [label, value] of [["Resource", resource.Name], ["Resource ID", resource.ID], ["Revision", resource.Revision], ["Destination", `${resource.Address}:${resource.Port} / TCP`], ["Connector", resource.ConnectorName], ["Connector ID", resource.ConnectorID]]) list.append(element("dt", label), element("dd", String(value)));
+      panel.append(list);
+    }
+    if (view.Previous) details(view.Previous, "Current destination");
+    details(view.Resource, view.Previous ? "Proposed destination" : "Destination");
+    const scope = element("dl");
+    if (state.kind === "grant") for (const [label, value] of [["Person", view.UserName], ["User ID", view.UserID], ["Device", view.DeviceName], ["Device ID", view.DeviceID]]) scope.append(element("dt", label), element("dd", value));
+    if (state.kind === "grant" || state.kind === "host") for (const [label, value] of [["From (UTC)", view.From], ["Until (UTC)", view.Until]]) scope.append(element("dt", label), element("dd", new Date(value).toISOString()));
+    panel.append(scope, element("p", `Approval expires ${new Date(view.ExpiresAt).toISOString()} · policy revision ${view.PolicyRevision}`));
+    if (view.Previous) panel.append(element("p", "Existing grants and hosting permissions remain bound to the previous revision. The new revision needs its own permissions."));
+    const approve = element("button", "Approve with security key", "primary-action"); approve.type = "button";
+    const cancelButton = element("button", "Cancel change"); cancelButton.type = "button"; cancelButton.addEventListener("click", policyCancel);
+    const actions = element("div", undefined, "policy-actions"); actions.append(approve, cancelButton); panel.append(actions);
+    approve.addEventListener("click", () => { if (!pending && state === policy && !document.hidden) void approvePolicy(view, state, panel, approve); });
+    records.replaceChildren(panel); heading.focus();
+  }
+  async function approvePolicy(view, state, panel, button) {
+    cancel(); const attempt = generation, controller = new AbortController(); pending = controller;
+    button.disabled = true; let submitted = false;
+    const timeout = setTimeout(() => controller.abort(), Math.max(1, Math.min(60000, Date.parse(view.ExpiresAt) - Date.now())));
+    const active = () => attempt === generation && state === policy && !document.hidden && !controller.signal.aborted && Date.now() < Date.parse(view.ExpiresAt);
+    try {
+      if (!active() || !globalThis.PublicKeyCredential?.parseRequestOptionsFromJSON || !PublicKeyCredential.prototype.toJSON) throw new Error("WebAuthn unavailable");
+      message("Use a registered security key and complete its user verification.");
+      const challenge = await privateJSON("/api/v1/admin/policy/challenge", { ID: view.ID, Digest: view.Digest }, controller.signal);
+      if (!active()) return;
+      const options = challenge?.Approval?.publicKey;
+      if (!exact(challenge, ["ID", "Approval"]) || !uuid(challenge.ID) || !options || options.rpId !== location.hostname || options.userVerification !== "required" || !Array.isArray(options.allowCredentials) || options.allowCredentials.length < 1) throw new Error("Invalid approval challenge");
+      const credential = await navigator.credentials.get({ publicKey: PublicKeyCredential.parseRequestOptionsFromJSON(options), signal: controller.signal });
+      if (!active()) return;
+      if (!credential || credential.type !== "public-key") throw new Error("No security key assertion");
+      submitted = true;
+      message("Submitting the approved change…");
+      const result = await privateJSON("/api/v1/admin/policy/confirm", { ID: challenge.ID, Response: credential.toJSON() }, controller.signal);
+      if (attempt !== generation || state !== policy || document.hidden) return;
+      if (!exact(result, [])) throw new Error("Invalid confirmation");
+      panel.replaceChildren(element("h2", "Change applied"), element("p", "Refresh the inventory to see the current configuration and inspect effective access."));
+      const refresh = element("button", "Return to inventory", "primary-action"); refresh.type = "button"; refresh.addEventListener("click", policyCancel); panel.append(refresh);
+      message("The server confirmed that this change was applied.");
+    } catch {
+      if (attempt !== generation) return;
+      message(submitted ? "The result could not be confirmed. The change may have been applied. Refresh and inspect the inventory before creating another change." : "Approval was not submitted. The key, browser, access or policy could not be verified. Cancel this change and start a fresh preview.", true);
+    } finally {
+      clearTimeout(timeout);
+      if (attempt === generation) pending = undefined;
     }
   }
   function select() {

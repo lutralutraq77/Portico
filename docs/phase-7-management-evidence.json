@@ -1,0 +1,119 @@
+{
+  "schema": 1,
+  "status": "component passed; full Phases 6 and 7 remain incomplete",
+  "source_base_commit": "2b39bf645aac361798cade5dd7236b5dcd4e29f3",
+  "management_browser": {
+    "browser": "152.0.4191.66",
+    "playwright": "1.62.1",
+    "checks": [
+      "bounded forward and backward management choices retain unsent form values",
+      "altered destination preview rejected before hardware ceremony or policy mutation",
+      "different relying party rejected without requesting or submitting a credential",
+      "concurrent policy change invalidates the preview before approval",
+      "cancelling an in-flight native credential request submits no approval",
+      "section navigation discards the preview and aborts pending hardware approval",
+      "real controller rejects native virtual authenticator response with invalid user verification",
+      "real controller rejects native virtual authenticator response with invalid signature",
+      "exact readable preview, safe hostile text, keyboard focus and 360px dark reflow",
+      "real browser WebAuthn creates one resource, and the controller rejects assertion replay",
+      "resource revision approval shows old and new tuples and preserves resource identity",
+      "native security-key approval applies exact revision and UTC interval for hosting",
+      "native security-key approval applies exact revision and UTC interval for grants",
+      "lost confirmation response reports uncertain outcome and never retries the committed mutation",
+      "live administrator revocation denies a previously displayed preview",
+      "no cookie, persistent browser state, external page request or script error"
+    ],
+    "assertions": 16,
+    "final_state": {
+      "Resources": 3,
+      "Grants": 2,
+      "Hosting": 2,
+      "Applied": 5
+    },
+    "limitations": [
+      "Virtual USB P256 authenticator with software attestation fixtures; no physical key model qualification.",
+      "Private TLS browser fixture uses Playwright client-certificate proxy; no native administrator bridge or platform custody qualification."
+    ]
+  },
+  "management_browser_seconds": 75.66,
+  "inventory_browser_regression": {
+    "seconds": 34.94,
+    "note": "Same production dashboard assets. Before the shared fixture added 54 connectors exclusively to the management branch; the inventory fixture path is unchanged.",
+    "groups": 19
+  },
+  "native_race": {
+    "top_pass": 10,
+    "sub_pass": 60,
+    "failed": 0,
+    "skipped": 0,
+    "seconds": 80.788
+  },
+  "static_analysis": "JavaScript syntax, native controller vet and staticcheck with dashboardbrowser tag passed",
+  "artifact_root": "E:/Portico/work/reports",
+  "artifact_sha256": {
+    "dashboard-policy-inventory-regression.log": "6b653bb284429b211136440337a59727b2150c2646d75630a77a4515b228f276",
+    "dashboard-policy-browser-v1.log": "78b847d385ee5df374f4904c97f54f2672ecb7121c5ae3ac97e06965b1152ade",
+    "dashboard-policy-browser-v2.log": "cfd7467685c93759945b09c4beee1d2a2c37b08f9b94ee98c50dbaefbd01e948",
+    "dashboard-policy-browser-final.log": "1a958ca4e200639853077d7cece20e2f04dc731a5265c9eb31b8f6385aacd66b",
+    "dashboard-policy-browser-final/result.json": "e20e3e1f1967b8bc8f4ccbb7329c0b52c3c0abe96fb30a538e14c83ad18a23ac",
+    "dashboard-policy-browser-final/desktop-preview.png": "e7da9c2da28c1a1d16223eaf8fa16fbd602502f024477687714bc26e3150fae4",
+    "dashboard-policy-browser-final/mobile-preview-dark.png": "23eda61c462b01badd036e4e72ee942f07281c24171ad7779e7718b63dbb1aab",
+    "dashboard-management-native.jsonl": "dad0ae8d312ea177232a4b86c95446883ca9116f813e166fcd8c60f08f1b756a"
+  },
+  "earlier_attempts": [
+    "First management run failed in the fixture: navigation to an unchanged hash retained the prior error state. The harness now explicitly reloads that document.",
+    "Corrected initial 14-group management run passed in 21.41 seconds; final fixture adds paging and section-navigation controls."
+  ],
+  "limitations": [
+    "Virtual USB P256 authenticator with software attestation fixtures; no physical key model qualification.",
+    "Private TLS browser fixture uses Playwright client-certificate proxy; no native administrator bridge or platform custody qualification."
+  ],
+  "canonical_acceptance": {
+    "planned": 84,
+    "implemented": 7,
+    "total": 91
+  },
+  "source_files": [
+    {
+      "path": "internal/adminauth/webauthn.go",
+      "sha256": "f4b40e183cc841b118e871343fde7a1278d0cbab7ba1b60df7036d3f32426347"
+    },
+    {
+      "path": "internal/controller/admin.go",
+      "sha256": "63cc2b877d041746872524cf3f386fafae60c2f76b0067be348be7706649a648"
+    },
+    {
+      "path": "internal/controller/dashboard_browser_test.go",
+      "sha256": "fd041c821ea358b67eca085c1d5aa4d97de02f72eac1095fd83b47a477416dec"
+    },
+    {
+      "path": "internal/controller/dashboard/admin.css",
+      "sha256": "943d00b4a1104170fbb6060c775661142769f2ffb0d2a1853ca9fa336fc6e6a8"
+    },
+    {
+      "path": "internal/controller/dashboard/admin.js",
+      "sha256": "28600cc6e1b78a0f55528d66a94d71476408353150ed080283fc6f8feec21e50"
+    },
+    {
+      "path": "internal/controller/dashboard/index.html",
+      "sha256": "5d62282fd26d02cc43b494fea7667870a2a36ba1f0e1a61d371e0384fe6a6eb8"
+    },
+    {
+      "path": "internal/controller/policy_http.go",
+      "sha256": "909c66f3be1fde2e0015bba275e8b4f9b4891096cf52e2b569931a403f464b17"
+    },
+    {
+      "path": "internal/controller/policy_preview.go",
+      "sha256": "6e5d41ee7b51e3fa2feafd670af9e2e83250ebb51b587811e806d129ecfec29d"
+    },
+    {
+      "path": "scripts/test-dashboard-browser.cjs",
+      "sha256": "2de862eaf7d957edafdf2e281a67fcb0672559e8c320ec4b68e9b218ea50f3b5"
+    },
+    {
+      "path": "scripts/test-dashboard-policy-browser.cjs",
+      "sha256": "91e9a39b93592bdf97a8f0d12f3da8be29c159adfd56659bddb7b69ef3b24d5a"
+    }
+  ],
+  "scanner_note": "Initial secret scan flagged a public source SHA-256 under a WebAuthn path. Source records now use the established path/sha256 list schema; no scanner exclusion was added."
+}
