@@ -31,6 +31,8 @@ Status: proposed controls, not implemented proofs. Each row names the threat, me
 | CTRL-21 | TH-08 expiry extension by time faults | Separate UTC deadlines, monotonic lease timers, explicit timezone/DST rule | Controller clock health and platform suspend-aware timer | Unknown/rolled-back clock cannot extend authority | Restore clock health and reauthenticate; console for expired admin | SESSION-01/06, ADMIN-03 |
 | CTRL-22 | TH-21 application-mediated pivot | Destination auth and independent workload egress; treat proxy/SSH capabilities explicitly | Resource owner and segmentation boundary | Portico port policy cannot stop allowed app opening onward connections | Contain/rebuild application; tighten egress/forwarding policy | AUTHZ-07, NET-07 |
 
+The [Linux administrator key provider](docs/administrator-key-storage.md) adds CTRL-01/CTRL-19 component evidence: protected encrypted state bound to administrator trust, actual TLS with the reopened key and rejection after the signer handle closes. It does not qualify an installed administrator package or replace hardware approval.
+
 ## Audit contract
 Events contain sequence, UTC time, action/result enum, immutable actor/target IDs, correlation ID and a redacted change reference. Required actions: authentication success/failure, issuance/enrollment, revocation, resource/grant changes, administrator/factor changes, recovery, security settings, session termination and updates.
 
