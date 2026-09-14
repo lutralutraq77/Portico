@@ -1,5 +1,7 @@
 # Security-critical mechanism register
 
+The [native administration component](docs/native-administration.md) implements a TB-06/CTRL-20 boundary using a Go-held administrator TLS signer, fixed server trust/origin, inherited private pipes and one sandboxed browser frame. Actual TLS, malformed transport, virtual-key browser and request-ownership tests provide component evidence. Installed Linux custody, management routing, suspend-aware expiry and complete bootstrap/recovery remain open; no full acceptance case is relabeled.
+
 The development [application launcher](docs/application-launcher.md) adds a TB-01 mechanism against TH-18/20: protected exact-resource Unix transport, kernel peer-UID checks, six admitted streams, explicit local executable selection and joined child/stream completion. Focused Linux component tests cover binary transfer, half-close, late failure, cancellation/reaping, overload and existing-entry rejection. Same-UID processes remain trusted. This evidence does not complete PLATFORM-02 or qualify a browser bridge.
 
 Status: proposed controls, not implemented proofs. Each row names the threat, mechanism, trusted enforcement component, failure behavior, recovery and proving tests. Related residual risks are in [threat model](THREAT_MODEL.md). The detailed design documents own semantics; this table cannot weaken them.

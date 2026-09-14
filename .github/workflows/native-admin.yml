@@ -1,0 +1,62 @@
+name: Native administrator window
+on:
+  pull_request:
+    paths:
+      - 'desktop/admin/**'
+      - 'internal/adminbridge/**'
+      - 'internal/controller/**'
+      - 'scripts/*native*'
+      - 'scripts/prepare-admin-runtime.ps1'
+      - '.github/workflows/native-admin.yml'
+      - 'go.mod'
+      - 'go.sum'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: native-admin-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  linux-window:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version: '1.27.1'
+          cache: false
+      - name: Install isolated runner display dependencies
+        shell: bash
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends xvfb xauth libgtk-3-0 libnss3 libgbm1 libasound2t64
+      - name: Prepare digest-pinned native runtime
+        shell: pwsh
+        run: |
+          ./scripts/prepare-admin-runtime.ps1
+      - name: Enable the verified Chromium sandbox helper in this runner
+        shell: bash
+        run: |
+          runtime="$GITHUB_WORKSPACE/work/toolchains/admin-electron-44.3.0-linux-amd64"
+          sudo chown root:root "$runtime/chrome-sandbox"
+          sudo chmod 4755 "$runtime/chrome-sandbox"
+      - name: Qualify private transport and real native WebAuthn window
+        shell: bash
+        run: |
+          xvfb-run --auto-servernum pwsh -NoProfile -File scripts/test-native-admin.ps1
+      - name: Upload redacted native qualification evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: native-admin-linux
+          path: |
+            work/reports/admin-runtime.json
+            work/reports/native-admin-summary.json
+            work/reports/native-admin-*.log
+            work/reports/native-admin-browser/result.json
+            work/reports/native-admin-browser/failure.json
+            work/reports/native-admin-browser/native-*-key-review.png
+          retention-days: 14
