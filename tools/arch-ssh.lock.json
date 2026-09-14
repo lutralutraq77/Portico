@@ -1,0 +1,9 @@
+{
+  "schema": 1,
+  "packages": [
+    {"name": "openssh-10.5p1-1-x86_64.pkg.tar.zst", "url": "https://archive.archlinux.org/packages/o/openssh/openssh-10.5p1-1-x86_64.pkg.tar.zst", "sha256": "7095495592ec579541478fb82dc0c0038f3b9da8adc774ffe1a1589004432992"},
+    {"name": "openssh-10.5p1-1-x86_64.pkg.tar.zst.sig", "url": "https://archive.archlinux.org/packages/o/openssh/openssh-10.5p1-1-x86_64.pkg.tar.zst.sig", "sha256": "9bb5a0b656ede135b38851afe32a88e1e9c1a7d9dfa8aaf952b339579e426c0a"},
+    {"name": "libedit-20260512_3.1-1-x86_64.pkg.tar.zst", "url": "https://archive.archlinux.org/packages/l/libedit/libedit-20260512_3.1-1-x86_64.pkg.tar.zst", "sha256": "70cb736e4fdee330cd0dfab45875f6ea378ae819958dd15748c300b8d7285b42"},
+    {"name": "libedit-20260512_3.1-1-x86_64.pkg.tar.zst.sig", "url": "https://archive.archlinux.org/packages/l/libedit/libedit-20260512_3.1-1-x86_64.pkg.tar.zst.sig", "sha256": "6f61da87117c55f2eef074dc61bb9aa33539e0b80edb2e0e7be9af98e2609f61"}
+  ]
+}

@@ -4,6 +4,7 @@
 set -Eeuo pipefail
 trap 'printf "PORTICO_ARCH_ROOTFS_FAILED line=%s status=%s\n" "$LINENO" "$?" >&2' ERR
 test "$(id -u)" -eq 0
+bash /scripts/arch-ssh-packages.sh
 packages=(/input/portico-cli-development-*.pkg.tar.zst)
 test "${#packages[@]}" -eq 1
 pacman -U --noconfirm "${packages[0]}"
@@ -13,6 +14,7 @@ test -x /usr/lib/systemd/systemd
 test -x /usr/bin/bsdtar
 test -x /usr/bin/curl
 test -x /usr/bin/openssl
+test -x /usr/bin/ssh
 groupadd --gid 1000 porticofixture
 groupadd --gid 1001 porticoother
 useradd --uid 1000 --gid 1000 --create-home --shell /bin/bash porticofixture
@@ -51,7 +53,7 @@ After=basic.target
 Type=oneshot
 ExecStart=/usr/bin/bash /portico-systemd-fixture.sh
 ExecStopPost=/usr/bin/systemctl --no-block poweroff
-TimeoutStartSec=1300s
+TimeoutStartSec=2000s
 StandardOutput=tty
 StandardError=tty
 TTYPath=/dev/console

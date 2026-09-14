@@ -6,6 +6,9 @@ $revision = (& git rev-parse HEAD).Trim()
 if ($LASTEXITCODE -ne 0 -or $revision -notmatch '^[0-9a-f]{40}$') { throw 'Missing source revision' }
 $dirty = @(& git status --porcelain --untracked-files=all)
 if ($LASTEXITCODE -ne 0 -or $dirty.Count -ne 0) { throw 'Systemd qualification requires a clean checkout' }
+& (Join-Path $PSScriptRoot 'prepare-arch-ssh.ps1') -WorkRoot $WorkRoot
+if (-not $?) { throw 'Pinned SSH fixture download failed' }
+$sshRoot = Join-Path $PorticoWork 'downloads/ssh-arch'
 $packageRoot = Join-Path $PorticoWork ('arch-package/' + $revision)
 $provenance = Get-Content -Raw -LiteralPath (Join-Path $packageRoot 'provenance.json') | ConvertFrom-Json
 $qualification = Get-Content -Raw -LiteralPath (Join-Path $packageRoot 'qualification.json') | ConvertFrom-Json
@@ -35,21 +38,25 @@ try {
     } finally { Pop-Location }
 } finally { $env:GOOS=$priorOS; $env:GOARCH=$priorArch; $env:CGO_ENABLED=$priorCGO }
 $driver = Join-Path $PSScriptRoot 'arch-systemd-rootfs.sh'
-$dockerArgs = @('run','--rm','--pull=never','--platform',$imageLock.platform,'--network=none','--security-opt=no-new-privileges','--env','LC_ALL=C','--env',('PORTICO_BINARY_SHA256='+$provenance.files.portico),'--env',('PORTICO_UNIT_SHA256='+$provenance.files.'portico-agent.service'),'--volume',((Join-Path $packageRoot 'output')+':/input:ro'),'--volume',((Join-Path $root 'controller')+':/controller-input:ro'),'--volume',((Join-Path $root 'portico-issuer')+':/issuer-input:ro'),'--volume',($root+':/output:rw'),'--volume',($PSScriptRoot+':/scripts:ro'),'--volume',($driver+':/driver.sh:ro'),$imageLock.image,'bash','/driver.sh')
+$dockerArgs = @('run','--rm','--pull=never','--platform',$imageLock.platform,'--network=none','--security-opt=no-new-privileges','--env','LC_ALL=C','--env',('PORTICO_BINARY_SHA256='+$provenance.files.portico),'--env',('PORTICO_UNIT_SHA256='+$provenance.files.'portico-agent.service'),'--volume',((Join-Path $packageRoot 'output')+':/input:ro'),'--volume',((Join-Path $root 'controller')+':/controller-input:ro'),'--volume',((Join-Path $root 'portico-issuer')+':/issuer-input:ro'),'--volume',($sshRoot+':/ssh-input:ro'),'--volume',($root+':/output:rw'),'--volume',($PSScriptRoot+':/scripts:ro'),'--volume',($driver+':/driver.sh:ro'),$imageLock.image,'bash','/driver.sh')
 & docker @dockerArgs 2>&1 | Tee-Object -FilePath (Join-Path $root 'rootfs-build.log')
 if ($LASTEXITCODE -ne 0) { throw 'Systemd rootfs creation failed' }
 $initramfs = Join-Path $root 'systemd-initramfs.cpio.gz'
 $environment = [ordered]@{schema=1;source_revision=$revision;image=$imageLock.image;package_sha256=$qualification.package_sha256;unit_sha256=$provenance.files.'portico-agent.service';binary_sha256=$provenance.files.portico;controller_test_sha256=(Get-FileHash -LiteralPath (Join-Path $root 'controller') -Algorithm SHA256).Hash.ToLowerInvariant();qemu_version=$qemuVersion;qemu_sha256=(Get-FileHash -LiteralPath $qemu -Algorithm SHA256).Hash.ToLowerInvariant();kernel_sha256=$runtimeLock.kernel_sha256.ToLowerInvariant();initramfs_sha256=(Get-FileHash -LiteralPath $initramfs -Algorithm SHA256).Hash.ToLowerInvariant();acceleration='tcg';virtual_cpus=2;memory_mib=3072;network_devices=0;host_filesystem_shares=0}
 $environment['issuer_binary_sha256']=(Get-FileHash -LiteralPath (Join-Path $root 'portico-issuer') -Algorithm SHA256).Hash.ToLowerInvariant()
+$environment['ssh_package_lock_sha256']=(Get-FileHash -LiteralPath (Join-Path $PorticoRoot 'tools/arch-ssh.lock.json') -Algorithm SHA256).Hash.ToLowerInvariant()
+$environment['ssh_binaries_manifest_sha256']=(Get-FileHash -LiteralPath (Join-Path $root 'ssh-binaries.sha256') -Algorithm SHA256).Hash.ToLowerInvariant()
 $environment | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $root 'environment.json') -Encoding utf8
 $log = Join-Path $root 'runtime.log'
-& timeout --signal=TERM --kill-after=10s 1600s $qemu -accel tcg -cpu max -smp 2 -m 3072 -nodefaults -display none -serial stdio -monitor none -nic none -kernel $kernel -initrd $initramfs -append 'console=ttyS0 panic=-1 rdinit=/portico-systemd-init systemd.log_target=console systemd.show_status=yes' -no-reboot *> $log
+& timeout --signal=TERM --kill-after=10s 2300s $qemu -accel tcg -cpu max -smp 2 -m 3072 -nodefaults -display none -serial stdio -monitor none -nic none -kernel $kernel -initrd $initramfs -append 'console=ttyS0 panic=-1 rdinit=/portico-systemd-init systemd.log_target=console systemd.show_status=yes' -no-reboot *> $log
 if ($LASTEXITCODE -ne 0) { throw 'Systemd guest exited unsuccessfully or exceeded its bound' }
 $body = Get-Content -Raw -LiteralPath $log
 if ($body -notmatch '(?m)^PORTICO_ARCH_SYSTEMD_PASS\r?$' -or $body -notmatch '(?m)^--- PASS: TestSystemdGuestAgentEnrollmentAndRevocation ' -or $body -match 'PORTICO_ARCH_SYSTEMD_FAILED|--- FAIL:|--- SKIP:') { throw 'Actual systemd service qualification failed' }
 if ($body -notmatch '(?m)^PORTICO_ARCH_APPLICATION_HTTPS_PASS\r?$' -or $body -notmatch '(?m)^--- PASS: TestArchGuestApplicationHTTPS ') { throw 'Real HTTPS application qualification failed' }
+if ($body -notmatch '(?m)^PORTICO_ARCH_APPLICATION_SSH_PASS\r?$' -or $body -notmatch '(?m)^--- PASS: TestArchGuestApplicationSSH ') { throw 'Real SSH application qualification failed' }
 $result = [ordered]@{schema=1;source_revision=$revision;runtime_log_sha256=(Get-FileHash -LiteralPath $log -Algorithm SHA256).Hash.ToLowerInvariant();environment_sha256=(Get-FileHash -LiteralPath (Join-Path $root 'environment.json') -Algorithm SHA256).Hash.ToLowerInvariant();service_execution=$true;user_uid=1000;enrolled_fixture_identity=$true;production_identity=$false;hardware_qualification=$false}
 $result['application_execution']=$true
+$result['ssh_application_execution']=$true
 $result['application_user_uid']=0
 $result['restricted_issuer_process']=$true
 $result | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $root 'qualification.json') -Encoding utf8

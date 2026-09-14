@@ -138,4 +138,6 @@ trap - EXIT
 # it does not claim the preceding UID1000 installed-service qualification.
 PORTICO_ISOLATED_VM=1 PORTICO_SYSTEMD_FIXTURE=1 /controller -test.v -test.timeout=600s '-test.run=^TestArchGuestApplicationHTTPS$'
 echo PORTICO_ARCH_APPLICATION_HTTPS_PASS
+PORTICO_ISOLATED_VM=1 PORTICO_SYSTEMD_FIXTURE=1 PORTICO_SSH_FIXTURE=1 /controller -test.v -test.timeout=600s '-test.run=^TestArchGuestApplicationSSH$'
+echo PORTICO_ARCH_APPLICATION_SSH_PASS
 echo PORTICO_ARCH_SYSTEMD_PASS
