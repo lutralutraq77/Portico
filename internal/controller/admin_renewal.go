@@ -17,6 +17,16 @@ type AdminRenewalSpec struct {
 	NotAfter time.Time
 }
 
+type AdminRenewalPrepared struct {
+	Version                int
+	RenewalID              string
+	CSRHash                string
+	CurrentCertificateHash string
+	NotAfter               time.Time
+	PolicyRevision         int64
+	Challenge              AdminChallenge
+}
+
 func (t *Tx) reviewAdminRenewal(p adminPeer, trust *pki.Trust, op AdminOperation) ([]byte, string, error) {
 	if op.Kind != "renew-administrator" || !validID(op.TargetID) || op.Renewal == nil || op.Invitation != nil || op.PolicyHash != "" || trust == nil || trust.Profile() != pki.Administrator {
 		return nil, "", t.fail(ErrInvalid)
@@ -43,16 +53,21 @@ func (t *Tx) reviewAdminRenewal(p adminPeer, trust *pki.Trust, op AdminOperation
 }
 
 func (s *Store) BeginAdminRenewal(ctx context.Context, conn *tls.Conn, trust *pki.Trust, v *adminauth.Verifier, id string, spec AdminRenewalSpec) (AdminChallenge, error) {
-	if len(spec.CSR) == 0 || len(spec.CSR) > pki.MaxCSR {
-		return AdminChallenge{}, ErrInvalid
+	result, err := s.beginAdminRenewal(ctx, conn, trust, v, id, spec, 0)
+	return result.Challenge, err
+}
+
+func (s *Store) beginAdminRenewal(ctx context.Context, conn *tls.Conn, trust *pki.Trust, v *adminauth.Verifier, id string, spec AdminRenewalSpec, expectedRevision int64) (AdminRenewalPrepared, error) {
+	if len(spec.CSR) == 0 || len(spec.CSR) > pki.MaxCSR || expectedRevision < 0 {
+		return AdminRenewalPrepared{}, ErrInvalid
 	}
 	der, err := adminDER(ctx, conn)
 	if err != nil {
-		return AdminChallenge{}, err
+		return AdminRenewalPrepared{}, err
 	}
 	spec.CSR = bytes.Clone(spec.CSR)
 	op := AdminOperation{Kind: "renew-administrator", TargetID: id, Renewal: &spec}
-	var result AdminChallenge
+	var result AdminRenewalPrepared
 	err = s.Update(ctx, NewID(), func(t *Tx) error {
 		peer, err := t.adminPeer(trust, der)
 		if err != nil {
@@ -62,11 +77,19 @@ func (s *Store) BeginAdminRenewal(ctx context.Context, conn *tls.Conn, trust *pk
 		if _, _, err = t.reviewAdminRenewal(peer, trust, op); err != nil {
 			return err
 		}
-		result, err = t.beginAdmin(peer, v, op)
+		revision, err := t.policyRevision()
+		if err != nil {
+			return err
+		}
+		if expectedRevision != 0 && expectedRevision != revision {
+			return t.fail(ErrConflict)
+		}
+		result = AdminRenewalPrepared{Version: 1, RenewalID: id, CSRHash: pki.Hash(spec.CSR), CurrentCertificateHash: peer.hash, NotAfter: spec.NotAfter, PolicyRevision: revision}
+		result.Challenge, err = t.beginAdmin(peer, v, op)
 		return err
 	})
 	if err != nil {
-		return AdminChallenge{}, err
+		return AdminRenewalPrepared{}, err
 	}
 	return result, nil
 }

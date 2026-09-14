@@ -13,17 +13,19 @@ import (
 	"time"
 
 	"portico.local/portico/internal/adminauth"
+	"portico.local/portico/internal/adminrenewal"
 	"portico.local/portico/internal/control"
 	"portico.local/portico/internal/pki"
 	"portico.local/portico/internal/wire"
 )
 
 type PolicyHTTPConfig struct {
-	Profile               pki.Profile
-	Host                  string
-	ServerIdentity        tls.Certificate
-	AdministratorTrust    *pki.Trust
-	AdministratorVerifier *adminauth.Verifier
+	Profile                    pki.Profile
+	Host                       string
+	ServerIdentity             tls.Certificate
+	AdministratorTrust         *pki.Trust
+	AdministratorVerifier      *adminauth.Verifier
+	AdministratorRenewalIssuer IssuanceProvider
 }
 type PolicyHTTPServer struct{ server *http.Server }
 type policyConnKey struct{}
@@ -38,6 +40,9 @@ type finishApprovalRequest struct {
 // The administrative HTTP surface is a private server component; browser/native
 // delivery and platform-key isolation still require their dedicated qualification.
 func (p *PolicyEngine) NewHTTPServer(c PolicyHTTPConfig) (*PolicyHTTPServer, error) {
+	if c.Profile != pki.Administrator && c.AdministratorRenewalIssuer != nil {
+		return nil, ErrInvalid
+	}
 	u, e := url.Parse("https://" + c.Host)
 	if e != nil || u.Host != c.Host || u.Hostname() == "" || u.User != nil || u.Path != "" || u.RawQuery != "" || u.Fragment != "" || strings.ToLower(c.Host) != c.Host {
 		return nil, ErrInvalid
@@ -102,6 +107,38 @@ func (p *PolicyEngine) NewHTTPServer(c PolicyHTTPConfig) (*PolicyHTTPServer, err
 		}
 		var result any
 		switch {
+		case c.Profile == pki.Administrator && c.AdministratorRenewalIssuer != nil && r.URL.Path == adminrenewal.PreparePath:
+			var request adminrenewal.PrepareRequest
+			if wire.Decode(body, &request) != nil || request.Version != adminrenewal.Version || request.PolicyRevision < 1 {
+				deny()
+				return
+			}
+			result, e = p.store.beginAdminRenewal(r.Context(), conn, c.AdministratorTrust, c.AdministratorVerifier, request.RenewalID, AdminRenewalSpec{CSR: request.CSR, NotAfter: request.NotAfter}, request.PolicyRevision)
+		case c.Profile == pki.Administrator && c.AdministratorRenewalIssuer != nil && r.URL.Path == adminrenewal.ConfirmPath:
+			var request adminrenewal.ConfirmRequest
+			if wire.Decode(body, &request) != nil || request.Version != adminrenewal.Version {
+				deny()
+				return
+			}
+			var id string
+			id, e = p.store.FinishAdminRenewal(r.Context(), conn, c.AdministratorTrust, c.AdministratorVerifier, request.ChallengeID, request.Response)
+			if e == nil {
+				e = p.store.IssueAdminRenewal(r.Context(), c.AdministratorTrust.IssuerID(), id, c.AdministratorTrust, c.AdministratorRenewalIssuer)
+			}
+			if e == nil {
+				var der []byte
+				der, e = p.store.AdminRenewalCertificate(r.Context(), conn, c.AdministratorTrust, id)
+				result = adminrenewal.Certificate{Version: adminrenewal.Version, RenewalID: id, CertificateDER: der}
+			}
+		case c.Profile == pki.Administrator && r.URL.Path == adminrenewal.CertificatePath:
+			var request adminrenewal.CertificateRequest
+			if wire.Decode(body, &request) != nil || request.Version != adminrenewal.Version {
+				deny()
+				return
+			}
+			var der []byte
+			der, e = p.store.AdminRenewalCertificate(r.Context(), conn, c.AdministratorTrust, request.RenewalID)
+			result = adminrenewal.Certificate{Version: adminrenewal.Version, RenewalID: request.RenewalID, CertificateDER: der}
 		case c.Profile == pki.Device && r.URL.Path == "/api/v1/device/catalog":
 			var request struct{}
 			if wire.Decode(body, &request) != nil {

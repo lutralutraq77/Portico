@@ -7,12 +7,16 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"encoding/base64"
+	"encoding/json"
+	"io"
 	"net"
+	"net/http"
 	"testing"
 	"time"
 
 	"github.com/google/uuid"
 	"portico.local/portico/internal/adminauth"
+	"portico.local/portico/internal/adminrenewal"
 	"portico.local/portico/internal/controller"
 	"portico.local/portico/internal/pki"
 	"portico.local/portico/internal/testfixture"
@@ -109,7 +113,7 @@ func TestAdministratorRenewalThroughRealRestrictedIssuer(t *testing.T) {
 	if _, err = s.DashboardInventory(ctx, candidate, l.trust, controller.DashboardRequest{Section: "users", Limit: 8}); err == nil {
 		t.Fatal("activation-only candidate read administrator inventory")
 	}
-	testfixture.Must(t, s.ActivateAdminRenewal(ctx, candidate, l.trust, id))
+	activateAdministratorHTTPS(t, s, l.trust, serverIdentity, root, identity, id)
 	if _, err = renewalTLSProof(t, currentTLS, oldIdentity, root); err == nil {
 		t.Fatal("old administrator certificate retained TLS authority")
 	}
@@ -120,7 +124,52 @@ func TestAdministratorRenewalThroughRealRestrictedIssuer(t *testing.T) {
 	testfixture.Must(t, err)
 	_, err = s.DashboardInventory(ctx, activated, l.trust, controller.DashboardRequest{Section: "users", Limit: 8})
 	testfixture.Must(t, err)
-	t.Log("real restricted administrator issuance, two separately tested virtual factors, backup-key approval, singular renewal, durable issuer receipt and separate TLS activation verified")
+	t.Log("real restricted administrator issuance, two separately tested virtual factors, backup-key approval, singular renewal, durable issuer receipt and separate HTTPS activation verified")
+}
+
+func activateAdministratorHTTPS(t *testing.T, s *controller.Store, trust *pki.Trust, serverIdentity tls.Certificate, root *x509.Certificate, identity tls.Certificate, id string) {
+	t.Helper()
+	listener, err := net.Listen("tcp4", "127.0.0.1:0")
+	testfixture.Must(t, err)
+	_, port, err := net.SplitHostPort(listener.Addr().String())
+	testfixture.Must(t, err)
+	host := net.JoinHostPort("localhost", port)
+	server, err := s.NewAdminRenewalActivationServer(controller.AdminRenewalActivationConfig{Host: host, ServerIdentity: serverIdentity, Trust: trust, Timeout: 3 * time.Second, MaxConnections: 2, MaxRequests: 1})
+	testfixture.Must(t, err)
+	done := make(chan error, 1)
+	go func() { done <- server.Serve(listener) }()
+	t.Cleanup(func() {
+		stop, cancel := context.WithTimeout(context.Background(), 4*time.Second)
+		defer cancel()
+		testfixture.Must(t, server.Close(stop))
+		if err := <-done; err != http.ErrServerClosed {
+			t.Errorf("administrator activation HTTP shutdown: %v", err)
+		}
+	})
+	roots := x509.NewCertPool()
+	roots.AddCert(root)
+	transport := &http.Transport{TLSClientConfig: &tls.Config{MinVersion: tls.VersionTLS13, RootCAs: roots, Certificates: []tls.Certificate{identity}}, DisableKeepAlives: true}
+	defer transport.CloseIdleConnections()
+	client := &http.Client{Transport: transport, Timeout: 3 * time.Second, CheckRedirect: func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse }}
+	body, err := json.Marshal(adminrenewal.ActivateRequest{Version: 1, RenewalID: id})
+	testfixture.Must(t, err)
+	request, err := http.NewRequest(http.MethodPost, "https://"+host+adminrenewal.ActivatePath, bytes.NewReader(body))
+	testfixture.Must(t, err)
+	request.Header.Set("Content-Type", "application/json")
+	request.Header.Set("Origin", "https://"+host)
+	response, err := client.Do(request)
+	testfixture.Must(t, err)
+	defer response.Body.Close()
+	data, err := io.ReadAll(io.LimitReader(response.Body, adminrenewal.MaxActivationBody+1))
+	testfixture.Must(t, err)
+	if response.StatusCode != http.StatusOK || len(data) > adminrenewal.MaxActivationBody || response.Header.Get("Cache-Control") != "no-store" {
+		t.Fatal("renewal HTTPS activation rejected or exceeded its response scope")
+	}
+	var result adminrenewal.Activated
+	testfixture.Must(t, json.Unmarshal(data, &result))
+	if result.Version != 1 || result.RenewalID != id || result.CertificateSHA256 != pki.Hash(identity.Certificate[0]) {
+		t.Fatal("HTTPS activation response lost its exact certificate binding")
+	}
 }
 
 func renewalTLSProof(t *testing.T, serverConfig *tls.Config, identity tls.Certificate, root *x509.Certificate) (*tls.Conn, error) {

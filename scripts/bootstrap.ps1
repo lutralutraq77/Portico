@@ -54,7 +54,16 @@ if ($LASTEXITCODE -ne 0 -or $actualVersion -ne ('go' + $lock.go.version)) {
 }
 Push-Location (Join-Path $PorticoRoot 'tools')
 try {
-    & go mod download
+    # Cache completed public modules and retry a bounded number of interrupted
+    # transfers. Go's pinned checksums and the verification below still apply.
+    for ($downloadAttempt = 1; $downloadAttempt -le 3; $downloadAttempt++) {
+        & go mod download
+        if ($LASTEXITCODE -eq 0) { break }
+        if ($downloadAttempt -lt 3) {
+            Write-Output ('Retrying public tool module download (' + $downloadAttempt + '/2)')
+            Start-Sleep -Seconds 2
+        }
+    }
     if ($LASTEXITCODE -ne 0) { throw 'Tool dependency download failed' }
     & go mod verify
     if ($LASTEXITCODE -ne 0) { throw 'Tool checksum verification failed' }
