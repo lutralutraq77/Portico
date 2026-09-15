@@ -1,0 +1,170 @@
+{
+  "base_source": "7960a6dda3e0a1541428582c137a961da1e5c027",
+  "sources": [
+    {
+      "path": ".github/workflows/native-admin.yml",
+      "sha256": "697da8a2e16b6a4601a42ddfbe0330f56e05f4933016a424437e1d7a71863e91"
+    },
+    {
+      "path": "desktop/admin/shell.cjs",
+      "sha256": "0a2abb840dd9fb49cf947335839436799e8c19a3bb99facef3c34a921ffa6c21"
+    },
+    {
+      "path": "internal/adminapp/config_test.go",
+      "sha256": "e702b12bc9d3da31f91f15be954b1dd57444bf28dda42aa6629434feedf3adc0"
+    },
+    {
+      "path": "internal/adminapp/config.go",
+      "sha256": "5f0f8d117c12e779064210a7a39a88ceafe0033a32d615b922aa0846cf91475c"
+    },
+    {
+      "path": "internal/adminapp/credentials_linux_test.go",
+      "sha256": "cd0d8d1459b28ca676f6b18dc4328a8df0f848b748be0ad10926e9085f2eb891"
+    },
+    {
+      "path": "internal/adminapp/credentials_linux.go",
+      "sha256": "3797186dda0391afb71b2d4a7b0ef5b0be4b2c87776d122e2f79a3dcf958417f"
+    },
+    {
+      "path": "internal/adminapp/credentials_other.go",
+      "sha256": "b226c2cab60fe952141b3ddbd99f46058a00c511733e54bc8d8e3f732525d0e0"
+    },
+    {
+      "path": "internal/adminapp/credentials.go",
+      "sha256": "b2b435160121d680b96d486baf5273b9ccb6bb90ac7649295d06050019019b82"
+    },
+    {
+      "path": "internal/adminapp/renewal_browser_test.go",
+      "sha256": "6aec4cff235c0f7a26181a8fa7335c74b143020d4eb55d8ac3074cbd347e31b4"
+    },
+    {
+      "path": "internal/adminapp/renewal_linux_test.go",
+      "sha256": "c3f1720cf57a5c478b382d1d9c19d74dd013be730e7e3ed11a04a74c0d3aa390"
+    },
+    {
+      "path": "internal/adminapp/renewal_test.go",
+      "sha256": "24e595b6b6df4d32c41df3e83b4cdf9f0ad094c56261b79876db294ba698134f"
+    },
+    {
+      "path": "internal/adminapp/renewal.go",
+      "sha256": "60e916b5579f392de2cad5be5cd0e4e77afb7cfe1d2310520402e0bc799d1936"
+    },
+    {
+      "path": "internal/adminapp/session_linux_test.go",
+      "sha256": "2eb694f929f39af792e2c1ed30d670ecb11da40c778223ebcdfe1cd6546a1800"
+    },
+    {
+      "path": "internal/adminbridge/client.go",
+      "sha256": "7a1835d5a8b9bc7dab71e24c24c73113e9c7c3c061418d09c38268c15d81660f"
+    },
+    {
+      "path": "internal/adminbridge/renewal_test.go",
+      "sha256": "660a7dac55cf56b69ef7374ca64507cd2a5693b9fadc37897e6c379c5a7f9e5d"
+    },
+    {
+      "path": "internal/adminrenewal/protocol.go",
+      "sha256": "8caba0853a0a26bfc5b78a1342df87295b10d52d35f406e5f260b5e5ed3e2868"
+    },
+    {
+      "path": "internal/controller/admin_renewal_approval_http_test.go",
+      "sha256": "37cff9ca31ef096593bf8177248ab40617bb5c49c5f629482e641f5dff98845e"
+    },
+    {
+      "path": "internal/controller/admin_renewal.go",
+      "sha256": "afd8e609c00601d097d868b01484aa379fb563708ca7c287ce6894328563e2f5"
+    },
+    {
+      "path": "internal/controller/dashboard_factor_model_browser_test.go",
+      "sha256": "38b52693a6b6c85555d6b0accaf11aed837d5fb0a0d6aba819f2bb94596eef2c"
+    },
+    {
+      "path": "internal/controller/dashboard/admin.js",
+      "sha256": "101fa953256ac36f783a33d7b4a0432a4e6133396e4a2609c7652efb14688721"
+    },
+    {
+      "path": "internal/controller/dashboard/index.html",
+      "sha256": "5f271ab8cf71ac4204ab00ec80ec3a6f32361e4258c46f68b14fdc34b4a59fa0"
+    },
+    {
+      "path": "internal/testfixture/chromium_browser.go",
+      "sha256": "0ac52f22d17a5c98436a9956a6aa8f2dc0e98c16b81e4754f3a601b79c2a9d38"
+    },
+    {
+      "path": "scripts/test-dashboard-renewal-native.cjs",
+      "sha256": "6313d59e7e4d2403802f49ca3e1c1f6c26ac90b9e12ea54ce91edd711d9678dc"
+    },
+    {
+      "path": "scripts/test-native-admin.ps1",
+      "sha256": "a092b050d5885bb34970ebd0a282ed86cb0485c9bfb7c68a5efba7f3042e603d"
+    }
+  ],
+  "checks": [
+    {
+      "report": "work/reports/admin-native-renewal-expiry-race.log",
+      "sha256": "1e66ac62efba1530657cf2d5a7f0688d3414ad658b332a6a93076e2d1f23e5f0",
+      "passing_top_level": 11,
+      "passing_subcases": 24,
+      "failed_top_level": 0,
+      "packages": [
+        "ok  \tportico.local/portico/internal/adminapp\t16.424s",
+        "ok  \tportico.local/portico/internal/adminbridge\t10.664s",
+        "ok  \tportico.local/portico/internal/controller\t13.966s"
+      ]
+    },
+    {
+      "report": "work/reports/admin-native-renewal-verified-race.log",
+      "sha256": "03d1b857a041811b524e161f284611b13e762079698170a6ec8c6e458c9bb4a5",
+      "passing_top_level": 27,
+      "passing_subcases": 138,
+      "failed_top_level": 0,
+      "packages": [
+        "ok  \tportico.local/portico/internal/adminapp\t9.656s",
+        "ok  \tportico.local/portico/internal/adminbridge\t4.897s"
+      ]
+    },
+    {
+      "report": "work/reports/admin-native-renewal-browser-expiry.log",
+      "sha256": "572a25e0d1792f9c5eca1117170306440d2da93c63c0f6b06cace6a56d0b1759",
+      "passing_top_level": 1,
+      "passing_subcases": 0,
+      "failed_top_level": 0,
+      "packages": [
+        "ok  \tportico.local/portico/internal/adminapp\t13.450s"
+      ]
+    },
+    {
+      "report": "work/reports/admin-native-renewal-regression-browser.log",
+      "sha256": "2fe73cc50161268f95b5a319c7c5b5a398ede9b71d1bf2ba7e6d2f311c9505fb",
+      "passing_top_level": 3,
+      "passing_subcases": 0,
+      "failed_top_level": 0,
+      "packages": [
+        "ok  \tportico.local/portico/internal/controller\t15.908s"
+      ]
+    }
+  ],
+  "platform": "Windows local race execution; Windows and Linux vet/staticcheck including dashboardbrowser passed on final source",
+  "verification_scope": "Final expiry race and actual renewal window include the stored review deadline. Full 27-test/138-subcase native regression and existing three-window regression precede that narrow expiry addition; the final focused 11-test/24-subcase run covers its affected native/controller paths.",
+  "browser_result": "work/reports/admin-native-renewal-browser-expiry/result.json",
+  "browser_result_sha256": "f755da3f2ab11a542a5400e91febc3bd9667c629fd644f352e95a2d7f0b7f279",
+  "browser": "Actual sandboxed Electron 44.3.0 / Chromium 152.0.7977.78; seven groups, two virtual factors, three browser get calls (two factor tests and one renewal), one native proof submission and one issuer invocation; reopened new certificate succeeds, old certificate fails; desktop/mobile review visually checked.",
+  "preserved_failures": [
+    "Native v1 rejected reopened preparing records because absent RawMessage serialized as null; corrected by omitting an absent review.",
+    "Browser v1 used a forbidden single-label localhost test origin; corrected fixture to the fixed .test origin and matching SAN.",
+    "Browser v2 expected three CDP assertion notifications but observed four. The final harness records the four notifications and independently verifies three actual browser get calls, one native renewal submit and one issuer call."
+  ],
+  "hosted_current_source": "pending",
+  "linux_current_source": "Durable descriptor-based credential storage and version-2 command runtime tests are written and cross-analyzed; actual Linux execution pending.",
+  "limitations": [
+    "Portable browser fixture uses a memory journal and local test issuer signer; it does not establish disk persistence or issuer operational custody.",
+    "Injected durability errors and process reopening do not establish physical power-loss resilience.",
+    "Virtual authenticators do not establish independent physical key custody.",
+    "Management routing, complete owner bootstrap/finalization and independent recovery remain unfinished.",
+    "No host firewall, DNS, Mullvad, clock, trust or service changes."
+  ],
+  "acceptance": {
+    "implemented": 7,
+    "planned": 84,
+    "total": 91
+  }
+}

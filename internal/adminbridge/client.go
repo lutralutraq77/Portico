@@ -20,6 +20,7 @@ import (
 	"strings"
 	"time"
 
+	"portico.local/portico/internal/adminrenewal"
 	"portico.local/portico/internal/localipc"
 	"portico.local/portico/internal/pki"
 	"portico.local/portico/internal/wire"
@@ -42,7 +43,14 @@ type Config struct {
 	Socket            string
 	Timeout, Lifetime time.Duration
 	ClockHealth       ClockHealth
+	RenewalHandler    RenewalHandler
 }
+
+// The callback is supplied by native application code, never deserialized from
+// a browser request. Its sender can reach only three fixed renewal endpoints,
+// using the existing administrator identity and the operation's bounded context.
+type RenewalExchange func(path string, body []byte) (Response, error)
+type RenewalHandler func(context.Context, Request, RenewalExchange) (Response, error)
 
 // Request deliberately has no arbitrary headers, proxy destination, cookies,
 // authentication token, redirect target or signing operation.
@@ -69,6 +77,8 @@ type Client struct {
 	admission    chan struct{}
 	clock        *sessionClock
 	watchDone    chan struct{}
+	renewal      RenewalHandler
+	activation   bool
 }
 
 func Origin(value string) bool {
@@ -190,6 +200,7 @@ func newClient(parent context.Context, c Config, clock *sessionClock) (*Client, 
 	ctx, cancel := context.WithCancel(parent)
 	client := &http.Client{Transport: transport, CheckRedirect: func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse }}
 	result := &Client{origin: c.Origin, host: u.Host, trust: c.AdministratorTrust, leaf: bytes.Clone(identity.Certificate[0]), timeout: c.Timeout, client: client, transport: transport, context: ctx, cancel: cancel, admission: make(chan struct{}, 4), clock: clock, watchDone: make(chan struct{})}
+	result.renewal = c.RenewalHandler
 	go result.watch()
 	return result, nil
 }
@@ -237,6 +248,9 @@ func (c *Client) permitted(r Request) bool {
 	if r.Site != "" && r.Site != "none" && r.Site != "same-origin" {
 		return false
 	}
+	if c.activation {
+		return r.Method == http.MethodPost && r.Path == adminrenewal.ActivatePath && r.Origin == c.origin && len(r.Body) > 0 && len(r.Body) <= adminrenewal.MaxActivationBody
+	}
 	if r.Method == http.MethodGet {
 		return (r.Origin == "" || r.Origin == c.origin) && len(r.Body) == 0 && (r.Path == "/admin" || r.Path == "/admin.js" || r.Path == "/admin.css")
 	}
@@ -244,6 +258,9 @@ func (c *Client) permitted(r Request) bool {
 		return false
 	}
 	switch r.Path {
+	case adminrenewal.StatusPath, adminrenewal.StartPath, adminrenewal.ApprovePath, adminrenewal.ResumePath, adminrenewal.CancelPath:
+		var fields map[string]json.RawMessage
+		return c.renewal != nil && wire.Decode(r.Body, &fields) == nil && fields != nil
 	case "/api/v1/admin/dashboard/inventory", "/api/v1/admin/dashboard/access", "/api/v1/admin/factors/challenge", "/api/v1/admin/factors/confirm", "/api/v1/admin/invitations/challenge", "/api/v1/admin/invitations/confirm", "/api/v1/admin/policy/preview", "/api/v1/admin/policy/challenge", "/api/v1/admin/policy/confirm":
 		var fields map[string]json.RawMessage
 		return wire.Decode(r.Body, &fields) == nil && fields != nil
@@ -272,6 +289,33 @@ func (c *Client) Exchange(parent context.Context, request Request) (Response, er
 	defer cancel()
 	stop := context.AfterFunc(c.context, cancel)
 	defer stop()
+	if nativeRenewalPath(request.Path) {
+		response, err := c.renewal(ctx, request, func(path string, body []byte) (Response, error) {
+			if path != adminrenewal.PreparePath && path != adminrenewal.ConfirmPath && path != adminrenewal.CertificatePath {
+				return Response{}, ErrRejected
+			}
+			var fields map[string]json.RawMessage
+			if len(body) == 0 || len(body) > wire.MaxBody || wire.Decode(body, &fields) != nil || fields == nil {
+				return Response{}, ErrRejected
+			}
+			return c.roundTrip(ctx, Request{Method: http.MethodPost, Path: path, Origin: c.origin, Site: "same-origin", Body: body})
+		})
+		if _, clockErr := c.remaining(); err != nil || clockErr != nil || ctx.Err() != nil || len(response.Body) > wire.MaxBody {
+			return Response{}, ErrRejected
+		}
+		return response, nil
+	}
+	return c.roundTrip(ctx, request)
+}
+
+func nativeRenewalPath(path string) bool {
+	return path == adminrenewal.StatusPath || path == adminrenewal.StartPath || path == adminrenewal.ApprovePath || path == adminrenewal.ResumePath || path == adminrenewal.CancelPath
+}
+
+func (c *Client) roundTrip(ctx context.Context, request Request) (Response, error) {
+	if _, err := c.remaining(); err != nil || ctx.Err() != nil {
+		return Response{}, ErrRejected
+	}
 	r, err := http.NewRequestWithContext(ctx, request.Method, c.origin+request.Path, bytes.NewReader(bytes.Clone(request.Body)))
 	if err != nil {
 		return Response{}, ErrRejected
@@ -318,6 +362,9 @@ func (c *Client) Exchange(parent context.Context, request Request) (Response, er
 	if want == "application/json" {
 		limit = wire.MaxBody
 	}
+	if c.activation {
+		limit = adminrenewal.MaxActivationBody
+	}
 	body, err := io.ReadAll(io.LimitReader(response.Body, limit+1))
 	if err != nil || int64(len(body)) > limit || ctx.Err() != nil || c.context.Err() != nil {
 		return Response{}, ErrRejected
@@ -330,7 +377,7 @@ func (c *Client) Exchange(parent context.Context, request Request) (Response, er
 		}
 		headers[name] = values[0]
 	}
-	if headers["Referrer-Policy"] != "no-referrer" || headers["X-Frame-Options"] != "DENY" || (headers["Content-Security-Policy"] != browserCSP && headers["Content-Security-Policy"] != "default-src 'none'") {
+	if headers["Referrer-Policy"] != "no-referrer" || headers["X-Frame-Options"] != "DENY" || (headers["Content-Security-Policy"] != browserCSP && headers["Content-Security-Policy"] != "default-src 'none'" && !(c.activation && headers["Content-Security-Policy"] == "default-src 'none'; frame-ancestors 'none'")) {
 		clear(body)
 		return Response{}, ErrRejected
 	}
@@ -339,4 +386,30 @@ func (c *Client) Exchange(parent context.Context, request Request) (Response, er
 		return Response{}, ErrRejected
 	}
 	return Response{Status: response.StatusCode, Headers: headers, Body: body}, nil
+}
+
+// Activate has no browser-selected endpoint or key. It creates a fresh bounded
+// candidate TLS session which permits only this activation path. A lost response
+// returns an error; native durable state decides any later reconciliation.
+func Activate(ctx context.Context, config Config, id string) error {
+	if !pki.ValidID(id) || len(config.Identity.Certificate) == 0 {
+		return ErrRejected
+	}
+	config.RenewalHandler = nil
+	client, err := New(ctx, config)
+	if err != nil {
+		return ErrRejected
+	}
+	client.activation = true
+	defer client.Close()
+	body, err := json.Marshal(adminrenewal.ActivateRequest{Version: 1, RenewalID: id})
+	if err != nil {
+		return ErrRejected
+	}
+	response, err := client.Exchange(ctx, Request{Method: http.MethodPost, Path: adminrenewal.ActivatePath, Origin: config.Origin, Body: body})
+	var result adminrenewal.Activated
+	if err != nil || response.Status != http.StatusOK || wire.Decode(response.Body, &result) != nil || result.Version != 1 || result.RenewalID != id || result.CertificateSHA256 != pki.Hash(config.Identity.Certificate[0]) {
+		return ErrRejected
+	}
+	return nil
 }

@@ -21,7 +21,7 @@ func renewalHTTPApproval(t *testing.T, a *adminFixture, f *policyHTTPFixture) Ad
 	request := adminrenewal.PrepareRequest{Version: 1, RenewalID: NewID(), CSR: spec.CSR, NotAfter: spec.NotAfter, PolicyRevision: factorRevision(t, a)}
 	var prepared AdminRenewalPrepared
 	f.post(t, adminrenewal.PreparePath, request, &prepared)
-	if prepared.Version != 1 || prepared.RenewalID != request.RenewalID || prepared.CSRHash != pki.Hash(spec.CSR) || prepared.CurrentCertificateHash != pki.Hash(a.identity.Certificate[0]) || prepared.PolicyRevision != request.PolicyRevision || !prepared.NotAfter.Equal(request.NotAfter) || prepared.Challenge.Approval == nil || prepared.Challenge.Registration != nil {
+	if prepared.Version != 1 || prepared.RenewalID != request.RenewalID || prepared.CSRHash != pki.Hash(spec.CSR) || prepared.CurrentCertificateHash != pki.Hash(a.identity.Certificate[0]) || prepared.PolicyRevision != request.PolicyRevision || !prepared.NotAfter.Equal(request.NotAfter) || !prepared.ExpiresAt.After(time.Now()) || prepared.ExpiresAt.After(time.Now().Add(2*time.Minute)) || prepared.Challenge.Approval == nil || prepared.Challenge.Registration != nil {
 		t.Fatal("renewal review changed the approved identity, CSR or lifetime")
 	}
 	return prepared

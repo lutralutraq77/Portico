@@ -84,6 +84,59 @@ func TestProtectedConfigurationBindsAdministrator(t *testing.T) {
 	}
 }
 
+func TestRenewalConfigurationBindsIndependentActivationRoute(t *testing.T) {
+	f, files, _, _ := fixture(t)
+	f.Version = 2
+	f.Renewal = &RenewalFiles{Server: f.Server, BootstrapAddress: "127.0.0.1:9443"}
+	data, err := json.Marshal(f)
+	testfixture.Must(t, err)
+	c, err := loadFixture(t, data, files)
+	testfixture.Must(t, err)
+	if c.renewal == nil || c.renewal.BootstrapAddress == c.bridge.BootstrapAddress || c.renewal.Origin != c.bridge.Origin || c.renewal.Identity.PrivateKey != nil || c.renewal.RenewalHandler != nil || len(c.binding) != 64 {
+		t.Fatal("renewal configuration changed custody or listener separation")
+	}
+	for _, scenario := range []string{"legacy-with-renewal", "same-route", "public-route", "both-routes", "no-route", "relative-socket", "origin-path", "pin", "root", "same-config-new-pin"} {
+		t.Run(scenario, func(t *testing.T) {
+			changed := f
+			activation := *f.Renewal
+			changed.Renewal = &activation
+			switch scenario {
+			case "legacy-with-renewal":
+				changed.Version = 1
+			case "same-route":
+				activation.BootstrapAddress = f.BootstrapAddress
+			case "public-route":
+				activation.BootstrapAddress = "192.0.2.1:443"
+			case "both-routes":
+				activation.Socket = filepath.Join(filepath.Dir(f.StateDirectory), "activation.sock")
+			case "no-route":
+				activation.BootstrapAddress = ""
+			case "relative-socket":
+				activation.BootstrapAddress, activation.Socket = "", "activation.sock"
+			case "origin-path":
+				activation.Server.URL += "/activate"
+			case "pin":
+				activation.Server.SPKI = "invalid"
+			case "root":
+				activation.Server.RootCertificateFile = f.IdentityCertificateFile
+			case "same-config-new-pin":
+				activation.Server.SPKI = strings.Repeat("0", 64)
+			}
+			encoded, err := json.Marshal(changed)
+			testfixture.Must(t, err)
+			other, err := loadFixture(t, encoded, files)
+			if scenario == "same-config-new-pin" {
+				testfixture.Must(t, err)
+				if other.binding == c.binding {
+					t.Fatal("changed activation trust retained prior credential journal binding")
+				}
+			} else if err == nil || other != nil {
+				t.Fatal("unsafe activation configuration accepted")
+			}
+		})
+	}
+}
+
 func TestConfigurationRejectsAuthorityAndLaunchOverrides(t *testing.T) {
 	f, files, _, _ := fixture(t)
 	changes := map[string]func(*FileConfig){

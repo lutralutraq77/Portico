@@ -20,6 +20,7 @@ import (
 
 	"portico.local/portico/internal/adminbridge"
 	"portico.local/portico/internal/adminkey"
+	"portico.local/portico/internal/adminrenewal"
 	"portico.local/portico/internal/identityfile"
 	"portico.local/portico/internal/localfile"
 	"portico.local/portico/internal/pki"
@@ -60,6 +61,11 @@ func TestLinuxLoadedKeyAuthenticatesAndIsRevokedOnReturn(t *testing.T) {
 	listener, err := net.Listen("tcp", "127.0.0.1:0")
 	testfixture.Must(t, err)
 	f.BootstrapAddress = listener.Addr().String()
+	activationListener, err := net.Listen("tcp", "127.0.0.1:0")
+	testfixture.Must(t, err)
+	t.Cleanup(func() { _ = activationListener.Close() })
+	f.Version = 2
+	f.Renewal = &RenewalFiles{Server: f.Server, BootstrapAddress: activationListener.Addr().String()}
 	var authenticated, requests atomic.Int32
 	server := &http.Server{ReadHeaderTimeout: 5 * time.Second, ErrorLog: log.New(io.Discard, "", 0), Handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		requests.Add(1)
@@ -110,6 +116,17 @@ func TestLinuxLoadedKeyAuthenticatesAndIsRevokedOnReturn(t *testing.T) {
 		if err != nil || response.Status != 200 || string(response.Body) != "isolated loaded administrator key" {
 			return ErrRejected
 		}
+		status, err := bridge.Exchange(ctx, adminbridge.Request{Method: http.MethodPost, Path: adminrenewal.StatusPath, Origin: config.bridge.Origin, Body: []byte(`{"Version":1}`)})
+		if err != nil || status.Status != http.StatusOK {
+			return ErrRejected
+		}
+		var renewal adminrenewal.Status
+		if json.Unmarshal(status.Body, &renewal) != nil || renewal.Version != 1 || renewal.State != "ready" || renewal.CurrentCertificateHash != pki.Hash(leaf) {
+			return ErrRejected
+		}
+		if other, err := openCredentialDisk(state); err == nil || other != nil {
+			t.Fatal("running version-2 command did not retain the credential directory lock")
+		}
 		return nil
 	})
 	testfixture.Must(t, err)
@@ -122,5 +139,13 @@ func TestLinuxLoadedKeyAuthenticatesAndIsRevokedOnReturn(t *testing.T) {
 	_, release, err := prepareTree(installation, state)
 	testfixture.Must(t, err)
 	release()
-	t.Log("protected configuration, encrypted key reopen, actual pinned administrator TLS, consumed passphrase, revoked signer and released state lock verified; native child execution is qualified separately")
+	disk, err := openCredentialDisk(state)
+	testfixture.Must(t, err)
+	defer disk.Close()
+	journal, err := openCredentialJournal(config, disk)
+	testfixture.Must(t, err)
+	if !bytes.Equal(journal.record.Certificate, leaf) || journal.record.Pending != nil {
+		t.Fatal("version-2 command did not retain its selected public identity")
+	}
+	t.Log("protected version-2 configuration, encrypted key reopen, actual pinned administrator TLS, durable credential status, consumed passphrase, revoked signer and released state/credential locks verified; native child execution is qualified separately")
 }

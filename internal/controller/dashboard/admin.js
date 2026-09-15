@@ -14,7 +14,8 @@
     hosting: { title: "Connector hosting", description: "Stored hosting permission for exact connector and resource revisions. Hosting alone gives no device access.", columns: [["Connector", "ConnectorName", "ConnectorID"], ["Resource", "ResourceName", "ResourceID"], ["Revision", "Revision"], ["From", "From"], ["Until", "Until"], ["Configuration", "Enabled"]], fields: { ID: "string", ConnectorID: "string", ConnectorName: "string", ResourceID: "string", ResourceName: "string", Revision: "number", Enabled: "boolean", From: "date", Until: "date" } },
     audit: { title: "Audit", description: "Recorded changes in sequence order, with actor and target identifiers.", columns: [["Event", "Action", "ID"], ["Occurred", "OccurredAt"], ["Actor", "ActorID"], ["Target", "TargetID"], ["Sequence", "Sequence"], ["Event hash", "Hash"]], fields: { ID: "string", ActorID: "string", CorrelationID: "string", Action: "string", TargetID: "string", PreviousHash: "string", Hash: "string", Sequence: "number", Generation: "number", OccurredAt: "date" }, scopeTitle: "Read the recorded history.", scopeDescription: "Events are shown oldest first. Viewing a page does not export or acknowledge the audit log. An independently retained checkpoint is needed to detect a rewritten history.", loaded: "Audit records loaded in sequence order." },
     security: { title: "Security", description: "The administrator identity used for this connection and its recorded factor status.", columns: [["Administrator", "UserName", "ID"], ["Device", "DeviceName", "DeviceID"], ["Certificate fingerprint", "CertificateFingerprint"], ["Certificate expires", "CertificateExpiresAt"], ["Enabled factors", "EnabledFactors"], ["Tested enabled factors", "TestedEnabledFactors"], ["Initial registration deadline", "BootstrapUntil"]], fields: { ID: "string", UserName: "string", DeviceID: "string", DeviceName: "string", CertificateFingerprint: "string", CertificateExpiresAt: "date", BootstrapUntil: "date", EnabledFactors: "number", TestedEnabledFactors: "number" }, scopeTitle: "Factor records describe configuration.", scopeDescription: "Counts do not prove separate physical keys or recovery readiness. A registration deadline does not grant permission to add a factor.", loaded: "Current administrator metadata loaded." },
-    access: { title: "Inspect access", description: "Check the current policy for an exact pair of identities and a resource revision." }
+    access: { title: "Inspect access", description: "Check the current policy for an exact pair of identities and a resource revision." },
+    renewal: { title: "Renew administrator identity", description: "Extend this administrator certificate with a fresh security-key approval.", scopeTitle: "Keep your administrator key.", scopeDescription: "Renewal uses the existing device key. Two enabled, separately tested security keys are required." }
   };
   const byID = (id) => document.getElementById(id);
   const records = byID("records");
@@ -25,7 +26,8 @@
   let section = "users", revision = 0, next = "", cursors = [""], pageIndex = 0;
   let pending, generation = 0;
   const accessViews = ["access", "grants", "hosting"];
-  const securityViews = ["security", "factors"];
+  const securityViews = ["security", "factors", "renewal"];
+  let renewalComplete = false;
   const lifecycleEntities = { users: "user", devices: "device", connectors: "connector" };
   const choiceTypes = {
     device: { label: "Device certificate", section: "certificates", profile: "device" },
@@ -172,6 +174,7 @@
     message(data.Items.length ? (view.loaded || `${view.title} loaded. Configuration does not establish effective access.`) : `No ${section} to display.`);
   }
   async function load() {
+    if (section === "renewal" || renewalComplete) return loadRenewal();
     if (section === "access") return loadAccess();
     document.querySelector(".pagination").hidden = section === "security";
     cancel();
@@ -209,6 +212,122 @@
     const response = await fetch(path, { method: "POST", mode: "same-origin", credentials: "same-origin", cache: "no-store", redirect: "error", referrerPolicy: "no-referrer", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body), signal });
     if (!response.ok || response.headers.get("Content-Type") !== "application/json") throw new Error("Request rejected");
     return response.json();
+  }
+  function validRenewal(status) {
+    const fields = ["Version", "State", "RenewalID", "CurrentCertificateHash", "CurrentNotAfter", "RequestedNotAfter"];
+    if (status?.State === "prepared") fields.push("Prepared");
+    const hash = (value) => typeof value === "string" && /^[0-9a-f]{64}$/.test(value);
+    const date = (value) => typeof value === "string" && value.length < 64 && Number.isFinite(Date.parse(value));
+    if (!exact(status, fields) || status.Version !== 1 || !["ready", "preparing", "prepared", "confirming", "issued", "complete"].includes(status.State) || !hash(status.CurrentCertificateHash) || !date(status.CurrentNotAfter) || Date.parse(status.CurrentNotAfter) <= Date.now() || !date(status.RequestedNotAfter)) return false;
+    if (status.State === "ready" || status.State === "complete") return status.RenewalID === "";
+    if (!uuid(status.RenewalID) || Date.parse(status.RequestedNotAfter) <= Date.parse(status.CurrentNotAfter)) return false;
+    if (status.State !== "prepared") return true;
+    const view = status.Prepared;
+    return exact(view, ["Version", "RenewalID", "CSRHash", "CurrentCertificateHash", "NotAfter", "ExpiresAt", "PolicyRevision", "Challenge"]) && view.Version === 1 && view.RenewalID === status.RenewalID && hash(view.CSRHash) && view.CurrentCertificateHash === status.CurrentCertificateHash && view.NotAfter === status.RequestedNotAfter && date(view.ExpiresAt) && Number.isSafeInteger(view.PolicyRevision) && view.PolicyRevision > 0 && validFactorCeremony(view.Challenge, false, { kind: "renew-administrator" });
+  }
+  async function loadRenewal() {
+    cancel(); clear();
+    document.querySelector(".pagination").hidden = true;
+    inventory.setAttribute("aria-busy", "true");
+    const attempt = generation, controller = new AbortController(); pending = controller;
+    const timeout = setTimeout(() => controller.abort(), 8000);
+    message("Checking the administrator renewal record…");
+    try {
+      const status = await privateJSON("/api/v1/admin/native-renewal/status", { Version: 1 }, controller.signal);
+      if (!validRenewal(status)) throw new Error("Invalid native renewal state");
+      let observedRevision = 0;
+      if (status.State === "ready") {
+        const security = await privateJSON("/api/v1/admin/dashboard/inventory", { Section: "security", Limit: 1 }, controller.signal);
+        if (!validPage(security, "security", 0) || security.Items[0].CertificateFingerprint !== status.CurrentCertificateHash) throw new Error("Administrator identity changed");
+        observedRevision = security.PolicyRevision;
+      }
+      if (attempt !== generation || document.hidden) return;
+      revision = observedRevision; renderRenewal(status);
+    } catch {
+      if (attempt !== generation) return;
+      message("Renewal could not be verified. Use the configured native administrator application and refresh. Any unfinished renewal record is retained.", true);
+    } finally {
+      clearTimeout(timeout);
+      if (attempt === generation) { pending = undefined; inventory.setAttribute("aria-busy", "false"); }
+    }
+  }
+  function renderRenewal(status) {
+    const panel = element("section", undefined, "access-result policy-preview"); panel.id = "renewal-panel";
+    const title = { ready: "Renew this administrator identity", preparing: "Continue the renewal review", prepared: "Review administrator renewal", confirming: "Check the issued certificate", issued: "Complete administrator renewal", complete: "Administrator identity renewed" }[status.State];
+    const heading = element("h2", title); heading.tabIndex = -1;
+    panel.append(heading, element("p", `Current certificate expires ${new Date(status.CurrentNotAfter).toISOString()}`), element("p", `Current certificate fingerprint ${status.CurrentCertificateHash}`, "record-id"));
+    const actions = element("div", undefined, "policy-actions");
+    const button = (label, operation, value) => {
+      const node = element("button", label, "primary-action"); node.type = "button";
+      node.addEventListener("click", () => { if (!pending && !document.hidden) void submitRenewal(operation, value, panel); });
+      actions.append(node); return node;
+    };
+    if (status.State === "ready") {
+      const form = element("form"), label = element("label", "New certificate expiry (your local time)"), input = element("input"), submit = element("button", "Review renewal", "primary-action");
+      input.id = "renewal-not-after"; input.type = "datetime-local"; input.step = "60"; input.required = true; label.htmlFor = input.id;
+      const minimum = new Date(Date.parse(status.CurrentNotAfter) + 60000), maximum = new Date(Date.now() + 24 * 60 * 60 * 1000);
+      const localValue = (date) => new Date(date.getTime() - date.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+      input.min = localValue(minimum); input.max = localValue(maximum);
+      submit.type = "submit";
+      form.append(label, input, element("p", "Choose a later expiry within the next 24 hours. The server also checks this device’s allowed lifetime."), submit);
+      form.addEventListener("submit", (event) => {
+        event.preventDefault();
+        if (pending || document.hidden || !form.reportValidity() || revision < 1) return;
+        const date = new Date(input.value);
+        if (!Number.isFinite(date.getTime()) || date.getTime() <= Date.parse(status.CurrentNotAfter) || date.getTime() > Date.now() + 86400000) return;
+        void submitRenewal("start", { Version: 1, NotAfter: date.toISOString(), PolicyRevision: revision }, panel);
+      });
+      panel.append(form);
+    } else if (status.State === "complete") {
+      renewalComplete = true;
+      panel.append(element("p", "The renewed certificate is saved. Close this window and reopen Portico to use the renewed identity."));
+      const close = element("button", "Close administrator window", "primary-action"); close.type = "button"; close.addEventListener("click", () => window.close()); actions.append(close);
+    } else {
+      panel.append(element("p", `Requested expiry ${new Date(status.RequestedNotAfter).toISOString()}`), element("p", `Renewal record ${status.RenewalID}`, "record-id"));
+      if (status.State === "prepared") {
+        panel.append(element("p", "Approving renews this administrator identity using its existing device key and retires the current certificate."), element("p", `Request fingerprint ${status.Prepared.CSRHash}`, "record-id"), element("p", `Review expires ${new Date(status.Prepared.ExpiresAt).toISOString()} · policy revision ${status.Prepared.PolicyRevision}`));
+        if (Date.parse(status.Prepared.ExpiresAt) > Date.now() + 6000) button("Approve renewal with security key", "approve", status.Prepared);
+        else panel.append(element("p", "This review has expired. Cancel it and begin a fresh review before approving."));
+      } else {
+        panel.append(element("p", status.State === "confirming" ? "The confirmation may have reached the issuer. Continue checks for its original public certificate without submitting approval again. If no result is available, the issuer operator must reconcile this record." : status.State === "issued" ? "The issued certificate is saved. Continue checks whether it is already active and completes activation when needed." : "The request is saved. Continue obtains a fresh review for this same request."));
+        button("Continue renewal", "resume", { Version: 1 });
+      }
+      if (status.State === "preparing" || status.State === "prepared") button("Cancel renewal review", "cancel", { Version: 1 });
+    }
+    panel.append(actions); records.replaceChildren(panel);
+    byID("page-summary").textContent = title; byID("revision").textContent = "";
+    message(status.State === "complete" ? "Renewal completed and saved." : "Administrator renewal record verified.");
+    heading.focus();
+  }
+  async function submitRenewal(operation, value, panel) {
+    cancel(); const attempt = generation, controller = new AbortController(); pending = controller;
+    const timeout = setTimeout(() => controller.abort(), operation === "approve" ? 60000 : 8000);
+    panel.querySelectorAll("button,input").forEach((node) => { node.disabled = true; });
+    inventory.setAttribute("aria-busy", "true");
+    let submitted = false;
+    const active = () => attempt === generation && !document.hidden && !controller.signal.aborted;
+    try {
+      if (operation === "approve") {
+        if (!active() || Date.parse(value.ExpiresAt) <= Date.now() + 6000 || !globalThis.PublicKeyCredential?.parseRequestOptionsFromJSON || !PublicKeyCredential.prototype.toJSON) throw new Error("WebAuthn unavailable or review expired");
+        const credential = await navigator.credentials.get({ publicKey: PublicKeyCredential.parseRequestOptionsFromJSON(value.Challenge.Approval.publicKey), signal: controller.signal });
+        if (!active() || Date.parse(value.ExpiresAt) <= Date.now() + 6000 || !credential || typeof credential.toJSON !== "function") throw new Error("Approval cancelled or review expired");
+        value = { Version: 1, ChallengeID: value.Challenge.ID, Response: credential.toJSON() };
+      }
+      if (!active()) return;
+      submitted = true;
+      const status = await privateJSON("/api/v1/admin/native-renewal/" + operation, value, controller.signal);
+      if (!validRenewal(status)) throw new Error("Invalid renewal result");
+      if (!active()) return;
+      renderRenewal(status);
+    } catch {
+      if (attempt !== generation) return;
+      records.replaceChildren();
+      const retry = element("button", "Check renewal record", "primary-action"); retry.type = "button"; retry.addEventListener("click", () => { if (!pending) void loadRenewal(); }); records.append(retry);
+      message(submitted ? "The result could not be confirmed. The native application retains the renewal record. Check it before continuing." : "No approval was submitted. Check the saved review before trying again.", true);
+    } finally {
+      clearTimeout(timeout);
+      if (attempt === generation) { pending = undefined; inventory.setAttribute("aria-busy", "false"); }
+    }
   }
   async function loadAccess() {
     cancel();

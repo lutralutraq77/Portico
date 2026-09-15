@@ -43,6 +43,10 @@ try {
     } finally { Remove-Item Env:ELECTRON_RUN_AS_NODE -ErrorAction SilentlyContinue }
     & go test -race -tags dashboardbrowser ./internal/controller -run '^TestDashboardNativeBrowser(Failure|ClockFault)?$' -count=1 -v -timeout 3m *> (Join-Path $PorticoWork ('reports/' + $RunName + '-browser.log'))
     if ($LASTEXITCODE -ne 0) { throw 'Native browser qualification failed' }
+    $env:PORTICO_BROWSER_REPORT = Join-Path $PorticoWork ('reports/' + $RunName + '-renewal-browser')
+    if (Test-Path -LiteralPath $env:PORTICO_BROWSER_REPORT) { throw 'Preserve prior renewal browser evidence; choose a fresh RunName' }
+    & go test -race -tags dashboardbrowser ./internal/adminapp -run '^TestNativeAdministratorRenewalBrowser$' -count=1 -v -timeout 3m *> (Join-Path $PorticoWork ('reports/' + $RunName + '-renewal-browser.log'))
+    if ($LASTEXITCODE -ne 0) { throw 'Native renewal browser qualification failed' }
     [ordered]@{ revision=(& git rev-parse HEAD); platform=[Runtime.InteropServices.RuntimeInformation]::OSDescription; go=(& go version); runtime=$runtime; result='PASS'; scope='Native component and virtual-key qualification; no physical keys, platform custody, installed administration package or owner recovery qualification' } | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath (Join-Path $PorticoWork ('reports/' + $RunName + '-summary.json'))
 } finally { Pop-Location }
 Write-Output 'Native administrator component qualification passed.'

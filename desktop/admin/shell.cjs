@@ -23,6 +23,7 @@ app.commandLine.appendSwitch("disable-http-cache");
 
 const getPaths = new Set(["/admin", "/admin.js", "/admin.css"]);
 const postPaths = new Set(["/api/v1/admin/dashboard/inventory", "/api/v1/admin/dashboard/access", "/api/v1/admin/factors/challenge", "/api/v1/admin/factors/confirm", "/api/v1/admin/invitations/challenge", "/api/v1/admin/invitations/confirm", "/api/v1/admin/policy/preview", "/api/v1/admin/policy/challenge", "/api/v1/admin/policy/confirm"]);
+for (const operation of ["status", "start", "approve", "resume", "cancel"]) postPaths.add("/api/v1/admin/native-renewal/" + operation);
 
 async function boundedBody(request) {
   if (!request.body) return Buffer.alloc(0);

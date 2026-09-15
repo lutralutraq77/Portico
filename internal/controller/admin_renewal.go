@@ -23,6 +23,7 @@ type AdminRenewalPrepared struct {
 	CSRHash                string
 	CurrentCertificateHash string
 	NotAfter               time.Time
+	ExpiresAt              time.Time
 	PolicyRevision         int64
 	Challenge              AdminChallenge
 }
@@ -86,7 +87,15 @@ func (s *Store) beginAdminRenewal(ctx context.Context, conn *tls.Conn, trust *pk
 		}
 		result = AdminRenewalPrepared{Version: 1, RenewalID: id, CSRHash: pki.Hash(spec.CSR), CurrentCertificateHash: peer.hash, NotAfter: spec.NotAfter, PolicyRevision: revision}
 		result.Challenge, err = t.beginAdmin(peer, v, op)
-		return err
+		if err != nil {
+			return err
+		}
+		var expires int64
+		if t.tx.QueryRowContext(t.ctx, "SELECT expires_at FROM admin_ceremonies WHERE id=? AND state='pending'", result.Challenge.ID).Scan(&expires) != nil {
+			return t.fail(ErrStorage)
+		}
+		result.ExpiresAt = time.Unix(0, expires).UTC()
+		return nil
 	})
 	if err != nil {
 		return AdminRenewalPrepared{}, err

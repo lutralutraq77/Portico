@@ -7,6 +7,7 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"encoding/hex"
+	"encoding/json"
 	"errors"
 	"net/netip"
 	"path/filepath"
@@ -38,12 +39,21 @@ type FileConfig struct {
 	StateDirectory          string                     `json:"state_directory"`
 	OperationTimeoutMillis  int                        `json:"operation_timeout_ms"`
 	SessionLifetimeSeconds  int                        `json:"session_lifetime_seconds"`
+	Renewal                 *RenewalFiles              `json:"renewal,omitempty"`
+}
+
+type RenewalFiles struct {
+	Server           identityfile.EndpointFiles `json:"server"`
+	BootstrapAddress string                     `json:"bootstrap_address,omitempty"`
+	Socket           string                     `json:"socket,omitempty"`
 }
 
 type Configuration struct {
 	bridge                    adminbridge.Config
 	leaf                      []byte
 	keyPath, principal, state string
+	renewal                   *adminbridge.Config
+	binding                   string
 }
 
 func pathValid(path string) bool {
@@ -55,19 +65,11 @@ func Load(path string) (*Configuration, error) { return load(path, localfile.Rea
 func load(path string, read identityfile.Reader) (*Configuration, error) {
 	data, err := read(path, wire.MaxBody, false)
 	var f FileConfig
-	if err != nil || wire.Decode(data, &f) != nil || f.Version != 1 || !pki.ValidID(f.DeploymentID) || !pki.ValidID(f.PrincipalID) || !adminbridge.Origin(f.Server.URL) || !pathValid(f.EncryptedKeyFile) || !pathValid(f.StateDirectory) || f.OperationTimeoutMillis < 1 || f.OperationTimeoutMillis > 5000 || f.SessionLifetimeSeconds < 1 || f.SessionLifetimeSeconds > 600 || (f.BootstrapAddress == "") == (f.Socket == "") {
+	if err != nil || wire.Decode(data, &f) != nil || (f.Version != 1 && f.Version != 2) || (f.Version == 2) != (f.Renewal != nil) || !pki.ValidID(f.DeploymentID) || !pki.ValidID(f.PrincipalID) || !pathValid(f.EncryptedKeyFile) || !pathValid(f.StateDirectory) || f.OperationTimeoutMillis < 1 || f.OperationTimeoutMillis > 5000 || f.SessionLifetimeSeconds < 1 || f.SessionLifetimeSeconds > 600 {
 		return nil, ErrRejected
 	}
-	if f.BootstrapAddress != "" {
-		a, err := netip.ParseAddrPort(f.BootstrapAddress)
-		if err != nil || !a.Addr().IsLoopback() || a.Addr().Is4In6() || a.Addr().Zone() != "" || a.Port() == 0 || a.String() != f.BootstrapAddress {
-			return nil, ErrRejected
-		}
-	} else if !pathValid(f.Socket) {
-		return nil, ErrRejected
-	}
-	spki, err := hex.DecodeString(f.Server.SPKI)
-	if err != nil || len(spki) != 32 || hex.EncodeToString(spki) != f.Server.SPKI {
+	bridge, err := readEndpoint(read, f.Server, f.BootstrapAddress, f.Socket)
+	if err != nil {
 		return nil, ErrRejected
 	}
 	trust, err := read.Trust(f.DeploymentID, f.Administrators, pki.Administrator)
@@ -79,21 +81,60 @@ func load(path string, read identityfile.Reader) (*Configuration, error) {
 		return nil, ErrRejected
 	}
 	credential, err := trust.VerifyPeer(leaf, time.Now().UTC())
+	if f.Version == 2 {
+		credential, err = historicalCredential(trust, f.PrincipalID, leaf)
+	}
 	if err != nil || credential.PrincipalID != f.PrincipalID {
 		return nil, ErrRejected
 	}
-	rootDER, err := read.Certificate(f.Server.RootCertificateFile)
+	bridge.AdministratorTrust, bridge.Timeout, bridge.Lifetime = trust, time.Duration(f.OperationTimeoutMillis)*time.Millisecond, time.Duration(f.SessionLifetimeSeconds)*time.Second
+	c := &Configuration{bridge: bridge, leaf: leaf, keyPath: f.EncryptedKeyFile, principal: f.PrincipalID, state: f.StateDirectory}
+	if f.Renewal != nil {
+		activation, err := readEndpoint(read, f.Renewal.Server, f.Renewal.BootstrapAddress, f.Renewal.Socket)
+		if err != nil || (f.Renewal.BootstrapAddress == f.BootstrapAddress && f.Renewal.Socket == f.Socket) {
+			return nil, ErrRejected
+		}
+		activation.AdministratorTrust, activation.Timeout, activation.Lifetime = trust, bridge.Timeout, bridge.Lifetime
+		c.renewal = &activation
+		// Bind the public journal to independently loaded configuration and trust,
+		// including routes and actual certificate contents, not filenames alone.
+		binding, err := json.Marshal(struct {
+			Config                                            FileConfig
+			Initial, Root, Issuer, ServerRoot, ActivationRoot string
+		}{f, pki.Hash(leaf), trust.RootFingerprint(), trust.IssuerFingerprint(), pki.Hash(bridge.ServerRootDER), pki.Hash(activation.ServerRootDER)})
+		if err != nil {
+			return nil, ErrRejected
+		}
+		c.binding = pki.Hash(binding)
+	}
+	return c, nil
+}
+
+func readEndpoint(read identityfile.Reader, files identityfile.EndpointFiles, address, socket string) (adminbridge.Config, error) {
+	if !adminbridge.Origin(files.URL) || (address == "") == (socket == "") {
+		return adminbridge.Config{}, ErrRejected
+	}
+	if address != "" {
+		a, err := netip.ParseAddrPort(address)
+		if err != nil || !a.Addr().IsLoopback() || a.Addr().Is4In6() || a.Addr().Zone() != "" || a.Port() == 0 || a.String() != address {
+			return adminbridge.Config{}, ErrRejected
+		}
+	} else if !pathValid(socket) {
+		return adminbridge.Config{}, ErrRejected
+	}
+	spki, err := hex.DecodeString(files.SPKI)
+	if err != nil || len(spki) != 32 || hex.EncodeToString(spki) != files.SPKI {
+		return adminbridge.Config{}, ErrRejected
+	}
+	rootDER, err := read.Certificate(files.RootCertificateFile)
 	if err != nil {
-		return nil, ErrRejected
+		return adminbridge.Config{}, ErrRejected
 	}
 	root, err := x509.ParseCertificate(rootDER)
 	if err != nil || !root.IsCA || !root.BasicConstraintsValid || root.CheckSignatureFrom(root) != nil {
-		return nil, ErrRejected
+		return adminbridge.Config{}, ErrRejected
 	}
-	return &Configuration{
-		bridge: adminbridge.Config{Origin: f.Server.URL, ServerSPKI: f.Server.SPKI, ServerRootDER: rootDER, AdministratorTrust: trust, BootstrapAddress: f.BootstrapAddress, Socket: f.Socket, Timeout: time.Duration(f.OperationTimeoutMillis) * time.Millisecond, Lifetime: time.Duration(f.SessionLifetimeSeconds) * time.Second},
-		leaf:   leaf, keyPath: f.EncryptedKeyFile, principal: f.PrincipalID, state: f.StateDirectory,
-	}, nil
+	return adminbridge.Config{Origin: files.URL, ServerSPKI: files.SPKI, ServerRootDER: rootDER, BootstrapAddress: address, Socket: socket}, nil
 }
 
 type deviceKey interface {
@@ -134,11 +175,37 @@ func (c *Configuration) run(ctx context.Context, passphrase []byte, open openKey
 	if err != nil || key == nil || ctx.Err() != nil {
 		return ErrRejected
 	}
-	identity, err := key.Identity(c.leaf)
+	config := c.bridge
+	leaf := c.leaf
+	if c.renewal != nil {
+		renewable, ok := key.(renewalKey)
+		if !ok {
+			return ErrRejected
+		}
+		storage, err := openCredentialDisk(c.state)
+		if err != nil {
+			return ErrRejected
+		}
+		defer storage.Close()
+		renewal, err := newNativeRenewal(c, renewable, storage)
+		if err != nil {
+			return ErrRejected
+		}
+		// A durably retained candidate can be reconciled after a crash even if
+		// the predecessor has since expired or was retired by remote activation.
+		if p := renewal.journal.record.Pending; p != nil && p.Phase == "issued" {
+			if renewal.activate(ctx) != nil {
+				return ErrRejected
+			}
+			renewal.completed = false // This new window uses the selected new leaf.
+		}
+		leaf = renewal.journal.record.Certificate
+		config.RenewalHandler = renewal.Handle
+	}
+	identity, err := key.Identity(leaf)
 	if err != nil || ctx.Err() != nil {
 		return ErrRejected
 	}
-	config := c.bridge
 	config.Identity = identity
 	bridge, err := adminbridge.New(ctx, config)
 	if err != nil {

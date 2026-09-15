@@ -85,6 +85,9 @@ jobs:
             work/reports/native-admin-browser/failure.json
             work/reports/native-admin-browser/native-*-key-review.png
             work/reports/native-admin-browser-clock-fault/clock-ready.txt
+            work/reports/native-admin-renewal-browser/result.json
+            work/reports/native-admin-renewal-browser/failure.json
+            work/reports/native-admin-renewal-browser/native-renewal-*.png
           retention-days: 14
       - name: Upload installed administrator and package evidence
         if: always()
