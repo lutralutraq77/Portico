@@ -291,6 +291,9 @@ func (s *Store) Update(ctx context.Context, actor string, change func(*Tx) error
 	if e == nil && t.now.UnixNano() < previousTime {
 		return ErrDenied
 	}
+	if e = s.checkManagementRequest(t); e != nil {
+		return e
+	}
 	if e = change(t); e != nil {
 		return e
 	}

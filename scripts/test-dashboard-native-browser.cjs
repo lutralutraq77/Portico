@@ -8,6 +8,9 @@ const { Channel } = require("../desktop/admin/channel.cjs");
 const { createWindow } = require("../desktop/admin/shell.cjs");
 
 const channel = new Channel(), report = process.env.PORTICO_NATIVE_STATE;
+// The fixture owns its final channel handshake, report and exit. Prevent the
+// last-window default quit path from racing that explicit completion sequence.
+app.on("window-all-closed", () => {});
 const checks = [], checked = (value) => checks.push(value);
 const requestMetadata = [];
 // Main-process test observation only: record bounded booleans and status, never
@@ -120,7 +123,13 @@ let win;
   assert.deepEqual(await win.webContents.session.cookies.get({}), []);
   checked("native shell leaves no cookies or browser storage");
   await fs.writeFile(path.join(report, "result.json"), JSON.stringify({ electron: process.versions.electron, chromium: process.versions.chrome, checks, creations, assertions, limitations: ["Windows execution qualifies the portable shell/transport components; the supported Linux package and OS key provider still need qualification.", "Administrator TLS identity is an in-memory Go fixture; both hardware factors are virtual. Complete owner bootstrap and physical recovery are not established."] }, null, 2) + "\n");
-  await channel.close(); win.destroy(); app.exit(0);
+  // Retain public lifecycle observations if the parent later has to enforce
+  // its shutdown deadline. No pipe bytes, requests or credentials are logged.
+  const shutdown = async (stage) => fs.writeFile(path.join(report, "native-shutdown.json"), JSON.stringify({stage,time:Date.now(),inputDestroyed:channel.input.destroyed,inputClosed:channel.input.closed,outputDestroyed:channel.output.destroyed,outputClosed:channel.output.closed,outputFinished:channel.output.writableFinished,outputEnded:channel.output.writableEnded,outputPendingBytes:channel.output.writableLength}, null, 2) + "\n");
+  await shutdown("before-close");
+  const observation = setTimeout(() => { void shutdown("awaiting-close"); }, 1500);
+  await channel.close(); clearTimeout(observation); await shutdown("channel-closed");
+  app.exit(0);
 })().catch(async (error) => {
   await fs.mkdir(report, { recursive: true });
   await fs.writeFile(path.join(report, "failure.json"), JSON.stringify({ message: error.message, stack: error.stack, checks, requestMetadata }, null, 2) + "\n");

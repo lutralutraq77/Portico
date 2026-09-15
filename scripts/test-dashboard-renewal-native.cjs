@@ -8,6 +8,7 @@ const { Channel } = require("../desktop/admin/channel.cjs");
 const { createWindow } = require("../desktop/admin/shell.cjs");
 
 const channel = new Channel(), report = process.env.PORTICO_NATIVE_STATE;
+app.on("window-all-closed", () => {});
 const checks = [];
 let win;
 (async () => {
@@ -92,9 +93,11 @@ let win;
   await evaluate('document.querySelector("#renewal-panel").scrollIntoView({block:"start"})');
   await capture("native-renewal-desktop.png");
   win.setSize(360, 900); await wait("innerWidth <= 360");
-  assert.equal(await evaluate("document.documentElement.scrollWidth <= innerWidth"), true);
   await evaluate('document.querySelector("#renewal-panel").scrollIntoView({block:"start"})');
   await capture("native-renewal-mobile.png");
+  const layout = await evaluate('({width:innerWidth,scrollWidth:document.documentElement.scrollWidth,overflow:[...document.querySelectorAll("body *")].filter((node)=>{const box=node.getBoundingClientRect();return box.width>0&&box.right>innerWidth;}).map((node)=>({tag:node.tagName,id:node.id,classes:node.className,right:node.getBoundingClientRect().right,width:node.getBoundingClientRect().width})).slice(0,24)})');
+  await fs.writeFile(path.join(report, "native-renewal-mobile-layout.json"), JSON.stringify(layout, null, 2) + "\n");
+  assert.ok(layout.scrollWidth <= layout.width, "Mobile renewal overflow: " + JSON.stringify(layout));
   win.setSize(1200, 900);
   checks.push("desktop and 360-pixel review show exact current/request fingerprints, expiry, policy revision and explicit approval");
   await press("Approve renewal with security key"); await title("Administrator identity renewed");
@@ -106,7 +109,7 @@ let win;
   checks.push("backup key supplies one fresh assertion; native code retains and activates the issued certificate and requests a new window");
   checks.push("no cookies or browser storage retain administrator credentials");
   await fs.writeFile(path.join(report, "result.json"), JSON.stringify({ electron: process.versions.electron, chromium: process.versions.chrome, checks, creations, assertions, browserGetCalls: await evaluate("observedNativeGetCount()"), limitations: ["Both security keys are virtual; no physical custody claim.", "This portable test uses a memory journal and local issuer signer. Linux disk durability and restricted real issuer integration are separately qualified."] }, null, 2) + "\n");
-  await channel.close(); win.destroy(); app.exit(0);
+  await channel.close(); app.exit(0);
 })().catch(async (error) => {
   await fs.mkdir(report, { recursive: true });
   await fs.writeFile(path.join(report, "failure.json"), JSON.stringify({ message: error.message, stack: error.stack, checks }, null, 2) + "\n");

@@ -40,6 +40,20 @@ type finishApprovalRequest struct {
 // The administrative HTTP surface is a private server component; browser/native
 // delivery and platform-key isolation still require their dedicated qualification.
 func (p *PolicyEngine) NewHTTPServer(c PolicyHTTPConfig) (*PolicyHTTPServer, error) {
+	return p.newHTTPServer(c, nil)
+}
+
+// NewManagementHTTPServer adds the exact administrator-only resource gate to
+// every TLS handshake and every request transaction. It is a distinct private
+// destination; ordinary device/connector HTTP constructors cannot select it.
+func (p *PolicyEngine) NewManagementHTTPServer(c PolicyHTTPConfig, route *ManagementRoute) (*PolicyHTTPServer, error) {
+	if p == nil || route == nil || route.store != p.store || c.Profile != pki.Administrator || c.AdministratorTrust != route.config.Administrators || route.config.Connectors != p.config.ConnectorTrust {
+		return nil, ErrInvalid
+	}
+	return p.newHTTPServer(c, route)
+}
+
+func (p *PolicyEngine) newHTTPServer(c PolicyHTTPConfig, route *ManagementRoute) (*PolicyHTTPServer, error) {
 	if c.Profile != pki.Administrator && c.AdministratorRenewalIssuer != nil {
 		return nil, ErrInvalid
 	}
@@ -64,6 +78,20 @@ func (p *PolicyEngine) NewHTTPServer(c PolicyHTTPConfig) (*PolicyHTTPServer, err
 	if e != nil {
 		return nil, e
 	}
+	if route != nil {
+		verify := tc.VerifyConnection
+		tc.VerifyConnection = func(state tls.ConnectionState) error {
+			if err := verify(state); err != nil {
+				return err
+			}
+			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+			defer cancel()
+			return p.store.Update(ctx, route.config.ConnectorID, func(t *Tx) error {
+				_, err := route.check(t, state.PeerCertificates[0].Raw)
+				return err
+			})
+		}
+	}
 	s := &http.Server{TLSConfig: tc, ReadHeaderTimeout: 5 * time.Second, ReadTimeout: 10 * time.Second, WriteTimeout: 10 * time.Second, IdleTimeout: 15 * time.Second, MaxHeaderBytes: 8192, ErrorLog: log.New(io.Discard, "", 0)}
 	s.ConnContext = func(ctx context.Context, c net.Conn) context.Context {
 		if conn, ok := c.(*tls.Conn); ok {
@@ -85,6 +113,14 @@ func (p *PolicyEngine) NewHTTPServer(c PolicyHTTPConfig) (*PolicyHTTPServer, err
 		if !ok || r.Host != c.Host || r.URL.RawQuery != "" || r.URL.ForceQuery || r.URL.RawPath != "" || r.Header.Get("Content-Encoding") != "" {
 			deny()
 			return
+		}
+		if route != nil {
+			bound, err := route.requestContext(r.Context(), conn)
+			if err != nil {
+				deny()
+				return
+			}
+			r = r.WithContext(bound)
 		}
 		if r.Method == http.MethodGet {
 			if c.Profile != pki.Administrator || p.store.serveDashboardAsset(w, r, conn, c) != nil {

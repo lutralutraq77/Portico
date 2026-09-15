@@ -104,7 +104,7 @@ th { font-weight: 600; color: var(--muted); font-size: 12px; background: var(--s
   .nav-label, .nav-foot, nav a span { display: none; }
   nav a { margin: 0; justify-content: center; padding: 10px 6px; font-size: 12px; min-height: 48px; }
   main { padding: 28px 16px 40px; }
-  .page-heading { gap: 12px; align-items: flex-start; }
+  .page-heading { gap: 12px; align-items: flex-start; flex-direction: column; }
   #refresh { padding-inline: 16px; }
   .notice { padding: 18px; }
   .inventory-heading, #feedback { padding: 18px; }

@@ -86,6 +86,7 @@ func Run(parent context.Context, client *Client, spec Launch) error {
 	var serveErr, exitErr error
 	var grace <-chan time.Time
 	var timer *time.Timer
+	graceExpired := false
 	defer func() {
 		if timer != nil {
 			timer.Stop()
@@ -117,6 +118,7 @@ func Run(parent context.Context, client *Client, spec Launch) error {
 			stop()
 			done = nil
 		case <-grace:
+			graceExpired = true
 			stop()
 			grace = nil
 		}
@@ -126,6 +128,9 @@ func Run(parent context.Context, client *Client, spec Launch) error {
 	}
 	if client.context.Err() != nil {
 		return fmt.Errorf("%w: native session ended", ErrRejected)
+	}
+	if graceExpired {
+		return fmt.Errorf("%w: native child shutdown timeout", ErrRejected)
 	}
 	if ctx.Err() != nil {
 		return fmt.Errorf("%w: launch cancelled", ErrRejected)
