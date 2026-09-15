@@ -93,8 +93,9 @@ func adminDER(ctx context.Context, conn *tls.Conn) ([]byte, error) {
 type AdminOperation struct {
 	Kind       string
 	TargetID   string
-	Invitation *InvitationSpec `json:",omitempty"`
-	PolicyHash string          `json:",omitempty"`
+	Invitation *InvitationSpec   `json:",omitempty"`
+	PolicyHash string            `json:",omitempty"`
+	Renewal    *AdminRenewalSpec `json:",omitempty"`
 }
 type AdminChallenge struct {
 	ID           string
@@ -102,13 +103,19 @@ type AdminChallenge struct {
 	Approval     *protocol.CredentialAssertion `json:",omitempty"`
 }
 type AdminResult struct {
+	InvitationID     string
 	InvitationSecret string
 	Registration     *AdminChallenge
+	RenewalID        string `json:",omitempty"`
 }
 
-func (t *Tx) adminUser(user string) (adminauth.User, error) {
+func (t *Tx) adminUser(user string, testedOnly bool) (adminauth.User, error) {
 	u := adminauth.User{ID: user}
-	rows, e := t.tx.QueryContext(t.ctx, "SELECT credential_json FROM admin_factors WHERE user_id=? AND enabled=1 ORDER BY id", user)
+	query := "SELECT credential_json FROM admin_factors WHERE user_id=? AND enabled=1"
+	if testedOnly {
+		query += " AND tested=1"
+	}
+	rows, e := t.tx.QueryContext(t.ctx, query+" ORDER BY id", user)
 	if e != nil {
 		return u, t.fail(ErrStorage)
 	}
@@ -132,11 +139,19 @@ func (t *Tx) stageAdmin(p adminPeer, v *adminauth.Verifier, op AdminOperation, r
 	if v == nil || !validID(op.TargetID) {
 		return result, t.fail(ErrInvalid)
 	}
-	if op.Kind != "invite" && op.Kind != "apply-policy" && op.Kind != "register-factor" && op.Kind != "disable-factor" && op.Kind != "test-factor" && !(op.Kind == "bootstrap-factor" && registration) {
+	if op.Kind != "invite" && op.Kind != "renew-administrator" && op.Kind != "revoke-enrollment" && op.Kind != "apply-policy" && op.Kind != "register-factor" && op.Kind != "disable-factor" && op.Kind != "test-factor" && !(op.Kind == "bootstrap-factor" && registration) {
 		return result, t.fail(ErrInvalid)
 	}
 	if (op.Kind == "invite") != (op.Invitation != nil) {
 		return result, t.fail(ErrInvalid)
+	}
+	if (op.Kind == "renew-administrator") != (op.Renewal != nil) {
+		return result, t.fail(ErrInvalid)
+	}
+	if op.Renewal != nil {
+		if _, e := pki.ParseCSR(op.Renewal.CSR); e != nil {
+			return result, t.fail(ErrInvalid)
+		}
 	}
 	if (op.Kind == "apply-policy" && !digest(op.PolicyHash)) || (op.Kind != "apply-policy" && op.PolicyHash != "") {
 		return result, t.fail(ErrInvalid)
@@ -148,9 +163,24 @@ func (t *Tx) stageAdmin(p adminPeer, v *adminauth.Verifier, op AdminOperation, r
 	if e := t.tx.QueryRowContext(t.ctx, "SELECT count(*) FROM admin_ceremonies WHERE device_id=? AND state='pending' AND expires_at>?", p.device, t.now.UnixNano()).Scan(&pending); e != nil || pending >= 16 {
 		return result, t.fail(ErrDenied)
 	}
-	u, e := t.adminUser(p.user)
+	// Registration excludes all existing credentials. Only an explicit key test
+	// can use an untested credential; other approvals require a prior key test.
+	u, e := t.adminUser(p.user, !registration && op.Kind != "test-factor")
 	if e != nil {
 		return result, e
+	}
+	if op.Kind == "test-factor" || op.Kind == "disable-factor" {
+		var target []byte
+		if t.tx.QueryRowContext(t.ctx, "SELECT credential_id FROM admin_factors WHERE id=? AND user_id=? AND enabled=1", op.TargetID, p.user).Scan(&target) != nil {
+			return result, t.fail(ErrDenied)
+		}
+		selected := u.Credentials[:0]
+		for _, credential := range u.Credentials {
+			if bytes.Equal(credential.ID, target) == (op.Kind == "test-factor") {
+				selected = append(selected, credential)
+			}
+		}
+		u.Credentials = selected
 	}
 	var generation int64
 	if e = t.tx.QueryRowContext(t.ctx, "SELECT revision FROM policy_meta WHERE singleton=1").Scan(&generation); e != nil {
@@ -198,17 +228,32 @@ func (s *Store) BeginInitialFactor(ctx context.Context, conn *tls.Conn, trust *p
 			return e
 		}
 		t.actor = p.user
-		var count int
-		if e = t.tx.QueryRowContext(ctx, "SELECT count(*) FROM admin_factors WHERE user_id=?", p.user).Scan(&count); e != nil || count >= 2 || t.now.UnixNano() >= p.bootstrapUntil {
-			return t.fail(ErrDenied)
-		}
-		result, e = t.stageAdmin(p, v, AdminOperation{Kind: "bootstrap-factor", TargetID: NewID()}, true)
+		result, e = t.beginInitialFactor(p, v, NewID())
 		return e
 	})
 	if e != nil {
 		return AdminChallenge{}, e
 	}
 	return result, nil
+}
+
+func (t *Tx) beginInitialFactor(p adminPeer, v *adminauth.Verifier, id string) (AdminChallenge, error) {
+	var count int
+	if t.tx.QueryRowContext(t.ctx, "SELECT count(*) FROM admin_factors WHERE user_id=?", p.user).Scan(&count) != nil || count >= 2 || t.now.UnixNano() >= p.bootstrapUntil {
+		return AdminChallenge{}, t.fail(ErrDenied)
+	}
+	return t.stageAdmin(p, v, AdminOperation{Kind: "bootstrap-factor", TargetID: id}, true)
+}
+
+func (t *Tx) beginAdmin(p adminPeer, v *adminauth.Verifier, op AdminOperation) (AdminChallenge, error) {
+	var tested int
+	if t.tx.QueryRowContext(t.ctx, "SELECT count(*) FROM admin_factors WHERE user_id=? AND enabled=1 AND tested=1", p.user).Scan(&tested) != nil {
+		return AdminChallenge{}, t.fail(ErrStorage)
+	}
+	if (op.Kind != "test-factor" && tested < 1) || ((invitationKind(op.Kind) || op.Kind == "apply-policy" || op.Kind == "renew-administrator") && tested < 2) {
+		return AdminChallenge{}, t.fail(ErrDenied)
+	}
+	return t.stageAdmin(p, v, op, false)
 }
 
 func (s *Store) BeginAdminOperation(ctx context.Context, conn *tls.Conn, trust *pki.Trust, v *adminauth.Verifier, op AdminOperation) (AdminChallenge, error) {
@@ -223,17 +268,7 @@ func (s *Store) BeginAdminOperation(ctx context.Context, conn *tls.Conn, trust *
 			return e
 		}
 		t.actor = p.user
-		var tested int
-		if e = t.tx.QueryRowContext(ctx, "SELECT count(*) FROM admin_factors WHERE user_id=? AND enabled=1 AND tested=1", p.user).Scan(&tested); e != nil {
-			return t.fail(ErrStorage)
-		}
-		if op.Kind != "test-factor" && tested < 1 {
-			return t.fail(ErrDenied)
-		}
-		if (op.Kind == "invite" || op.Kind == "apply-policy") && tested < 2 {
-			return t.fail(ErrDenied)
-		}
-		result, e = t.stageAdmin(p, v, op, false)
+		result, e = t.beginAdmin(p, v, op)
 		return e
 	})
 	if e != nil {
@@ -246,10 +281,19 @@ func (s *Store) BeginAdminOperation(ctx context.Context, conn *tls.Conn, trust *
 // exact operation in one transaction with its audit events. It rechecks TLS
 // identity and the global policy generation immediately before the mutation.
 func (s *Store) FinishAdminOperation(ctx context.Context, conn *tls.Conn, trust *pki.Trust, v *adminauth.Verifier, id string, response []byte) (AdminResult, error) {
-	return s.finishAdminOperation(ctx, conn, trust, v, id, response, nil)
+	return s.finishAdminOperation(ctx, conn, trust, v, id, response, adminFinishAny, nil)
 }
 
-func (s *Store) finishAdminOperation(ctx context.Context, conn *tls.Conn, trust *pki.Trust, v *adminauth.Verifier, id string, response []byte, applyPolicy func(*Tx, adminPeer, AdminOperation) error) (AdminResult, error) {
+type adminFinishScope uint8
+
+const (
+	adminFinishAny adminFinishScope = iota
+	adminFinishFactor
+	adminFinishInvitation
+	adminFinishRenewal
+)
+
+func (s *Store) finishAdminOperation(ctx context.Context, conn *tls.Conn, trust *pki.Trust, v *adminauth.Verifier, id string, response []byte, scope adminFinishScope, applyPolicy func(*Tx, adminPeer, AdminOperation) error) (AdminResult, error) {
 	if v == nil || !validID(id) {
 		return AdminResult{}, ErrInvalid
 	}
@@ -273,6 +317,9 @@ func (s *Store) finishAdminOperation(ctx context.Context, conn *tls.Conn, trust 
 		if json.Unmarshal(sessionBytes, &session) != nil || json.Unmarshal(operationBytes, &op) != nil {
 			return t.fail(ErrIntegrity)
 		}
+		if scope > adminFinishRenewal || (scope == adminFinishFactor && !factorKind(op.Kind)) || (scope == adminFinishInvitation && !invitationKind(op.Kind)) || (scope == adminFinishRenewal && op.Kind != "renew-administrator") {
+			return t.fail(ErrDenied)
+		}
 		if (applyPolicy != nil && op.Kind != "apply-policy") || (applyPolicy == nil && op.Kind == "apply-policy") {
 			return t.fail(ErrDenied)
 		}
@@ -281,7 +328,8 @@ func (s *Store) finishAdminOperation(ctx context.Context, conn *tls.Conn, trust 
 			return t.fail(ErrStorage)
 		}
 		binding := adminauth.Binding{AdministratorID: p.user, DeviceCertificateHash: p.hash, OperationHash: pki.Hash(operationBytes), Revision: generation}
-		u, e := t.adminUser(p.user)
+		// Recheck tested state in the same transaction that commits the operation.
+		u, e := t.adminUser(p.user, session.Kind != "registration" && op.Kind != "test-factor")
 		if e != nil {
 			return e
 		}
@@ -323,14 +371,30 @@ func (s *Store) finishAdminOperation(ctx context.Context, conn *tls.Conn, trust 
 			return e
 		}
 		switch op.Kind {
+		case "renew-administrator":
+			if e = t.reserveAdminRenewal(p, trust, op); e != nil {
+				return e
+			}
+			result.RenewalID = op.TargetID
+			return nil
 		case "apply-policy":
 			if applyPolicy == nil {
 				return t.fail(ErrDenied)
 			}
 			return applyPolicy(t, p, op)
 		case "invite":
+			if op.Invitation == nil || op.TargetID != op.Invitation.ID {
+				return t.fail(ErrDenied)
+			}
 			result.InvitationSecret, e = t.invite(*op.Invitation)
+			result.InvitationID = op.TargetID
 			return e
+		case "revoke-enrollment":
+			if _, e = t.reviewEnrollmentRevocation(p, op.TargetID); e != nil {
+				return e
+			}
+			result.InvitationID = op.TargetID
+			return t.RevokeEnrollment(op.TargetID)
 		case "register-factor":
 			challenge, e := t.stageAdmin(p, v, op, true)
 			if e != nil {

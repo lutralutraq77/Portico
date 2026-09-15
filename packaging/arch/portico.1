@@ -7,6 +7,10 @@ portico \- development access to individually authorized private resources
 .br
 .B portico help
 .br
+.B portico admin open --config
+.I FILE
+.RB ( "--secrets-fd 3" " | " --prompt )
+.br
 .B portico enroll prepare|redeem|activate --config
 .I FILE
 .RB ( "--secrets-fd 3" " | " --prompt )
@@ -68,6 +72,12 @@ This development binary uses approved local configuration and pinned private
 services. It is not a supported distribution or a self-configuring installer.
 The package creates no identities, trust roots, accounts, listeners or services.
 It changes no routes, DNS, firewall rules, VPN configuration or system clock.
+.PP
+Administrator access requires a protected Linux native runtime installation,
+an existing administrator certificate and its encrypted key. The command
+checks fixed installation paths, holds an exclusive private-state lock and
+revokes its native signer when the session ends. This CLI package does not
+install the native browser or establish administrator enrollment or recovery.
 .PP
 Enrollment prepares an encrypted local key, redeems an invitation for its
 certificate, and activates that certificate with fresh private-key proof.

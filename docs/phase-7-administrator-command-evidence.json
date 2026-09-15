@@ -1,0 +1,152 @@
+{
+  "schema": 1,
+  "recordedUTC": "2026-09-14T13:48:03.1039588Z",
+  "baseSource": "4e2416a15eb730dfb4f860c1d1422bcc0a8cc4a6",
+  "sources": [
+    {
+      "path": "internal/adminapp/config.go",
+      "sha256": "6df014ed4158937523ae873becb5dfdbd5a159540fa758625b994748f2245b80"
+    },
+    {
+      "path": "internal/adminapp/config_test.go",
+      "sha256": "320978928161577b19ff47d734dce37139b5ae5d6a355079bc0f41965aced6f6"
+    },
+    {
+      "path": "internal/adminapp/installed_linux.go",
+      "sha256": "ab9834d0c150cb8cf14f293c3352b199e8753889d7b742562336f38b6757ec8c"
+    },
+    {
+      "path": "internal/adminapp/installed_linux_test.go",
+      "sha256": "c960e145a9e4582d9a63dd7dacddb9277e2c698a2fdfc4815a35ac63f035ebff"
+    },
+    {
+      "path": "internal/adminapp/installed_other.go",
+      "sha256": "907fd37d19144a48d112f38ee555ef868679ad15563462a2ccef9592555e0c76"
+    },
+    {
+      "path": "internal/adminapp/session_linux_test.go",
+      "sha256": "1162004350960f9c84483f5ec2236d9a2d038f7920e433d5dd27387d62eefdcc"
+    },
+    {
+      "path": "internal/cli/administrator.go",
+      "sha256": "f4fad992b154f1c81ba723e2056fb52bd8abd9df7ca7815c3c0475003ef8b681"
+    },
+    {
+      "path": "internal/cli/administrator_test.go",
+      "sha256": "02f61f04fe908fc4973bc968670c04bb9200a9ae53eb500649e718e6ef2f77c7"
+    },
+    {
+      "path": "internal/localfile/directory_linux.go",
+      "sha256": "a9a37859043a304897ff9213251da3741efb235701c38d9b52c692f5c6ebc2f6"
+    },
+    {
+      "path": "internal/cli/run.go",
+      "sha256": "62def3450e8765d6e211a1129fe11ca811425d0bbf3afca0fa78395da9e13c36"
+    },
+    {
+      "path": "internal/cli/terminal_linux.go",
+      "sha256": "d539ef23b3684b9658f4ab9c1ba87748ee8e610df21b29d5b98b3a2383292fd0"
+    },
+    {
+      "path": "internal/cli/terminal_linux_test.go",
+      "sha256": "1250153d30c02715d14827f2d5ba6eb4e1ee7e4ffd1ef389d87a2da3e1cf5417"
+    },
+    {
+      "path": "internal/localfile/read_other.go",
+      "sha256": "e910c39dde5114b00f2b2e80a78a59d31a21c12e06c9e1ba51adec2753f55ab1"
+    },
+    {
+      "path": "scripts/test-linux.ps1",
+      "sha256": "782a333477638acf06536584590c99989ecd5fa67f1c9f098132c8a8dc683bee"
+    },
+    {
+      "path": "scripts/test-native-admin.ps1",
+      "sha256": "5117caec74befd1557b389efdab7d591783e0adff5bb3fcc971b7b65caf3b194"
+    },
+    {
+      "path": "tools/linuxvm/archive/main.go",
+      "sha256": "604bff60a4286aad6fdc6ca08fc714d0e6daa894937dfb4b4c2803de4e12cf83"
+    },
+    {
+      "path": "tools/linuxvm/init/main_linux.go",
+      "sha256": "af8b518b3fc5ebd113b4ab6f140737d4a83721149a34247293da2370c5c24680"
+    }
+  ],
+  "guestRoot": "E:/Portico/work/reports/admin-app-linux-final",
+  "artifacts": [
+    {
+      "path": "adminapp",
+      "sha256": "29e574ea7614b6108ed3095227d92a028bf8fea70836733ae48aa334ac2df66d"
+    },
+    {
+      "path": "adminkey",
+      "sha256": "886924c11aab8a28a39db4c847d933a31edbed5e52e2c2f4f2e93e06ed5332c2"
+    },
+    {
+      "path": "admin-key-init",
+      "sha256": "edea98390a80dc8ab6f70787d22a54e15f282209a363eee0501f92696c21a436"
+    },
+    {
+      "path": "admin-key-tests.cpio.gz",
+      "sha256": "6a2a643b4c672d1f638ea089a4c4cbf0b9a6c769add0825810bd9f541d4fdc3c"
+    },
+    {
+      "path": "runtime.log",
+      "sha256": "083c0fa1f7b4fadf8ba4070882dd660b59d426b4a87cb59de46018b6a576f548"
+    },
+    {
+      "path": "environment.json",
+      "sha256": "ad03d0d41a5273431d82850df0bb984b0d43b9c383461fcde215de668e130848"
+    }
+  ],
+  "linux": {
+    "failed": 0,
+    "passedSubcases": 46,
+    "loadedKeyTLSSeconds": 44.29,
+    "encryptedKeyTLSSeconds": 85.41,
+    "environment": {
+      "host": "Microsoft Windows 10.0.26200",
+      "qemu_version": "QEMU emulator version 11.1.0 (v11.1.0-12130-ge470268ff4)",
+      "qemu_sha256": "47d57a6072e0bb3bd98f87926eb129eb1736dfe818c67b3b81ef7ce4edd0b3cd",
+      "kernel_sha256": "1e6bf9027720c75c3ed0d79171f21b5791ee40ca9795d07c7c6e04dc5ea2ae90",
+      "initramfs_sha256": "6a2a643b4c672d1f638ea089a4c4cbf0b9a6c769add0825810bd9f541d4fdc3c",
+      "acceleration": "tcg",
+      "virtual_cpus": 2,
+      "memory_mib": 1536,
+      "network_devices": 0,
+      "host_filesystem_shares": 0,
+      "workload_only": false,
+      "administrator_only": true
+    },
+    "passedTests": 7
+  },
+  "portableLog": "E:/Portico/work/reports/admin-app-portable-final.log",
+  "fuzzLog": "E:/Portico/work/reports/admin-app-cli-fuzz.log",
+  "retainedFailure": {
+    "detail": "Combined integration fixture omitted required Referrer-Policy and X-Frame-Options response headers; fixed fixture only; production response policy unchanged",
+    "root": "E:/Portico/work/reports/admin-app-integration-v1"
+  },
+  "limitations": [
+    "Configuration, real protected encrypted-key TLS and launcher ownership/lifetime components; native child replaced by request driver in combined test",
+    "Native actual window is separately qualified for preceding key source; new full hosted qualification pending",
+    "New administrator terminal prompt case awaits full Linux CLI suite",
+    "No supported administrator package, production issuance/renewal, management route, complete owner bootstrap/recovery or physical-key proof",
+    "Canonical acceptance remains 7 implemented and 84 planned"
+  ],
+  "portable": {
+    "result": "PASS",
+    "raceTests": 15,
+    "raceSubcases": 79,
+    "logSHA256": "13555fac619a185674dafeb6292869e4206ea6a7dfad2cf6bb0cc66ec6443b53",
+    "fuzzResult": "PASS",
+    "fuzzLogSHA256": "ac8c0e69d1f1e54e4c2f0a2394f8431d3c14a0f0eb218fbe9921135543c2336f",
+    "windowsVet": "PASS",
+    "linuxVet": "PASS",
+    "windowsStaticcheck": "PASS",
+    "linuxStaticcheck": "PASS",
+    "linuxCLI": "build PASS; not installed",
+    "sourceScanner": "PASS",
+    "documentation": "120 Markdown, 17 required, 91 cases, zero errors",
+    "scriptParse": "PASS"
+  }
+}

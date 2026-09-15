@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"crypto/ecdsa"
 	"crypto/tls"
 	"crypto/x509"
 	"crypto/x509/pkix"
@@ -17,28 +18,36 @@ import (
 )
 
 type adminFixture struct {
-	f        *enrollmentFixture
-	trust    *pki.Trust
-	conn     *tls.Conn
-	identity tls.Certificate
-	verifier *adminauth.Verifier
-	keys     []*testfixture.VirtualKey
-	factors  []string
+	f                *enrollmentFixture
+	trust            *pki.Trust
+	conn             *tls.Conn
+	identity         tls.Certificate
+	verifier         *adminauth.Verifier
+	keys             []*testfixture.VirtualKey
+	factors          []string
+	userID, deviceID string
+	ca               *x509.Certificate
+	caKey            *ecdsa.PrivateKey
 }
 
 func adminSeed(t *testing.T) *adminFixture {
 	t.Helper()
 	f := enrollmentSeed(t)
+	return adminSeedFor(t, f, f.f.user.ID, f.f.device.ID)
+}
+
+func adminSeedFor(t *testing.T, f *enrollmentFixture, userID, deviceID string) *adminFixture {
+	t.Helper()
 	root, rk := testfixture.Root(t)
 	ik := newKey(t)
 	ca := testfixture.Certificate(t, &x509.Certificate{SerialNumber: big.NewInt(2), Subject: pkix.Name{CommonName: "isolated administrator issuer"}, NotBefore: time.Now().Add(-time.Hour), NotAfter: time.Now().Add(4 * time.Hour), KeyUsage: x509.KeyUsageCertSign, BasicConstraintsValid: true, IsCA: true, MaxPathLenZero: true}, root, &ik.PublicKey, rk)
 	trust, e := pki.NewTrust(pki.Config{DeploymentID: f.config.DeploymentID, IssuerID: NewID(), Profile: pki.Administrator, RootDER: root.Raw, IssuerDER: ca.Raw})
 	must(t, e)
 	key := newKey(t)
-	u, e := pki.IdentityURI(f.config.DeploymentID, pki.Administrator, f.f.device.ID)
+	u, e := pki.IdentityURI(f.config.DeploymentID, pki.Administrator, deviceID)
 	must(t, e)
 	leaf := testfixture.Certificate(t, &x509.Certificate{SerialNumber: big.NewInt(3), NotBefore: f.f.s.now().Add(-time.Minute), NotAfter: f.f.s.now().Add(time.Hour), BasicConstraintsValid: true, KeyUsage: x509.KeyUsageDigitalSignature, ExtKeyUsage: []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth}, URIs: []*url.URL{u}}, ca, &key.PublicKey, ik)
-	must(t, f.f.s.Update(ctx, f.f.actor, func(tx *Tx) error { return tx.RegisterAdminDevice(f.f.user.ID, f.f.device.ID, trust, leaf.Raw) }))
+	must(t, f.f.s.Update(ctx, f.f.actor, func(tx *Tx) error { return tx.RegisterAdminDevice(userID, deviceID, trust, leaf.Raw) }))
 	conn, e := tlsHandshake(t, f.f.s, trust, tls.Certificate{Certificate: [][]byte{leaf.Raw}, PrivateKey: key}, false)
 	must(t, e)
 	keys := []*testfixture.VirtualKey{testfixture.Virtual(t), testfixture.Virtual(t), testfixture.Virtual(t)}
@@ -48,7 +57,7 @@ func adminSeed(t *testing.T) *adminFixture {
 	}
 	v, e := adminauth.New(adminauth.Config{Origin: "https://admin.portico.test", Models: models, ValidUntil: time.Now().Add(time.Hour)})
 	must(t, e)
-	return &adminFixture{f: f, trust: trust, conn: conn, identity: tls.Certificate{Certificate: [][]byte{leaf.Raw}, PrivateKey: key}, verifier: v, keys: keys}
+	return &adminFixture{f: f, trust: trust, conn: conn, identity: tls.Certificate{Certificate: [][]byte{leaf.Raw}, PrivateKey: key}, verifier: v, keys: keys, userID: userID, deviceID: deviceID, ca: ca, caKey: ik}
 }
 func (a *adminFixture) register(t *testing.T, key *testfixture.VirtualKey, challenge AdminChallenge) string {
 	t.Helper()

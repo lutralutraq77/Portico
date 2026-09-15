@@ -1,0 +1,49 @@
+{
+  "schema": 1,
+  "status": "passed",
+  "source_base_commit": "a967c62609d50a6f9a813c74b2337a7a2371113d",
+  "source_files_sha256": {
+    "internal/controller/policy_http.go": "33becf343520943c466aa6443a0da1eb5ddfb5712042e2eb4adaa7f736c23828",
+    "internal/controller/dashboard_assets.go": "67979c8b13e990672aae99bd84c83405497a03772f054c5d31f48500a1afdb83",
+    "internal/controller/dashboard_assets_test.go": "c06fdb6b5f02a53bda8fab7790be39b24c2624ad30fca81a76d10b074c19c28b",
+    "internal/controller/dashboard_browser_test.go": "16bc62e70cc4b2548c13ae0874fe22a9f9db47a1da2cc2be20ffc5ed3ad29d00",
+    "internal/controller/dashboard/index.html": "5186b50707b948152e94e11336f6616a6050f9db1af0ae713e3c498208336e91",
+    "internal/controller/dashboard/admin.css": "46c7c406be1e2ad04097a83839995607ca5e428a7cd204571d77c01effded085",
+    "internal/controller/dashboard/admin.js": "295ed61e321bde2e56d63949da7ebde7ae028bb849bdb5b931df514c122351cd",
+    "scripts/test-dashboard-browser.cjs": "6e9703bb5755d4b76bb43319c1d57e43733820311090f6ec8eac978554a80560"
+  },
+  "browser": "152.0.4191.66",
+  "playwright": "1.62.1",
+  "seconds": 65.23,
+  "checks": [
+    "authenticated real TLS inventory, bounded first page and CSP",
+    "forward and backward revision-bound pagination",
+    "hostile metadata rendered as text without execution",
+    "keyboard navigation and skip link",
+    "all six sections and accessible table headings",
+    "360px mobile reflow, 48px navigation targets and dark scheme",
+    "no cookies, persistent browser storage, third-party requests or script errors",
+    "network failure clears records and refresh recovers",
+    "live administrator revocation clears inventory and denies private assets"
+  ],
+  "source_static_analysis": "Native and Linux vet/staticcheck passed; JavaScript syntax passed",
+  "native_race": {
+    "failures": 0,
+    "top_level_tests": 10,
+    "seconds": 141.0
+  },
+  "artifact_directory": "E:/Portico/work/reports/dashboard-browser-cleanup",
+  "artifact_sha256": {
+    "desktop-resources.png": "79107e825f4036c10b37a13e49367dbec88254e2a09c2632c7f1cf6ab11a592c",
+    "mobile-dark.png": "e48cc27a942fae542b894ee9d5e91a130e3237cf44ccdb10e2e0edb9cabdc73e",
+    "mobile-resources.png": "53eb103b70798d686d77ec0196ae915c62c103a7e933fa089b99cdad6d744e34",
+    "result.json": "6f4f3fbf609440540c91e9ea456fb47ceca8c0613ceb9ef70416ce154077713a",
+    "revoked.png": "0c9b36e4c4324867f1b2fb49da7d63bf7229397c08ed7fa81f3f098cf0d08874",
+    "../dashboard-browser-cleanup.log": "87b7dc792fa4b0ecef3b73abc96d218ea5e4d25babbbf058036c2ee0af70c001"
+  },
+  "limitations": [
+    "Ephemeral software identity; no physical security-key or platform custody qualification.",
+    "Browser automation presents the client identity through Playwright's TLS proxy; upstream TLS validates the isolated root via process-only NODE_EXTRA_CA_CERTS."
+  ],
+  "first_run": "All functional checks passed, but Node stdin remained open until fixture deadline; failed overall. Mobile caption width fixed after screenshot review."
+}

@@ -83,10 +83,17 @@ func main() {
 		panic(e)
 	}
 	workloadOnly := false
+	administratorOnly := false
 	for _, arg := range strings.Fields(string(commandLine)) {
 		if arg == "portico.workload-only=1" {
 			workloadOnly = true
 		}
+		if arg == "portico.administrator-only=1" {
+			administratorOnly = true
+		}
+	}
+	if workloadOnly && administratorOnly {
+		panic("ambiguous guest suite")
 	}
 	passed := true
 	tests := []struct {
@@ -104,6 +111,10 @@ func main() {
 		// Production-cost password KDF tests run sequentially in the emulator.
 		// This suite budget does not change any enrollment network deadline.
 		{"/tests/enrollment", []string{"-test.v", "-test.shuffle=on", "-test.timeout=600s"}},
+		// Native hosted tests cover the complete cryptographic suite. Exercise
+		// persisted key custody and actual TLS on this independent guest kernel.
+		{"/tests/adminkey", []string{"-test.v", "-test.timeout=600s", "-test.run=^TestLinuxEncryptedSignerPersistsAndAuthenticatesTLS$"}},
+		{"/tests/adminapp", []string{"-test.v", "-test.shuffle=on", "-test.timeout=180s"}},
 		{"/tests/workload", []string{"-test.v", "-test.shuffle=on", "-test.timeout=180s"}},
 		{"/tests/controller", []string{"-test.v", "-test.shuffle=on", "-test.timeout=600s"}},
 		{"/tests/pki", []string{"-test.v", "-test.shuffle=on", "-test.timeout=180s"}},
@@ -116,6 +127,9 @@ func main() {
 		{"/portico", []string{"version", "--json"}},
 	}
 	for _, test := range tests {
+		if administratorOnly && test.name != "/tests/adminkey" && test.name != "/tests/adminapp" {
+			continue
+		}
 		if workloadOnly {
 			switch test.name {
 			case "/tests/boottime", "/tests/workload", "/tests/clockhealth", "/tests/connector", "/tests/localfile", "/tests/client":
@@ -137,6 +151,8 @@ func main() {
 	if passed {
 		if workloadOnly {
 			fmt.Println("PORTICO_LINUX_WORKLOAD_PASS")
+		} else if administratorOnly {
+			fmt.Println("PORTICO_LINUX_ADMINISTRATOR_PASS")
 		} else {
 			fmt.Println("PORTICO_LINUX_ALL_PASS")
 		}

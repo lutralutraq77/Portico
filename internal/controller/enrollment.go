@@ -94,26 +94,8 @@ func (t *Tx) invite(v InvitationSpec) (string, error) {
 }
 
 func (t *Tx) enrollmentAuthority(issuer, principal string, profile pki.Profile, until time.Time) error {
-	var issuerEnd int64
-	if e := t.tx.QueryRowContext(t.ctx, `SELECT i.not_after FROM issuers i JOIN pki_bindings p ON p.issuer_id=i.id WHERE i.id=? AND i.enabled=1 AND p.profile=?`, issuer, string(profile)).Scan(&issuerEnd); e != nil {
-		return t.fail(ErrDenied)
-	}
-	if !until.After(t.now) || until.UnixNano() > issuerEnd {
-		return t.fail(ErrDenied)
-	}
-	var enabled int
-	if profile == pki.Device {
-		var end int64
-		e := t.tx.QueryRowContext(t.ctx, `SELECT d.enabled*u.enabled,d.not_after FROM devices d JOIN users u ON u.id=d.user_id WHERE d.id=?`, principal).Scan(&enabled, &end)
-		if e != nil || enabled != 1 || until.UnixNano() > end {
-			return t.fail(ErrDenied)
-		}
-	} else if profile == pki.Connector {
-		if e := t.tx.QueryRowContext(t.ctx, "SELECT enabled FROM connectors WHERE id=?", principal).Scan(&enabled); e != nil || enabled != 1 {
-			return t.fail(ErrDenied)
-		}
-	} else {
-		return t.fail(ErrDenied)
+	if err := t.readPolicy().enrollmentAuthority(issuer, principal, profile, until); err != nil {
+		return t.fail(err)
 	}
 	return nil
 }
@@ -136,16 +118,8 @@ func (t *Tx) enrollment(id string) (enrollment, error) {
 }
 
 func (t *Tx) renewalSource(v enrollment) error {
-	if !v.replaces.Valid || v.state == "active" {
-		return nil
-	}
-	var count int
-	e := t.tx.QueryRowContext(t.ctx, `SELECT count(*) FROM certificates c JOIN enrollments e ON e.certificate_id=c.id JOIN issuers i ON i.id=c.issuer_id WHERE c.id=? AND c.revoked=0 AND c.not_before<=? AND c.not_after>? AND e.state='active' AND i.enabled=1 AND i.not_after>?`, v.replaces.String, t.now.UnixNano(), t.now.UnixNano(), t.now.UnixNano()).Scan(&count)
-	if e != nil {
-		return t.fail(ErrStorage)
-	}
-	if count != 1 {
-		return t.fail(ErrDenied)
+	if err := t.readPolicy().renewalSource(v.replaces, v.state); err != nil {
+		return t.fail(err)
 	}
 	return nil
 }
@@ -269,16 +243,8 @@ type IssuanceProvider interface {
 }
 
 func (t *Tx) trustBound(trust *pki.Trust) error {
-	if trust == nil {
-		return t.fail(ErrInvalid)
-	}
-	var count int
-	e := t.tx.QueryRowContext(t.ctx, `SELECT count(*) FROM pki_bindings WHERE issuer_id=? AND deployment_id=? AND profile=? AND root_sha256=? AND issuer_sha256=?`, trust.IssuerID(), trust.DeploymentID(), string(trust.Profile()), trust.RootFingerprint(), trust.IssuerFingerprint()).Scan(&count)
-	if e != nil {
-		return t.fail(ErrStorage)
-	}
-	if count != 1 {
-		return t.fail(ErrDenied)
+	if err := t.readPolicy().trustBound(trust); err != nil {
+		return t.fail(err)
 	}
 	return nil
 }

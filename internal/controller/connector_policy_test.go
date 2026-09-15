@@ -367,7 +367,7 @@ func TestVersionFourMigrationPreservesCancellationsAndRollsBack(t *testing.T) {
 			f := v.device.f
 			a, e := v.engine.Authorize(ctx, v.connectorConn, v.request())
 			must(t, e)
-			_, e = f.s.db.Exec("DROP TABLE session_closure_receipts; PRAGMA user_version=4")
+			_, e = f.s.db.Exec("DROP TABLE admin_renewals; DROP TABLE session_closure_receipts; PRAGMA user_version=4")
 			must(t, e)
 			hash := sha256.Sum256([]byte(schema + enrollmentSchema + adminSchema + policySchema))
 			old := hex.EncodeToString(hash[:])

@@ -1,0 +1,15 @@
+{
+  "version": "44.3.0",
+  "source": "https://github.com/electron/electron/releases/tag/v44.3.0",
+  "license": "MIT; bundled Chromium and third-party notices ship in the runtime archive",
+  "artifacts": {
+    "windows-amd64": {
+      "file": "electron-v44.3.0-win32-x64.zip",
+      "sha256": "26bf9a617d58d81772b3d68305d59ee48272969c15083c06db634a77358a8d9d"
+    },
+    "linux-amd64": {
+      "file": "electron-v44.3.0-linux-x64.zip",
+      "sha256": "8b49b9efdd73c0f467edc3c1cd5678392c384ccf224f34ff54179f736e2f384b"
+    }
+  }
+}

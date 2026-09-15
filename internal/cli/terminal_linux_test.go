@@ -48,7 +48,7 @@ func TestGuestTerminalSecrets(t *testing.T) {
 		terminalSecretChild(t, role)
 		return
 	}
-	for _, name := range []string{"prepare", "redeem", "activate", "client", "line_editing", "translated_input", "limit", "oversize", "invitation_bound", "encoded_bound", "invalid_utf8", "nul", "empty", "eof", "partial_eof", "cancel", "cancel_confirmation", "interrupt", "deadline", "no_controlling_terminal", "background"} {
+	for _, name := range []string{"prepare", "redeem", "activate", "client", "administrator", "line_editing", "translated_input", "limit", "oversize", "invitation_bound", "encoded_bound", "invalid_utf8", "nul", "empty", "eof", "partial_eof", "cancel", "cancel_confirmation", "interrupt", "deadline", "no_controlling_terminal", "background"} {
 		t.Run(name, func(t *testing.T) {
 			master, slave := testfixture.GuestTerminal(t)
 			raw, err := slave.SyscallConn()
@@ -217,7 +217,7 @@ func terminalSecretChild(t *testing.T, name string) {
 		defer stop()
 	}
 	operation := "client"
-	if name == "prepare" || name == "redeem" || name == "activate" {
+	if name == "prepare" || name == "redeem" || name == "activate" || name == "administrator" {
 		operation = name
 	}
 	if name == "encoded_bound" || name == "cancel_confirmation" {

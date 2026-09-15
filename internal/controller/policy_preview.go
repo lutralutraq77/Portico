@@ -28,11 +28,12 @@ type HostingDraft struct {
 // Exactly one draft is permitted. ResourceID/ExpectedRevision are only accepted
 // for a revision; all new security IDs and enabled flags are chosen by the server.
 type PolicyDraft struct {
-	Resource         *ResourceDraft `json:",omitempty"`
-	Grant            *GrantDraft    `json:",omitempty"`
-	Hosting          *HostingDraft  `json:",omitempty"`
-	ResourceID       string         `json:",omitempty"`
-	ExpectedRevision int64          `json:",omitempty"`
+	Resource         *ResourceDraft  `json:",omitempty"`
+	Grant            *GrantDraft     `json:",omitempty"`
+	Hosting          *HostingDraft   `json:",omitempty"`
+	Lifecycle        *LifecycleDraft `json:",omitempty"`
+	ResourceID       string          `json:",omitempty"`
+	ExpectedRevision int64           `json:",omitempty"`
 }
 type PolicyPreview struct {
 	ID, Digest, Kind, UserID, UserName, DeviceID, DeviceName string
@@ -40,12 +41,15 @@ type PolicyPreview struct {
 	Previous                                                 *ResourceAccess `json:",omitempty"`
 	From, Until, ExpiresAt                                   time.Time
 	PolicyRevision                                           int64
+	Lifecycle                                                *LifecycleTarget `json:",omitempty"`
+	PreviousName                                             string           `json:",omitempty"`
 }
 type policyChange struct {
 	Resource         *Resource
 	Grant            *Grant
 	Hosting          *HostBinding
 	ExpectedRevision int64
+	Lifecycle        *lifecycleChange
 }
 
 func (p *PolicyEngine) resource(t *Tx, id string, revision int64) (ResourceAccess, error) {
@@ -60,11 +64,11 @@ func (p *PolicyEngine) resource(t *Tx, id string, revision int64) (ResourceAcces
 	return r, nil
 }
 
-func (p *PolicyEngine) prepare(t *Tx, id string, d PolicyDraft) (policyChange, PolicyPreview, error) {
+func (p *PolicyEngine) prepare(t *Tx, admin adminPeer, id string, d PolicyDraft) (policyChange, PolicyPreview, error) {
 	var change policyChange
 	v := PolicyPreview{ID: id, ExpiresAt: t.now.Add(5 * time.Minute)}
 	n := 0
-	for _, has := range []bool{d.Resource != nil, d.Grant != nil, d.Hosting != nil} {
+	for _, has := range []bool{d.Resource != nil, d.Grant != nil, d.Hosting != nil, d.Lifecycle != nil} {
 		if has {
 			n++
 		}
@@ -72,7 +76,14 @@ func (p *PolicyEngine) prepare(t *Tx, id string, d PolicyDraft) (policyChange, P
 	if n != 1 || (d.Resource == nil && (d.ResourceID != "" || d.ExpectedRevision != 0)) {
 		return change, v, t.fail(ErrInvalid)
 	}
-	if d.Resource != nil {
+	if d.Lifecycle != nil {
+		var err error
+		change.Lifecycle, v.Lifecycle, v.PreviousName, err = p.prepareLifecycle(t, admin, *d.Lifecycle)
+		if err != nil {
+			return change, v, err
+		}
+		v.Kind = d.Lifecycle.Kind
+	} else if d.Resource != nil {
 		r := Resource{ID: NewID(), Revision: 1, Name: d.Resource.Name, ConnectorID: d.Resource.ConnectorID, Kind: "application", Address: d.Resource.Address, Port: d.Resource.Port, Protocol: d.Resource.Protocol, Enabled: true}
 		address, e := validResource(r)
 		if e != nil || !p.destination(address) {
@@ -178,7 +189,7 @@ func (p *PolicyEngine) Preview(ctx context.Context, c *tls.Conn, trust *pki.Trus
 		if t.tx.QueryRowContext(ctx, "SELECT count(*) FROM policy_previews WHERE device_id=?", admin.device).Scan(&count) != nil || count >= 16 {
 			return t.fail(ErrDenied)
 		}
-		change, view, e := p.prepare(t, NewID(), d)
+		change, view, e := p.prepare(t, admin, NewID(), d)
 		if e != nil {
 			return e
 		}
@@ -253,12 +264,14 @@ func (p *PolicyEngine) BeginPolicyApproval(ctx context.Context, c *tls.Conn, tru
 }
 
 func (p *PolicyEngine) FinishPolicyApproval(ctx context.Context, c *tls.Conn, trust *pki.Trust, v *adminauth.Verifier, id string, response []byte) error {
-	_, e := p.store.finishAdminOperation(ctx, c, trust, v, id, response, func(t *Tx, admin adminPeer, op AdminOperation) error {
+	_, e := p.store.finishAdminOperation(ctx, c, trust, v, id, response, adminFinishAny, func(t *Tx, admin adminPeer, op AdminOperation) error {
 		change, e := p.preview(t, admin, op.TargetID, op.PolicyHash)
 		if e != nil {
 			return e
 		}
-		if change.Resource != nil {
+		if change.Lifecycle != nil {
+			e = p.applyLifecycle(t, admin, *change.Lifecycle)
+		} else if change.Resource != nil {
 			if !p.destination(change.Resource.Address) {
 				return t.fail(ErrDenied)
 			}

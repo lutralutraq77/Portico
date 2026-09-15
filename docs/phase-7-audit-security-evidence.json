@@ -1,0 +1,251 @@
+{
+  "schema": 1,
+  "source_base_commit": "dcf8002cc85fbe021fb847b875db325c511b3e2f",
+  "status": "native and browser component checks passed; final combined-source hosted qualification pending",
+  "source_files": [
+    {
+      "path": "go.mod",
+      "sha256": "07492fa09cc573215077baa5a2bd8f31b0fe89f8e7a418457c4e68b961886d66"
+    },
+    {
+      "path": "go.sum",
+      "sha256": "1e8b0fee8a3077655271dfa66e7a54b104c684691c01d0d2c8caf6d10088301f"
+    },
+    {
+      "path": "internal/controller/dashboard.go",
+      "sha256": "2160c6c384ade5138a22545aba482ee5ce20a7bbebf57be6203ad3339b560f39"
+    },
+    {
+      "path": "internal/controller/dashboard_security.go",
+      "sha256": "7c99d8dfb62ab02f978bd0d4107dc47f403b3c402068a70869d42deeff1b49bd"
+    },
+    {
+      "path": "internal/controller/dashboard_security_test.go",
+      "sha256": "1133a891398ce7323c5beeb61e3991e4dd06d87ff325e02515a22a5d2209ad7f"
+    },
+    {
+      "path": "internal/controller/dashboard_test.go",
+      "sha256": "9c1d30486b007d2aa0817083c1d4e0cb766a92b2fc681d9c31a495574a409331"
+    },
+    {
+      "path": "internal/controller/dashboard_assets.go",
+      "sha256": "67979c8b13e990672aae99bd84c83405497a03772f054c5d31f48500a1afdb83"
+    },
+    {
+      "path": "internal/controller/dashboard_browser_test.go",
+      "sha256": "aca1eba573a7db3a960767d0e04733585d2e3b95639b95b1d170f12c0a2c5275"
+    },
+    {
+      "path": "internal/controller/policy_http.go",
+      "sha256": "909c66f3be1fde2e0015bba275e8b4f9b4891096cf52e2b569931a403f464b17"
+    },
+    {
+      "path": "internal/controller/admin.go",
+      "sha256": "63cc2b877d041746872524cf3f386fafae60c2f76b0067be348be7706649a648"
+    },
+    {
+      "path": "internal/controller/audit.go",
+      "sha256": "fc20983cde9880bbaf29997250d40e8e6ec7d39cab025b1331abbd797c076bde"
+    },
+    {
+      "path": "internal/controller/dashboard/index.html",
+      "sha256": "5d62282fd26d02cc43b494fea7667870a2a36ba1f0e1a61d371e0384fe6a6eb8"
+    },
+    {
+      "path": "internal/controller/dashboard/admin.js",
+      "sha256": "14d103baf636d218b582bb7971885d935d056278bb8f098eae53f86a4306ba47"
+    },
+    {
+      "path": "internal/controller/dashboard/admin.css",
+      "sha256": "4f3986bff366117421ecd50fe7db7a6f3503ec29caef7c3c8a989186582a1202"
+    },
+    {
+      "path": "scripts/test-dashboard-browser.cjs",
+      "sha256": "2de862eaf7d957edafdf2e281a67fcb0672559e8c320ec4b68e9b218ea50f3b5"
+    }
+  ],
+  "checks": {
+    "dashboard_race": {
+      "subcase_pass": 41,
+      "fail": 0,
+      "skip": 0,
+      "top_pass": 17,
+      "note": "Before final user/device-name and UI readability additions",
+      "seconds": 220.208
+    },
+    "browser": {
+      "screenshots_reviewed": [
+        "desktop-audit.png",
+        "desktop-security.png",
+        "mobile-audit-dark.png",
+        "mobile-security-dark.png"
+      ],
+      "seconds": 20.88,
+      "package_seconds": 24.746,
+      "groups": 19,
+      "result": {
+        "browser": "152.0.4191.66",
+        "playwright": "1.62.1",
+        "checks": [
+          "authenticated real TLS inventory, bounded first page and CSP",
+          "forward and backward revision-bound pagination",
+          "hostile metadata rendered as text without execution",
+          "keyboard navigation and skip link",
+          "all six sections and accessible table headings",
+          "audit history has chronological bounded pages and stable backward navigation",
+          "inconsistent audit sequence is rejected and prior history is cleared",
+          "current administrator security metadata rejects inconsistent factor counts without retaining old data",
+          "audit and security views reflow at 360px in the dark scheme",
+          "effective access uses exact registered identities and controller policy snapshot",
+          "360px access selectors, fingerprints and allowed result reflow with 48px controls in light and dark schemes",
+          "changing selected identity clears the previous permission and status until a new check",
+          "mismatched destination in an inspection response is rejected and clears prior state",
+          "policy change rejects stale access snapshot, clears old result and shows fresh denial",
+          "separate device grant and connector hosting inventory",
+          "360px mobile reflow, 48px navigation targets and dark scheme",
+          "no cookies, persistent browser storage, third-party requests or script errors",
+          "network failure clears records and refresh recovers",
+          "live administrator revocation clears inventory and denies private assets"
+        ],
+        "limitations": [
+          "Ephemeral software identity; no physical security-key or platform custody qualification.",
+          "Browser automation presents the client identity through Playwright's TLS proxy; upstream TLS validates the isolated root via process-only NODE_EXTRA_CA_CERTS."
+        ]
+      }
+    },
+    "final_affected_race": {
+      "seconds": 13.483,
+      "skip": 0,
+      "fail": 0,
+      "subcase_pass": 3,
+      "top_pass": 5
+    },
+    "static": {
+      "linux": "passed",
+      "windows": "passed"
+    }
+  },
+  "artifacts": [
+    {
+      "path": "reports/dashboard-audit-security-native.jsonl",
+      "sha256": "5a7edb29c0e997033f7ef4144e4476bad44e705444b868f2fe27ccdca79a9c3b"
+    },
+    {
+      "path": "reports/dashboard-audit-security-final-native.jsonl",
+      "sha256": "8631dca255a3602dee7299633813de17a1dbc6c0f85e077a55c86c26a324c7f8"
+    },
+    {
+      "path": "reports/dashboard-audit-security-static.log",
+      "sha256": "78c45dda254645d6065e1215b56878480e61dd51d116ae61d169f97116c522a7"
+    },
+    {
+      "path": "reports/dashboard-audit-security-browser.log",
+      "sha256": "58f2bf30a90c20233f297ee1bbd650b07c1220f8615f204b3e32463742b08966"
+    },
+    {
+      "path": "reports/dashboard-audit-security-browser-final.log",
+      "sha256": "e8e24c48ee81d4ed9043e75f410322a162a3a17bd49f3df9f607295eb45b91ed"
+    },
+    {
+      "path": "reports/dashboard-audit-security-browser/desktop-access.png",
+      "sha256": "b1cb56cc739eb699b73217399f29cc1391d6e60e654613ee248734d4736c02af"
+    },
+    {
+      "path": "reports/dashboard-audit-security-browser/desktop-audit.png",
+      "sha256": "ef9e1fb8593b57b8a3261c6c5b0450e68725b008fd3e48e6c96b789fa68a548f"
+    },
+    {
+      "path": "reports/dashboard-audit-security-browser/desktop-resources.png",
+      "sha256": "4ccb03835b4c11146f413ef22e0199a483bf441408aae4ee76fc2642d2406d5c"
+    },
+    {
+      "path": "reports/dashboard-audit-security-browser/desktop-security.png",
+      "sha256": "429f4faceb4e0db1fa26f834e73b29c19289d85e94215dc52591268d5af3f341"
+    },
+    {
+      "path": "reports/dashboard-audit-security-browser/mobile-access-dark.png",
+      "sha256": "778d283028031d4eac6921e4d0e777e0aee7ce690543b0e27d390432f1af34a6"
+    },
+    {
+      "path": "reports/dashboard-audit-security-browser/mobile-access.png",
+      "sha256": "8b5667fd981eff9e05c97de2fdd576cb4680c927970bbfab5907c857b99b717d"
+    },
+    {
+      "path": "reports/dashboard-audit-security-browser/mobile-audit-dark.png",
+      "sha256": "114c7d23422d55d10d180470d01cfa074aaf1bb6d92dcc19953fb2d1121bbd87"
+    },
+    {
+      "path": "reports/dashboard-audit-security-browser/mobile-dark.png",
+      "sha256": "a3ed372ea2f1c9a2f1fe36a1e08412090c55b6904670e0443183310463f90e98"
+    },
+    {
+      "path": "reports/dashboard-audit-security-browser/mobile-resources.png",
+      "sha256": "e28449648499fd5e2a05ef488c28549ea81d31ef33282ee5fdb330c7ac5c784e"
+    },
+    {
+      "path": "reports/dashboard-audit-security-browser/mobile-security-dark.png",
+      "sha256": "e9436f5492fc56faf9be6d030519cf560880d673f9644425806aabc050fb573e"
+    },
+    {
+      "path": "reports/dashboard-audit-security-browser/result.json",
+      "sha256": "ff0fb3a1da35457c47a951ad98259682edc6d9b6b0ff139956836dbcdd7fb0e9"
+    },
+    {
+      "path": "reports/dashboard-audit-security-browser/revoked.png",
+      "sha256": "60f7c3da7e3acebc81bce2ffeb97d256f6f245525c5e25b2893fd15d6c8761ae"
+    },
+    {
+      "path": "reports/dashboard-audit-security-browser-final/desktop-access.png",
+      "sha256": "7100e9cbd055ebc602cfd300415bdbc9c8c06caee27caf50093e2eff5c6e168f"
+    },
+    {
+      "path": "reports/dashboard-audit-security-browser-final/desktop-audit.png",
+      "sha256": "8bf71e12afcddb75470cdb361d00a374656c41c66b21a2b4079ab1984843e752"
+    },
+    {
+      "path": "reports/dashboard-audit-security-browser-final/desktop-resources.png",
+      "sha256": "60412162a20feafdd5a797e6f83c1d145bb413acc640751f4a5d5906ff88a873"
+    },
+    {
+      "path": "reports/dashboard-audit-security-browser-final/desktop-security.png",
+      "sha256": "bfa6fbf2ce727a429f2c0dfbc3783c52a6b74760b333ffc922ce6485c07145c8"
+    },
+    {
+      "path": "reports/dashboard-audit-security-browser-final/mobile-access-dark.png",
+      "sha256": "7982f37cbf6d98a832cd845d4979508e4c9772f67a7d5faf8f033233f53a86b0"
+    },
+    {
+      "path": "reports/dashboard-audit-security-browser-final/mobile-access.png",
+      "sha256": "6091613e7759afdb7aec01fd266e3483192b23a5175ee125dbced7aee08123ef"
+    },
+    {
+      "path": "reports/dashboard-audit-security-browser-final/mobile-audit-dark.png",
+      "sha256": "08e6d684d01aca280fcb9fb817a52c343c123cfcc5dbde7436639c99f41799fc"
+    },
+    {
+      "path": "reports/dashboard-audit-security-browser-final/mobile-dark.png",
+      "sha256": "7a21e6cdf0d3cf2e3143f37b7f6850790e185b8bf124d58a6edc08ae8b149c57"
+    },
+    {
+      "path": "reports/dashboard-audit-security-browser-final/mobile-resources.png",
+      "sha256": "165da633179b731f162df751301df2ddfa5561481e4be19f7f09f1153d12ae65"
+    },
+    {
+      "path": "reports/dashboard-audit-security-browser-final/mobile-security-dark.png",
+      "sha256": "3e1d25380707ea9f39b96490dccdfc65456f2eaaa8394c18a1eaf0dd7bfbb519"
+    },
+    {
+      "path": "reports/dashboard-audit-security-browser-final/result.json",
+      "sha256": "7ef7d191a3d76b4aa8c1b6486b6359490a77e3e1d35a661bac8cc8163b719fc1"
+    },
+    {
+      "path": "reports/dashboard-audit-security-browser-final/revoked.png",
+      "sha256": "60f7c3da7e3acebc81bce2ffeb97d256f6f245525c5e25b2893fd15d6c8761ae"
+    }
+  ],
+  "acceptance": {
+    "planned": 84,
+    "total": 91,
+    "implemented": 7
+  }
+}

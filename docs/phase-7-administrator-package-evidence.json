@@ -1,0 +1,58 @@
+{
+  "source": "1ccbe15d5c5ed16759ce4e80dcb9ab0879cbf8fb",
+  "tested_merge": "51b1095d5dfa87d8ccde855d0f739bf342a44428",
+  "tree": "e432d67b9416c68c39c91782df43fc93cba33b43",
+  "run": 34859325785,
+  "native_archive_sha256": "a4890a3890e7bc0c499ec148cd63219805ed9b5e87c35b608917e0c81ce8c926",
+  "installed_archive_sha256": "8aee50954fdf3bc3de819db217fb838c2759f79b06eb39612e3893ab3f4c4d6c",
+  "installed": {
+    "source_revision": "51b1095d5dfa87d8ccde855d0f739bf342a44428",
+    "tree_sha256": "28d9ce92e5cdd8f0464428851dc3bb9b6404ee4edcc6866123aadad4dce0ff23",
+    "binary_sha256": "57e85f7e8439f15ac1afa3a3c609639fc610561d2eb01d2803bcd84c466f4257",
+    "result": "PASS",
+    "scope": "Unmodified installed CLI, encrypted administrator key, real kernel clock, shipped native entrypoint, authenticated dashboard inventory and cancellation; isolated issuer/model fixtures; no physical hardware or complete bootstrap/recovery"
+  },
+  "arch": {
+    "source_revision": "51b1095d5dfa87d8ccde855d0f739bf342a44428",
+    "tree_sha256": "28d9ce92e5cdd8f0464428851dc3bb9b6404ee4edcc6866123aadad4dce0ff23",
+    "image": "quay.io/archlinux/archlinux@sha256:2685bf92cc6215cc922488ae8e80b4875f4bdf19fef648818b1742517ce27077",
+    "package": "portico-admin-development-0.7.0.dev.g51b1095d5dfa-1-x86_64.pkg.tar.zst",
+    "package_sha256": "eb42271c8d9017e9198b5bae866d718b75e91e1bcae4268b8db6c364f38a7113",
+    "build": "PASS",
+    "install_remove": "PASS",
+    "network": "none",
+    "runtime_execution": false,
+    "limitations": "Offline packaging fixture omits dependency installation; actual native runtime is tested separately on Ubuntu"
+  },
+  "embedded_artifacts": [
+    {
+      "path": "installed-admin/portico",
+      "sha256": "57e85f7e8439f15ac1afa3a3c609639fc610561d2eb01d2803bcd84c466f4257",
+      "bytes": 20343121
+    },
+    {
+      "path": "admin-package/51b1095d5dfa87d8ccde855d0f739bf342a44428/portico-admin-tree.tar.gz",
+      "sha256": "28d9ce92e5cdd8f0464428851dc3bb9b6404ee4edcc6866123aadad4dce0ff23",
+      "bytes": 127794281
+    },
+    {
+      "path": "admin-package/51b1095d5dfa87d8ccde855d0f739bf342a44428/output/portico-admin-development-0.7.0.dev.g51b1095d5dfa-1-x86_64.pkg.tar.zst",
+      "sha256": "eb42271c8d9017e9198b5bae866d718b75e91e1bcae4268b8db6c364f38a7113",
+      "bytes": 117371349
+    },
+    {
+      "path": "admin-package/51b1095d5dfa87d8ccde855d0f739bf342a44428/PKGBUILD",
+      "sha256": "581aea971c0b3dcd0ebc7476fb4b948c1af035da024df0f6c01cd7cd8461e773",
+      "bytes": 1253
+    }
+  ],
+  "installed_test_seconds": 5.33,
+  "actual_kernel_clock_uncertainty": "3.044ms",
+  "package_integrity": "86 files, zero altered files",
+  "limitations": [
+    "Unsigned development artifact",
+    "Arch container verifies packaging without runtime dependency execution",
+    "Actual installed native execution is on Ubuntu 24.04.5",
+    "No physical hardware, complete bootstrap, recovery, administrator renewal or management-routing claim"
+  ]
+}

@@ -1,0 +1,152 @@
+{
+  "schema": 1,
+  "base_revision": "ba4e0d1519730f8f357d850e4e5fe50e8757d5f8",
+  "production_behavior_changed": false,
+  "initial_browser": {
+    "browser": "152.0.4191.66",
+    "playwright": "1.62.1",
+    "checks": [
+      "initial browser starts with no imported or pre-registered factor",
+      "altered relying party, user, attestation, attachment and verification stop before native creation",
+      "canceled native initial registration creates no factor or confirmation",
+      "initial key 1 uses native attested registration, remains untested and rejects confirmation replay",
+      "an untested initial key cannot authorize replacement registration",
+      "initial key 1 passes its separate native exact-key test",
+      "initial key 2 uses native attested registration, remains untested and rejects confirmation replay",
+      "initial key 2 passes its separate native exact-key test",
+      "third initial registration is denied before a native response",
+      "independently created backup retires primary without reopening initial registration",
+      "revoking administrator identity denies the newly registered backup over the existing browser connection",
+      "initial flow leaves no cookies, browser storage, external page requests or script errors"
+    ],
+    "creations": 2,
+    "assertions": 3,
+    "final_state": {
+      "Total": 2,
+      "Enabled": 1,
+      "Tested": 1,
+      "Registered": 2,
+      "Retired": 1,
+      "Tests": 2
+    },
+    "limitations": [
+      "Both native browser credentials use isolated virtual USB keys and Chromium software attestation; this does not qualify physical keys or independent custody.",
+      "Administrator TLS identity is provisioned by the fixture. Complete owner bootstrap, native bridge, encrypted backup and recovery remain unqualified."
+    ]
+  },
+  "initial_test_seconds": 48.76,
+  "replacement_regression_seconds": 48.95,
+  "replacement_regression": {
+    "browser": "152.0.4191.66",
+    "playwright": "1.62.1",
+    "checks": [
+      "security navigation lists only key metadata without credential handles",
+      "changed operation, target, revision and relying party stop before native assertion",
+      "concurrent policy change denies the previously reviewed key operation",
+      "cancellation and navigation abort native key requests without a confirmation",
+      "real controller rejects a native key proof without user verification",
+      "exact key test uses native assertion, keyboard activation and one-use confirmation",
+      "key review focuses its heading and reflows at 360px in dark mode",
+      "different native backup key retires primary and retired row cannot start a key test",
+      "retirement does not reopen the initial two-key registration allowance",
+      "separate native create registers the replacement with attestation but leaves it untested",
+      "newly created browser credential passes its independent exact-key test",
+      "lost key confirmation reports uncertainty without replaying the committed operation",
+      "replacement can authorize retirement but final enabled key cannot retire itself",
+      "live administrator revocation denies the key operation over the existing browser context",
+      "no cookies, browser storage, external page requests or script errors"
+    ],
+    "assertions": 7,
+    "creations": 1,
+    "final_state": {
+      "Total": 3,
+      "Enabled": 1,
+      "Tested": 1,
+      "Registered": 3,
+      "Retired": 2,
+      "Tests": 5
+    },
+    "limitations": [
+      "Virtual USB devices and the public Chromium software attestation signer are isolated test fixtures, not physical security-key qualification.",
+      "Private TLS uses an ephemeral client-certificate proxy; native administrator bridge, platform custody and complete bootstrap remain unqualified."
+    ]
+  },
+  "first_run": {
+    "result": "failed",
+    "seconds": 20.38,
+    "reason": "Test navigation to the same URL kept the prior rejected operation view. Corrected fixture reloads that URL, as existing browser tests do."
+  },
+  "validation": [
+    "Controller go vet with dashboardbrowser tag passed.",
+    "Controller staticcheck with dashboardbrowser tag passed.",
+    "New browser script Node syntax validation passed.",
+    "Desktop and 360px dark screenshots inspected; heading focus, reflow and minimum button height checked."
+  ],
+  "source_files": [
+    {
+      "path": "internal/controller/dashboard_browser_test.go",
+      "sha256": "bc8e0b57a0d473002979f0645ebf313c1ee9e06756330bf139374ac7044e510b"
+    },
+    {
+      "path": "internal/controller/dashboard_factor_model_browser_test.go",
+      "sha256": "1527012b2c3629fac1fbb513826033d86f51b5c740358a63a766a38f003ac28a"
+    },
+    {
+      "path": "scripts/test-dashboard-initial-factor-browser.cjs",
+      "sha256": "41b28a6d34c22a7a2f53c7f744129942bc4a6f5dd7dc1060781f1b1efda3b660"
+    },
+    {
+      "path": "scripts/test-dashboard-factor-browser.cjs",
+      "sha256": "c392020ca6db817ee9d0ac053d7b4755f438c42be71632e813ae21b4e392e896"
+    },
+    {
+      "path": "internal/controller/admin.go",
+      "sha256": "3d8cce6043e72e0da9bd063b9f3187edf52fe3fdb0d987e033071f058843e1fd"
+    },
+    {
+      "path": "internal/controller/dashboard_factors.go",
+      "sha256": "9988bf2b20a3556026c3f2b35c5a0a25e6fc66d55186ff4a5ba54b97e7a2a5a3"
+    },
+    {
+      "path": "internal/controller/dashboard/admin.js",
+      "sha256": "f4750b9a47d1777628e9a319e2b17e04b5e96a9983e16f523193b2cbc22ee293"
+    }
+  ],
+  "artifact_root": "E:/Portico/work/reports",
+  "artifacts": [
+    {
+      "path": "dashboard-initial-factor-browser-v1.log",
+      "sha256": "fc946b39cfcd3ae798269d03cdc0e320490d641e93bc9a3bce77cbfa3cf45bb2"
+    },
+    {
+      "path": "dashboard-initial-factor-browser-v2.log",
+      "sha256": "40d37b48e97e44b6680c34e2d6343d371d15e66b8553c5f82d19e8a412593053"
+    },
+    {
+      "path": "dashboard-initial-factor-browser-v2/result.json",
+      "sha256": "854a07b50f77c7a6fd23d921939c3e0015882b5ced0dbdecf13c227f78658515"
+    },
+    {
+      "path": "dashboard-initial-factor-browser-v2/desktop-initial-key-review.png",
+      "sha256": "80b8c319125577585603c125cdfd0a72eb069c12b583ec064b82e3cee64925f5"
+    },
+    {
+      "path": "dashboard-initial-factor-browser-v2/mobile-initial-key-review-dark.png",
+      "sha256": "548b85be3dbf3d4e5c060418345018a9e82ad74ee600ce56d0695206cacc2c2e"
+    },
+    {
+      "path": "dashboard-initial-factor-regression-v1.log",
+      "sha256": "ed7b4bdedafee277e6b72e282f398768122a74f6fa6db7afb405e37202e2b6c1"
+    },
+    {
+      "path": "dashboard-initial-factor-regression-v1/result.json",
+      "sha256": "e396188640d9582165d5b94097cc2dc9a49b48abf28e9771f1a3e6e9513b603a"
+    }
+  ],
+  "limitations": [
+    "Initial keys are distinct empty CDP virtual USB authenticators; no credential import or production attestation relaxation.",
+    "The administrator TLS identity is locally provisioned by test setup. This does not complete owner bootstrap, native administrator bridge, platform custody, encrypted backup or physical recovery.",
+    "The 12 new and 15 regression browser groups are component qualification; canonical acceptance remains 7 implemented and 84 planned out of 91.",
+    "No production deployment, release, merge or host DNS/firewall/clock/global trust changes."
+  ]
+}

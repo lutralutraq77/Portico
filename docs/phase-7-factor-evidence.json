@@ -1,0 +1,193 @@
+{
+  "factor_browser": {
+    "browser": "152.0.4191.66",
+    "playwright": "1.62.1",
+    "checks": [
+      "security navigation lists only key metadata without credential handles",
+      "changed operation, target, revision and relying party stop before native assertion",
+      "concurrent policy change denies the previously reviewed key operation",
+      "cancellation and navigation abort native key requests without a confirmation",
+      "real controller rejects a native key proof without user verification",
+      "exact key test uses native assertion, keyboard activation and one-use confirmation",
+      "key review focuses its heading and reflows at 360px in dark mode",
+      "different native backup key retires primary and retired row cannot start a key test",
+      "retirement does not reopen the initial two-key registration allowance",
+      "separate native create registers the replacement with attestation but leaves it untested",
+      "newly created browser credential passes its independent exact-key test",
+      "lost key confirmation reports uncertainty without replaying the committed operation",
+      "replacement can authorize retirement but final enabled key cannot retire itself",
+      "live administrator revocation denies the key operation over the existing browser context",
+      "no cookies, browser storage, external page requests or script errors"
+    ],
+    "assertions": 7,
+    "creations": 1,
+    "final_state": {
+      "Total": 3,
+      "Enabled": 1,
+      "Tested": 1,
+      "Registered": 3,
+      "Retired": 2,
+      "Tests": 5
+    },
+    "limitations": [
+      "Virtual USB devices and the public Chromium software attestation signer are isolated test fixtures, not physical security-key qualification.",
+      "Private TLS uses an ephemeral client-certificate proxy; native administrator bridge, platform custody and complete bootstrap remain unqualified."
+    ]
+  },
+  "static_analysis": "JavaScript syntax and controller vet/staticcheck with dashboardbrowser tag passed",
+  "limitations": [
+    "Public Chromium software attestation key is included only in an opt-in test file and isolated fixture trust; it must never be trusted in a deployment.",
+    "Native browser responses are not rewritten. A test wrapper records only native API error names while delegating to the actual browser implementation.",
+    "Positive initial-registration browser flow is not separately qualified; positive initial registration uses real HTTP/cryptographic fixtures.",
+    "No physical key, native administrator bridge, platform custody, complete bootstrap, encrypted-backup or physical recovery qualification.",
+    "Hosted checks on the new factor source remain pending."
+  ],
+  "source_files": [
+    {
+      "path": "internal/controller/admin.go",
+      "sha256": "5b6d342f56bf6339d791a94919d60ced70665035de7c9db18582c3d4a29174ed"
+    },
+    {
+      "path": "internal/controller/dashboard.go",
+      "sha256": "53ef5683c0851e87eb07ecc0eb8de0ec45680c26586294cc26923f00e91a2bb5"
+    },
+    {
+      "path": "internal/controller/dashboard/admin.js",
+      "sha256": "98148209b42f6a087211b9bef98523e29793928d0863b6a14090d188b8290f35"
+    },
+    {
+      "path": "internal/controller/dashboard/index.html",
+      "sha256": "e939be066e840f8791555215237c52e953dc88a1da5b0ad7d54f965691d91089"
+    },
+    {
+      "path": "internal/controller/dashboard_browser_test.go",
+      "sha256": "8146f77cef809897c7a16aa85ad97dba9df66fb91c000cc32fe96a4fe774df3f"
+    },
+    {
+      "path": "internal/controller/dashboard_factor_model_browser_test.go",
+      "sha256": "1527012b2c3629fac1fbb513826033d86f51b5c740358a63a766a38f003ac28a"
+    },
+    {
+      "path": "internal/controller/dashboard_factors.go",
+      "sha256": "a14eb86279749dac2b4333fc886b0744ed0e1f76170d122cb00d00f3484fe67d"
+    },
+    {
+      "path": "internal/controller/dashboard_factors_test.go",
+      "sha256": "d7e3621b351691d8abb84403653bb2f1f5634efa4513a7525420535d56690a90"
+    },
+    {
+      "path": "internal/controller/policy_http.go",
+      "sha256": "32dee9f1475b3bccfd45999edbf89ccb12bd59ba81287bcf75e3e161a7dd8932"
+    },
+    {
+      "path": "internal/controller/policy_preview.go",
+      "sha256": "d6767fbae811bcf81e6dd6432cc53f2fb631fcce0035fc089b3bab1a3020c732"
+    },
+    {
+      "path": "scripts/test-dashboard-factor-browser.cjs",
+      "sha256": "c392020ca6db817ee9d0ac053d7b4755f438c42be71632e813ae21b4e392e896"
+    },
+    {
+      "path": "internal/adminauth/webauthn.go",
+      "sha256": "f4b40e183cc841b118e871343fde7a1278d0cbab7ba1b60df7036d3f32426347"
+    }
+  ],
+  "artifact_root": "E:/Portico/work/reports",
+  "status": "component passed; full Phases 6 and 7 incomplete",
+  "source_base_commit": "5e7b0c8a89d799926f16ed9a5d9fa28f80eb1268",
+  "regression": "Before prior-test enforcement, an untested backup could stage retirement and approve new registration. A dedicated regression reproduced this; challenge and completion now select only currently enabled, previously tested approving credentials.",
+  "schema": 1,
+  "artifacts": [
+    {
+      "path": "dashboard-factors-native-v1.jsonl",
+      "sha256": "bcfbc0125397dc2d2ad07c1600f6a415d683d59269683a177f080a86bbee8d31"
+    },
+    {
+      "path": "dashboard-factor-tested-before.log",
+      "sha256": "b9bf92324b9c2826b2fa384e448e11c798cc69f2c5c0a9202a5d661303c48132"
+    },
+    {
+      "path": "dashboard-factors-native-final.jsonl",
+      "sha256": "50afa3823513cee3cd60d3bedafb7876bf0d3ca0e6e55edc2117fb996e379d22"
+    },
+    {
+      "path": "dashboard-factor-browser-v1.log",
+      "sha256": "f4d1593392db2782f2228f65eef300c93f079e5fa6a293fc63472de0efecb5c5"
+    },
+    {
+      "path": "dashboard-factor-browser-v2.log",
+      "sha256": "03f894c765b8cc1d01d48ff1b98dd838ec0fe4935d56d67480ffaaa1ee3a48fa"
+    },
+    {
+      "path": "dashboard-factor-browser-v3.log",
+      "sha256": "c3821ad4907798e61093b3802dac261371e6a2c42b07cf6f2eb61b281a2c7f25"
+    },
+    {
+      "path": "dashboard-factor-browser-v4.log",
+      "sha256": "2d10093b96212e484264432616a46fb7cd9e40976fb52cdd71b0732019ee4f29"
+    },
+    {
+      "path": "dashboard-factor-browser-v5.log",
+      "sha256": "32b7042a332dac9506b592a5f82785148df6101c9bdabb83bc17b6b55de9c55d"
+    },
+    {
+      "path": "dashboard-factor-browser-v6.log",
+      "sha256": "e898579a230d4c7df4c8c5d632156abcb0aa9d8a96e5837d0b9979d101e47ba6"
+    },
+    {
+      "path": "dashboard-factor-browser-v6/result.json",
+      "sha256": "e396188640d9582165d5b94097cc2dc9a49b48abf28e9771f1a3e6e9513b603a"
+    },
+    {
+      "path": "dashboard-factor-browser-v6/desktop-key-review.png",
+      "sha256": "a3861645d00089e0a71cc2a9bfc49e30eed8a38d4f9daeed3a172b950d88b804"
+    },
+    {
+      "path": "dashboard-factor-browser-v6/mobile-key-review-dark.png",
+      "sha256": "be1d6b4346f7b39e8736178ee8ef06ab40419a02c71314d21106f75cbeb8d5b3"
+    },
+    {
+      "path": "dashboard-factor-inventory-regression.log",
+      "sha256": "aaf18381d952bd759c62413efafe24d6c2cde9777cead02d7214f96b0eb91c16"
+    },
+    {
+      "path": "dashboard-factor-policy-regression.log",
+      "sha256": "db98d2d34930627cdd5c153d5dd01b493acbda4961730a07f903bbbf60e4313f"
+    },
+    {
+      "path": "dashboard-factors-static-final.log",
+      "sha256": "d94eb47dfc654d7edd942c388504decf2e7d722b77abd01d88a77fc4a0f98f7a"
+    }
+  ],
+  "earlier_attempts": [
+    "v1/v2 stopped at native assertion stages with multiple simultaneously connected virtual devices; fixture now swaps one device at a time.",
+    "v3/v4 exposed a fixture issuer ASN.1 encoding mismatch, with a valid attestation signature but rejected chain.",
+    "v5 matched issuer encoding but same-subject/same-key leaf and CA triggered X.509 cycle detection.",
+    "v6 uses a distinct fixture CA SAN and passes the unchanged production certificate-chain and attestation checks.",
+    "Initial staticcheck rejected deprecated raw ECDSA fields in the test model; fixture now uses ParseRawPrivateKey and final staticcheck passes."
+  ],
+  "factor_browser_seconds": 18.06,
+  "native_race": {
+    "sub_pass": 87,
+    "seconds": 109.364,
+    "failed": 0,
+    "race": true,
+    "top_pass": 30,
+    "skipped": 0
+  },
+  "browser_regressions": {
+    "inventory": {
+      "seconds": 11.74,
+      "groups": 19
+    },
+    "policy": {
+      "seconds": 16.23,
+      "groups": 16
+    }
+  },
+  "canonical_acceptance": {
+    "total": 91,
+    "implemented": 7,
+    "planned": 84
+  }
+}
