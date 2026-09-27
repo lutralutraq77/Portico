@@ -1,5 +1,7 @@
 # Roadmap and Phase 0 handoff
 
+For the current source, evidence and ordered remaining work, start with the [27 September 2026 save point](SAVEPOINT.md). Historical source-specific outcomes below are retained; they are not current-source completion claims.
+
 Status: Phases 6 and 7 are active. The Linux/Arch client, encrypted enrollment, protected agent, installed user service and application launcher have recorded qualification. Phase 7 includes private inventory, exact access inspection, grant/hosting lists and audit/security views with actual TLS/browser/mobile/keyboard/revocation checks. The latest 19-group browser run passed. Source 592536d passed all six hosted workflows; combined dcf8002 passed five but failed two final-response cases, prompting a follow-up drain-ordering correction. Final combined-source qualification remains required. Desktop/platform key workflows, secure administration/bootstrap, complete management/approval flows and physical/deployment gates remain open. Complete Phases 6 and 7, then wait for approval before Phase 8; see the [delivery ledger](docs/delivery-status.md).
 
 ## Delivery phases and gates

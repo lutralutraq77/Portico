@@ -1,5 +1,7 @@
 # Complete delivery status
 
+Latest restart record: the [27 September 2026 save point](../SAVEPOINT.md) and its [evidence snapshot](savepoint-2026-09-27-evidence.json) cover implementation commit `d22e2c4`. All seven hosted workflows for that source report success; independent verification of their downloadable artifacts remains pending. The dedicated management relay foundation is now committed, but its complete connector/native path and dedicated runtime tests remain unfinished. Use that dated checkpoint to resolve older status wording below; neither Phase 6 nor Phase 7 is complete.
+
 The project has fifteen phases, numbered 0 through 14. The active objective is to finish Phases 6 and 7, then wait for the owner's approval before Phase 8. Independent software work continues while physical or deployment inputs remain undecided. No phase number, successful build or component test implies production readiness.
 
 | Phase | Current authoritative state | Evidence still required for full completion |
