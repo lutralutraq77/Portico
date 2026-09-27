@@ -1,0 +1,163 @@
+{
+  "schema": 1,
+  "recordedUTC": "2026-09-14T12:21:56.2664945Z",
+  "source": "64796c07d014da5eb872207bb32e23acc0fa1029",
+  "testedMerge": "60b79f0df719cb16fb74b60ce2cea1564f8f7e3c",
+  "tree": "ef060d2010df9643c3c7b407a50b8f36b198da74",
+  "workflows": [
+    {
+      "id": 34808637767,
+      "name": "Dependency review",
+      "status": "completed",
+      "conclusion": "success",
+      "head_sha": "64796c07d014da5eb872207bb32e23acc0fa1029",
+      "html_url": "https://github.com/lutralutraq77/Portico/actions/runs/34808637767"
+    },
+    {
+      "id": 34808637831,
+      "name": "Arch development package",
+      "status": "completed",
+      "conclusion": "success",
+      "head_sha": "64796c07d014da5eb872207bb32e23acc0fa1029",
+      "html_url": "https://github.com/lutralutraq77/Portico/actions/runs/34808637831"
+    },
+    {
+      "id": 34808637761,
+      "name": "CodeQL",
+      "status": "completed",
+      "conclusion": "success",
+      "head_sha": "64796c07d014da5eb872207bb32e23acc0fa1029",
+      "html_url": "https://github.com/lutralutraq77/Portico/actions/runs/34808637761"
+    },
+    {
+      "id": 34808637996,
+      "name": "Native administrator window",
+      "status": "completed",
+      "conclusion": "success",
+      "head_sha": "64796c07d014da5eb872207bb32e23acc0fa1029",
+      "html_url": "https://github.com/lutralutraq77/Portico/actions/runs/34808637996"
+    },
+    {
+      "id": 34808637760,
+      "name": "Arch user service runtime",
+      "status": "completed",
+      "conclusion": "success",
+      "head_sha": "64796c07d014da5eb872207bb32e23acc0fa1029",
+      "html_url": "https://github.com/lutralutraq77/Portico/actions/runs/34808637760"
+    },
+    {
+      "id": 34808637770,
+      "name": "Repository quality",
+      "status": "completed",
+      "conclusion": "success",
+      "head_sha": "64796c07d014da5eb872207bb32e23acc0fa1029",
+      "html_url": "https://github.com/lutralutraq77/Portico/actions/runs/34808637770"
+    },
+    {
+      "id": 34808637752,
+      "name": "Isolated Linux runtime",
+      "status": "completed",
+      "conclusion": "success",
+      "head_sha": "64796c07d014da5eb872207bb32e23acc0fa1029",
+      "html_url": "https://github.com/lutralutraq77/Portico/actions/runs/34808637752"
+    }
+  ],
+  "linuxArchive": "68b9fa15fee600eacd78b8b081a81f56e7748f79fcd019cef1f87c39a9f4b5d7",
+  "serviceArchive": "27b83505d021629585c8fe94ad28e7200b55db3aceee9c676e182eace3d7a141",
+  "linuxTop": 265,
+  "linuxSub": 1210,
+  "linuxFailures": 0,
+  "linuxSkips": 5,
+  "serviceInstalledSeconds": 53.27,
+  "serviceHTTPSSeconds": 43.25,
+  "serviceSSHSeconds": 56.47,
+  "serviceRuntimeSHA256": "07aef3d17570d6d0324a7badf378cb8dfa0ea86c3f942b9ddbb635a8711ade83",
+  "verifiedEmbeddedArtifacts": [
+    {
+      "path": "arch-systemd/60b79f0df719cb16fb74b60ce2cea1564f8f7e3c/systemd-initramfs.cpio.gz",
+      "sha256": "57cb793f909c107d64183fc8a4c6c22ac0bfb6657292fa8e95a4212dac4af2dc"
+    },
+    {
+      "path": "arch-package/60b79f0df719cb16fb74b60ce2cea1564f8f7e3c/portico-agent.service",
+      "sha256": "29a26f3c83e42a72d214d3c79b07939d7e9da1229b904c2e98e393508bfe39fc"
+    },
+    {
+      "path": "arch-systemd/60b79f0df719cb16fb74b60ce2cea1564f8f7e3c/controller",
+      "sha256": "5fdda01b95281cdc16d57b15f5beea0be9e58d31ebc272fe31242f2ae5aa39a3"
+    },
+    {
+      "path": "arch-package/60b79f0df719cb16fb74b60ce2cea1564f8f7e3c/portico",
+      "sha256": "404392a0674d559d15ccadd366c2e731fa20967217d2f2248c5ad993023af3fb"
+    },
+    {
+      "path": "arch-package/60b79f0df719cb16fb74b60ce2cea1564f8f7e3c/output/portico-cli-development-0.6.0.dev.g60b79f0df719-1-x86_64.pkg.tar.zst",
+      "sha256": "13fa488fb0d7a98597065981921638b2871d69417c49a5bddd88a5a52780ada0"
+    },
+    {
+      "path": "arch-systemd/60b79f0df719cb16fb74b60ce2cea1564f8f7e3c/portico-issuer",
+      "sha256": "e9de6a2cb60551b812ea00da5eb87b0fdb4b87e5f85da9a0fcdc58446cd9b8a2"
+    }
+  ],
+  "nativeWindow": {
+    "runId": 34808637996,
+    "jobId": 103865384113,
+    "result": "PASS",
+    "source": "64796c07d014da5eb872207bb32e23acc0fa1029",
+    "testedMerge": "60b79f0df719cb16fb74b60ce2cea1564f8f7e3c",
+    "verifiedIdenticalTree": "ef060d2010df9643c3c7b407a50b8f36b198da74",
+    "publishedArchiveSHA256": "598160ae36b16094f2cda0bfb2cfc794643ee1f03045bbffa671e4b7505a9cbf",
+    "goRaceTopLevel": 10,
+    "goRaceSubcases": 43,
+    "goFailures": 0,
+    "nodeTests": 15,
+    "nodeFailures": 0,
+    "nativeBrowserGroups": 9,
+    "nativeCreations": 2,
+    "nativeAssertions": 3,
+    "nativeBrowserSeconds": 5.54,
+    "nativeFailureSeconds": 0.76,
+    "artifacts": [
+      {
+        "path": "admin-runtime.json",
+        "sha256": "b675def00ded5f886d6468d7b7185aaa135261a1743c779bd23020496024e8e9"
+      },
+      {
+        "path": "native-admin-summary.json",
+        "sha256": "e83d6b4f593993c9eb6b0deeeb6267f8ff75f00b739a6129e281a682ba9e25b6"
+      },
+      {
+        "path": "native-admin-transport.log",
+        "sha256": "01e2bbfd46a3941b8bb41aa95b5817692ca5f662000972ec0ab4efab97aa149b"
+      },
+      {
+        "path": "native-admin-channel.log",
+        "sha256": "5f955fef564ab3dc83d563fbe1e94c1fd034688f73266055d66db633af836abe"
+      },
+      {
+        "path": "native-admin-browser.log",
+        "sha256": "e467879ddbf1668c62e50458d250a96b03ff0f16ff7e74163bf49605e195672b"
+      },
+      {
+        "path": "native-admin-browser/result.json",
+        "sha256": "97b7c24efc20e97328ed388e299c1ce62ccc58d2a3c585a871225be3d4fc5f16"
+      },
+      {
+        "path": "native-admin-browser/native-desktop-key-review.png",
+        "sha256": "e24cb5a37ca4e770aadcd194f105f311c1b6846c91f042af096fef734f8eb756"
+      },
+      {
+        "path": "native-admin-browser/native-mobile-key-review.png",
+        "sha256": "731485a20e5db65c6a28a9b0f8ad40fd90a6877d5edddf0ac0df593ced10570b"
+      }
+    ],
+    "limitations": [
+      "Source 64796c0 native window component; all seven hosted checks subsequently verified",
+      "Virtual keys and software fixture identity; no installed custody or physical hardware qualification"
+    ]
+  },
+  "limitations": [
+    "All seven workflows and published archive digests verified for source 64796c0; subsequent clock edits require new-source hosted qualification",
+    "Historical success does not prove a fix for intermittent authenticated HTTPS launcher failures",
+    "No installed administration package, physical keys, OS key custody, management route, owner bootstrap/recovery or physical suspend qualification"
+  ]
+}

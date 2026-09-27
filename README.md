@@ -2,6 +2,8 @@
 
 Self-hosted, resource-oriented private access: identity → policy → resource → connector → destination.
 
+**Resume here:** the [27 September 2026 save point](SAVEPOINT.md) records the pushed implementation, verified CI status, detailed remaining Phase 6–7 work, all planned acceptance cases and later-phase gates.
+
 **Current state: development Linux client and connector commands are under qualification; full delivery remains in progress.** Exact policy, real issuer, enrollment and recovery components support authenticated workload forwarding with request-start leases and joined-worker closure receipts. The [connector command](docs/connector-configuration.md) uses protected files, native clock health and signal-driven shutdown. The [Phase 6 client command](docs/client-configuration.md) adds protected device identity, fresh catalog selection and process-owned application pipes. Controller/carrier endpoints and the development issuer listener remain restricted to loopback. [Isolation evidence](docs/phase-5-isolation-report.md) covers CONN-01 and CONN-03; [lifecycle evidence](docs/phase-5-lifecycle-report.md) adds connector revocation/restart/replay and independent stream endings. Physical security keys, the private sign-in origin, supported installed applications and production recovery remain unqualified. The [delivery ledger](docs/delivery-status.md) tracks all fifteen phases.
 
 The project and all generated development storage on this machine are in **E:\Portico**.

@@ -1,0 +1,243 @@
+package controller
+
+import (
+	"context"
+	"crypto/tls"
+	"database/sql"
+	"time"
+
+	"portico.local/portico/internal/pki"
+)
+
+const dashboardPageLimit = 50
+
+// DashboardRequest uses keyset pagination. A continuation must name the policy
+// revision returned with its first page; changing authority requires a refresh.
+type DashboardRequest struct {
+	Section        string
+	Profile        string
+	After          string
+	Limit          int
+	PolicyRevision int64
+}
+
+type DashboardPage struct {
+	Version        int
+	Section        string
+	PolicyRevision int64
+	ObservedAt     time.Time
+	Items          any
+	Next           string
+}
+
+// These DTOs deliberately have no invitation tokens/hashes, CSR/certificate
+// blobs, private keys, factor credentials, or pending ceremony/approval data.
+// Enabled is stored configuration, never an effective-access decision.
+type DashboardUser struct {
+	ID, Name string
+	Enabled  bool
+}
+type DashboardDevice struct {
+	ID, UserID, Name, Platform string
+	Enabled                    bool
+	NotAfter                   time.Time
+}
+type DashboardConnector struct {
+	ID, Name, Version string
+	Enabled           bool
+}
+type DashboardResource struct {
+	ID                               string
+	Revision                         int64
+	Name, ConnectorID, Kind, Address string
+	Port                             int
+	Protocol                         string
+	Enabled                          bool
+}
+type DashboardEnrollment struct {
+	ID, IssuerID, PrincipalID, Profile, State string
+	ExpiresAt, NotAfter                       time.Time
+}
+type DashboardCertificate struct {
+	ID, IssuerID, PrincipalID, Profile string
+	PrincipalName, Fingerprint         string
+	NotBefore, NotAfter                time.Time
+	Revoked                            bool
+}
+type DashboardIssuer struct {
+	ID, Profile, Fingerprint, RootFingerprint string
+	Enabled                                   bool
+	NotAfter                                  time.Time
+}
+
+type DashboardGrant struct {
+	ID, UserID, UserName, DeviceID, DeviceName, ResourceID, ResourceName string
+	Revision                                                             int64
+	Enabled                                                              bool
+	From, Until                                                          time.Time
+}
+
+type DashboardHosting struct {
+	ID, ConnectorID, ConnectorName, ResourceID, ResourceName string
+	Revision                                                 int64
+	Enabled                                                  bool
+	From, Until                                              time.Time
+}
+
+// DashboardInventory is a metadata-only read, authenticated from the real TLS
+// peer again on every request, including reused connections. It neither grants
+// authority nor supplies a secret-reveal path. Mutations retain their existing
+// preview and hardware-approval handlers.
+func (s *Store) DashboardInventory(ctx context.Context, conn *tls.Conn, trust *pki.Trust, request DashboardRequest) (DashboardPage, error) {
+	if request.Limit < 1 || request.Limit > dashboardPageLimit || request.PolicyRevision < 0 ||
+		(request.After != "" && (!validID(request.After) || request.PolicyRevision == 0)) ||
+		(request.Profile != "" && ((request.Section != "certificates" && request.Section != "issuers") || (request.Profile != "device" && request.Profile != "connector"))) {
+		return DashboardPage{}, ErrInvalid
+	}
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
+	der, err := adminDER(ctx, conn)
+	if err != nil {
+		return DashboardPage{}, err
+	}
+	var result DashboardPage
+	err = s.Update(ctx, NewID(), func(tx *Tx) error {
+		peer, err := tx.adminPeer(trust, der)
+		if err != nil {
+			return err
+		}
+		var revision int64
+		if err := tx.tx.QueryRowContext(ctx, "SELECT revision FROM policy_meta WHERE singleton=1").Scan(&revision); err != nil {
+			return tx.fail(ErrStorage)
+		}
+		if request.PolicyRevision != 0 && request.PolicyRevision != revision {
+			return tx.fail(ErrConflict)
+		}
+		result = DashboardPage{Version: 1, Section: request.Section, PolicyRevision: revision, ObservedAt: tx.now}
+		switch request.Section {
+		case "audit":
+			result.Items, result.Next, err = dashboardAudit(tx, request)
+		case "security":
+			result.Items, result.Next, err = dashboardSecurity(tx, request, peer, trust, der)
+		case "factors":
+			result.Items, result.Next, err = dashboardFactors(tx, request, peer)
+		case "users":
+			result.Items, result.Next, err = dashboardRows(tx, request, "SELECT id,name,enabled FROM users WHERE id>? ORDER BY id LIMIT ?", func(rows *sql.Rows) (DashboardUser, string, error) {
+				var v DashboardUser
+				e := rows.Scan(&v.ID, &v.Name, &v.Enabled)
+				return v, v.ID, e
+			})
+		case "devices":
+			result.Items, result.Next, err = dashboardRows(tx, request, "SELECT id,user_id,name,platform,enabled,not_after FROM devices WHERE id>? ORDER BY id LIMIT ?", func(rows *sql.Rows) (DashboardDevice, string, error) {
+				var v DashboardDevice
+				var expiry int64
+				e := rows.Scan(&v.ID, &v.UserID, &v.Name, &v.Platform, &v.Enabled, &expiry)
+				v.NotAfter = time.Unix(0, expiry).UTC()
+				return v, v.ID, e
+			})
+		case "connectors":
+			result.Items, result.Next, err = dashboardRows(tx, request, "SELECT id,name,version,enabled FROM connectors WHERE id>? ORDER BY id LIMIT ?", func(rows *sql.Rows) (DashboardConnector, string, error) {
+				var v DashboardConnector
+				e := rows.Scan(&v.ID, &v.Name, &v.Version, &v.Enabled)
+				return v, v.ID, e
+			})
+		case "resources":
+			result.Items, result.Next, err = dashboardRows(tx, request, "SELECT r.id,r.revision,r.name,r.connector_id,r.kind,r.address,r.port,r.protocol,r.enabled FROM resources r JOIN resource_heads h ON h.id=r.id AND h.revision=r.revision WHERE r.id>? ORDER BY r.id LIMIT ?", func(rows *sql.Rows) (DashboardResource, string, error) {
+				var v DashboardResource
+				e := rows.Scan(&v.ID, &v.Revision, &v.Name, &v.ConnectorID, &v.Kind, &v.Address, &v.Port, &v.Protocol, &v.Enabled)
+				return v, v.ID, e
+			})
+		case "enrollments":
+			result.Items, result.Next, err = dashboardRows(tx, request, "SELECT e.id,e.issuer_id,COALESCE(e.device_id,e.connector_id),b.profile,e.state,e.expires_at,e.not_after FROM enrollments e JOIN pki_bindings b ON b.issuer_id=e.issuer_id WHERE e.id>? ORDER BY e.id LIMIT ?", func(rows *sql.Rows) (DashboardEnrollment, string, error) {
+				var v DashboardEnrollment
+				var expiry, notAfter int64
+				e := rows.Scan(&v.ID, &v.IssuerID, &v.PrincipalID, &v.Profile, &v.State, &expiry, &notAfter)
+				v.ExpiresAt, v.NotAfter = time.Unix(0, expiry).UTC(), time.Unix(0, notAfter).UTC()
+				return v, v.ID, e
+			})
+		case "issuers":
+			query := "SELECT i.id,b.profile,b.issuer_sha256,b.root_sha256,i.enabled,i.not_after FROM issuers i JOIN pki_bindings b ON b.issuer_id=i.id WHERE i.id>?"
+			if request.Profile == "device" {
+				query += " AND b.profile='device'"
+			} else if request.Profile == "connector" {
+				query += " AND b.profile='connector'"
+			}
+			query += " ORDER BY i.id LIMIT ?"
+			result.Items, result.Next, err = dashboardRows(tx, request, query, func(rows *sql.Rows) (DashboardIssuer, string, error) {
+				var v DashboardIssuer
+				var expiry int64
+				err := rows.Scan(&v.ID, &v.Profile, &v.Fingerprint, &v.RootFingerprint, &v.Enabled, &expiry)
+				v.NotAfter = time.Unix(0, expiry).UTC()
+				return v, v.ID, err
+			})
+		case "certificates":
+			query := "SELECT c.id,c.issuer_id,COALESCE(c.device_id,c.connector_id),c.profile,COALESCE(d.name,k.name),c.leaf_sha256,c.not_before,c.not_after,c.revoked FROM certificates c LEFT JOIN devices d ON d.id=c.device_id LEFT JOIN connectors k ON k.id=c.connector_id WHERE c.id>?"
+			// Profile is validated above and selects fixed SQL text, never input SQL.
+			if request.Profile == "device" {
+				query += " AND c.profile='device'"
+			} else if request.Profile == "connector" {
+				query += " AND c.profile='connector'"
+			}
+			query += " ORDER BY c.id LIMIT ?"
+			result.Items, result.Next, err = dashboardRows(tx, request, query, func(rows *sql.Rows) (DashboardCertificate, string, error) {
+				var v DashboardCertificate
+				var before, after int64
+				e := rows.Scan(&v.ID, &v.IssuerID, &v.PrincipalID, &v.Profile, &v.PrincipalName, &v.Fingerprint, &before, &after, &v.Revoked)
+				v.NotBefore, v.NotAfter = time.Unix(0, before).UTC(), time.Unix(0, after).UTC()
+				return v, v.ID, e
+			})
+		case "grants":
+			result.Items, result.Next, err = dashboardRows(tx, request, "SELECT g.id,g.user_id,u.name,g.device_id,d.name,g.resource_id,r.name,g.revision,g.enabled,g.valid_from,g.valid_until FROM grants g JOIN users u ON u.id=g.user_id JOIN devices d ON d.id=g.device_id JOIN resources r ON r.id=g.resource_id AND r.revision=g.revision WHERE g.id>? ORDER BY g.id LIMIT ?", func(rows *sql.Rows) (DashboardGrant, string, error) {
+				var v DashboardGrant
+				var from, until int64
+				e := rows.Scan(&v.ID, &v.UserID, &v.UserName, &v.DeviceID, &v.DeviceName, &v.ResourceID, &v.ResourceName, &v.Revision, &v.Enabled, &from, &until)
+				v.From, v.Until = time.Unix(0, from).UTC(), time.Unix(0, until).UTC()
+				return v, v.ID, e
+			})
+		case "hosting":
+			result.Items, result.Next, err = dashboardRows(tx, request, "SELECT h.id,h.connector_id,k.name,h.resource_id,r.name,h.revision,h.enabled,h.valid_from,h.valid_until FROM host_bindings h JOIN connectors k ON k.id=h.connector_id JOIN resources r ON r.id=h.resource_id AND r.revision=h.revision WHERE h.id>? ORDER BY h.id LIMIT ?", func(rows *sql.Rows) (DashboardHosting, string, error) {
+				var v DashboardHosting
+				var from, until int64
+				e := rows.Scan(&v.ID, &v.ConnectorID, &v.ConnectorName, &v.ResourceID, &v.ResourceName, &v.Revision, &v.Enabled, &from, &until)
+				v.From, v.Until = time.Unix(0, from).UTC(), time.Unix(0, until).UTC()
+				return v, v.ID, e
+			})
+		default:
+			return tx.fail(ErrInvalid)
+		}
+		return err
+	})
+	if err != nil {
+		return DashboardPage{}, err
+	}
+	return result, nil
+}
+
+// Query text is selected only by the fixed switch above. Reading one extra row
+// lets the response provide an exact continuation without an unbounded count.
+func dashboardRows[T any](tx *Tx, request DashboardRequest, query string, scan func(*sql.Rows) (T, string, error), scope ...any) ([]T, string, error) {
+	args := append([]any{request.After}, scope...)
+	args = append(args, request.Limit+1)
+	rows, err := tx.tx.QueryContext(tx.ctx, query, args...)
+	if err != nil {
+		return nil, "", tx.fail(ErrStorage)
+	}
+	defer func() { _ = rows.Close() }()
+	items := make([]T, 0, request.Limit)
+	last, next := "", ""
+	for rows.Next() {
+		v, id, err := scan(rows)
+		if err != nil || !validID(id) {
+			return nil, "", tx.fail(ErrIntegrity)
+		}
+		if len(items) == request.Limit {
+			next = last
+			break
+		}
+		items, last = append(items, v), id
+	}
+	if rows.Err() != nil {
+		return nil, "", tx.fail(ErrStorage)
+	}
+	return items, next, nil
+}

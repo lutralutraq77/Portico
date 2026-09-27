@@ -1,0 +1,158 @@
+{
+  "schema": 1,
+  "recordedUTC": "2026-09-14T13:10:23.8152723Z",
+  "scope": "Encrypted administrator device-key component; Phases 6 and 7 incomplete",
+  "baseCommit": "018ec1f181309a3cb44a3651991e4ba2a7e88266",
+  "sourceBinding": "Unchanged files come from baseCommit. Listed final source hashes bind the production implementation and final focused Linux execution. Earlier portable KDF code is unchanged; affected signer/public-copy/concurrency tests were rerun after their changes.",
+  "sources": [
+    {
+      "path": "SECURITY_CONTROL_MATRIX.md",
+      "sha256": "7d889bb8842f98aaab8835f81e5da109a064e9320e5faac96841ea12bf940681"
+    },
+    {
+      "path": "docs/administrator-key-storage.md",
+      "sha256": "7fe318771d44f499510f70376e7328fad7e2fc7cd893ea04db50dc709e1871bf"
+    },
+    {
+      "path": "docs/delivery-status.md",
+      "sha256": "fe48a78773f99aa9e42ac4dd64b668852b76ea120d07f07d3dcf3a7d66f17df4"
+    },
+    {
+      "path": "docs/native-administration.md",
+      "sha256": "14546fe19e062a163109f99b081fe16b7c894c46cdaa2d685939ad95a5c3a864"
+    },
+    {
+      "path": "docs/phase-7-native-clock-hosted-evidence.json",
+      "sha256": "11c207e6b8fc0c8c0154aeb67f9e2efe18beee9f021393f5ef3b01a4d9627586"
+    },
+    {
+      "path": "internal/adminkey/key.go",
+      "sha256": "9f73367d489a59ef7417012a2cecaed2df4dc99b67b0c7582a2a05084ab1b1d6"
+    },
+    {
+      "path": "internal/adminkey/key_test.go",
+      "sha256": "97857d5920e79d7a3287525c7acd397f6348beddb46a7118ea36468a4da3dd9f"
+    },
+    {
+      "path": "internal/adminkey/key_linux_test.go",
+      "sha256": "74dd06a5ab8ac62e4a50ccaf93b4677f0e9988efe06bb0f88a10c328d71e4a83"
+    },
+    {
+      "path": "scripts/test-linux.ps1",
+      "sha256": "23f910c9ada8b88c87d1e90e403f40bf7a21db4a3ecde39e19dc6b8b6cde2aae"
+    },
+    {
+      "path": "scripts/test-native-admin.ps1",
+      "sha256": "2c70445b4448e196e98fa69a801c53d2caa5ab27dc4e11b237ed7d83ab744677"
+    },
+    {
+      "path": "tools/linuxvm/init/main_linux.go",
+      "sha256": "89e23317856158f9b7c76715b8c0ac451f8c41d4389cc347c4406ce69521c574"
+    },
+    {
+      "path": "tools/linuxvm/archive/main.go",
+      "sha256": "a06958d7b4db22923b46c8612336cbdc57c03bb2c897bfc26c591c0c2a79de17"
+    }
+  ],
+  "reportRoot": "E:/Portico/work/reports",
+  "artifacts": [
+    {
+      "path": "admin-key-native-v1.log",
+      "sha256": "49b55c20b9c8fec76b1d389843fb3c4aaa80c55d83fe6902ef6c9f23ca09df0d"
+    },
+    {
+      "path": "admin-key-public-copy-v2.log",
+      "sha256": "460332070e8f55a4c00a5a362de240e6d141833079cc1eb6fcf09a7abddbd02e"
+    },
+    {
+      "path": "admin-key-final-signers.log",
+      "sha256": "0e2cacb90ebd3803b0899d2533fc12950e90dad2f41ac01deb3ba78d3ac91e7c"
+    },
+    {
+      "path": "linux-admin-key-runtime.log",
+      "sha256": "f3950df1c0f00e390381c193298b9bbfa9b51e33e814b10e56a3aa4ad67ae2ed"
+    },
+    {
+      "path": "linux-admin-key-diagnostic-v2.log",
+      "sha256": "e61638ca73faa9917c42744d0742656db1e86f5b6b12646e81bcaadae3b9a01d"
+    },
+    {
+      "path": "linux-admin-key-final.log",
+      "sha256": "43dae2d74bb89545d309f2ed27b5044f788b50b281fed593e2405295beb6767c"
+    },
+    {
+      "path": "linux-admin-key-verified.log",
+      "sha256": "709b40b57f9e7f27457362732b70ede855afe3ce5189b042675f69de620ea23f"
+    },
+    {
+      "path": "linux-admin-key-verified-environment.json",
+      "sha256": "4605911bf5b1460db958b87fda7a6ea28bda92dada13773458f32318e944ae4b"
+    },
+    {
+      "path": "admin-key-linux-v1/evidence.json",
+      "sha256": "4a435929ade273656f3972b099e65c8b3e3ffbae6f10cb206408b55725b7dd5e"
+    }
+  ],
+  "guestBinaries": [
+    {
+      "path": "init",
+      "sha256": "3e34eed8a0c73c0ea63a48e7d9823bcc985cfe6b7c7fd4864d9382d97181b67b"
+    },
+    {
+      "path": "adminkey.test",
+      "sha256": "0427897ea694d65377dd0c6b273adeadf14d59b17de4774cc769ca644a4b2052"
+    },
+    {
+      "path": "initramfs.cpio.gz",
+      "sha256": "9b4266e36c473594081dacb301f48781377879a3beabb889238649e7a660f999"
+    }
+  ],
+  "guestEnvironment": {
+    "host": "Microsoft Windows 10.0.26200",
+    "qemu_version": "QEMU emulator version 11.1.0 (v11.1.0-12130-ge470268ff4)",
+    "qemu_sha256": "47d57a6072e0bb3bd98f87926eb129eb1736dfe818c67b3b81ef7ce4edd0b3cd",
+    "kernel_sha256": "1e6bf9027720c75c3ed0d79171f21b5791ee40ca9795d07c7c6e04dc5ea2ae90",
+    "initramfs_sha256": "9b4266e36c473594081dacb301f48781377879a3beabb889238649e7a660f999",
+    "acceleration": "tcg",
+    "virtual_cpus": 2,
+    "memory_mib": 1536,
+    "network_devices": 0,
+    "host_filesystem_shares": 0,
+    "workload_only": false,
+    "administrator_only": true
+  },
+  "validation": {
+    "initialPortableRaceTopLevel": 5,
+    "initialPortableRaceSubcases": 16,
+    "initialPortableRaceSeconds": 189.35,
+    "finalAffectedRaceTopLevel": 3,
+    "finalAffectedRaceSubcases": 11,
+    "finalAffectedRaceSeconds": 8.611,
+    "actualLinuxFileAndTLSTests": 1,
+    "actualLinuxSeconds": 72.13,
+    "kernel": "Linux 6.18.35-0-virt",
+    "windowsAndLinuxKeyVetStaticcheck": "PASS",
+    "linuxGuestUtilityVetStaticcheck": "PASS",
+    "changedPowerShellSyntax": "PASS"
+  },
+  "retainedFailures": [
+    "Initial Linux file test reached TLS then rejected. Diagnostic v2 established the one-second fixture deadline: 1.0608832s, one successful signature, one authenticated handshake, zero HTTP requests and native session still valid.",
+    "The Linux fixture uses the existing five-second transport maximum. Production deadlines and clock validation were not changed. Both subsequent Linux executions passed.",
+    "Initial static analysis rejected deprecated raw ECDSA coordinate copying; changed to standard X.509 public encoding/decoding without suppressions."
+  ],
+  "hosted": "All seven preceding clock-source workflows passed and artifacts verified; new key-source hosted execution pending",
+  "acceptance": {
+    "implemented": 7,
+    "planned": 84,
+    "total": 91
+  },
+  "limitations": [
+    "Software encryption and Linux filesystem protection, not hardware isolation or forensic erasure",
+    "Guest storage is volatile; target filesystem power-loss durability remains unqualified",
+    "No installed administrator command/package, production issuance/renewal, actual management-resource routing or complete owner bootstrap/recovery",
+    "Virtual fixtures do not qualify physical factors, physical suspend or private deployment origin",
+    "Prior native window shutdown and authenticated HTTPS intermittency remain unresolved",
+    "Windows execution qualifies portable code and does not advance Phase 8"
+  ],
+  "guestRoot": "E:/Portico/work/reports/admin-key-linux-verified"
+}

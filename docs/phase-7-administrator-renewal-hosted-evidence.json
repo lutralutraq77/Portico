@@ -1,0 +1,118 @@
+{
+  "source": "7960a6dda3e0a1541428582c137a961da1e5c027",
+  "tested_merge": "b0f692325a9d34af7ebb66bd83d1d609ce230809",
+  "equal_source_and_merge_tree": "a340ce3d78d50e4d002dfa4f64a9478343f4118b",
+  "workflows": [
+    {
+      "id": 34866337812,
+      "name": "Dependency review",
+      "head_sha": "7960a6dda3e0a1541428582c137a961da1e5c027",
+      "conclusion": "success",
+      "html_url": "https://github.com/lutralutraq77/Portico/actions/runs/34866337812"
+    },
+    {
+      "id": 34866337755,
+      "name": "Arch development package",
+      "head_sha": "7960a6dda3e0a1541428582c137a961da1e5c027",
+      "conclusion": "success",
+      "html_url": "https://github.com/lutralutraq77/Portico/actions/runs/34866337755"
+    },
+    {
+      "id": 34866337948,
+      "name": "CodeQL",
+      "head_sha": "7960a6dda3e0a1541428582c137a961da1e5c027",
+      "conclusion": "success",
+      "html_url": "https://github.com/lutralutraq77/Portico/actions/runs/34866337948"
+    },
+    {
+      "id": 34866337833,
+      "name": "Native administrator window",
+      "head_sha": "7960a6dda3e0a1541428582c137a961da1e5c027",
+      "conclusion": "success",
+      "html_url": "https://github.com/lutralutraq77/Portico/actions/runs/34866337833"
+    },
+    {
+      "id": 34866337902,
+      "name": "Arch user service runtime",
+      "head_sha": "7960a6dda3e0a1541428582c137a961da1e5c027",
+      "conclusion": "success",
+      "html_url": "https://github.com/lutralutraq77/Portico/actions/runs/34866337902"
+    },
+    {
+      "id": 34866337940,
+      "name": "Repository quality",
+      "head_sha": "7960a6dda3e0a1541428582c137a961da1e5c027",
+      "conclusion": "success",
+      "html_url": "https://github.com/lutralutraq77/Portico/actions/runs/34866337940"
+    },
+    {
+      "id": 34866338034,
+      "name": "Isolated Linux runtime",
+      "head_sha": "7960a6dda3e0a1541428582c137a961da1e5c027",
+      "conclusion": "success",
+      "html_url": "https://github.com/lutralutraq77/Portico/actions/runs/34866338034"
+    }
+  ],
+  "archives": [
+    {
+      "name": "isolated-linux-runtime",
+      "sha256": "5ed9c47194475c21e7cba6b67428746c9a5d481f2affc5d09c74ddaac9f320f9",
+      "verification": "Published digest independently matched downloaded archive and bounded extracted logs",
+      "passing_top_level": 291,
+      "passing_subcases": 1320,
+      "failures": 0,
+      "skips": 5
+    },
+    {
+      "name": "native-admin-linux",
+      "sha256": "44e68f6a6f3e122d5df4218823c290af2675d8e7524cf0f8c359e1c2ecf7eeef",
+      "verification": "Published digest independently matched downloaded archive; allowed bounded members extracted",
+      "transport_top_level": 15,
+      "transport_subcases": 65,
+      "node_cases": 15,
+      "actual_browser_cases": 3,
+      "actual_browser_seconds": [
+        7.29,
+        0.7,
+        0.65
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "report": "work/reports/final-ack-hosted/7960a6d-linux-runtime.log",
+      "sha256": "63caeec988499ce66979445e24e298e6930c4b4b975bb12213421b1dd898767e"
+    },
+    {
+      "report": "work/reports/final-ack-hosted/7960a6d-linux-runtime-environment.json",
+      "sha256": "ccc9ca753c3bb3720c6bc07c4a1392156307fa2c1f13bb8dcf83f95009a8cb87"
+    },
+    {
+      "report": "work/reports/native-renewal-http-linux-7960a6d/native-admin-browser.log",
+      "sha256": "2282753597506b869e85f1364ea3daec685a51c6be08842ce88bbdcc51b6bad4"
+    },
+    {
+      "report": "work/reports/native-renewal-http-linux-7960a6d/native-admin-transport.log",
+      "sha256": "00491c77d029d596b4447f38f7882903f8ac9c4c102b799f25a2c84b55b21462"
+    },
+    {
+      "report": "work/reports/native-renewal-http-linux-7960a6d/native-admin-channel.log",
+      "sha256": "9b64e002d803a3f4276783f59f9d7405f5975984314a7a902bdba3ad9d904df4"
+    }
+  ],
+  "environment": {
+    "native": "Ubuntu 24.04.5 LTS",
+    "go": "1.27.1",
+    "electron": "44.3.0"
+  },
+  "limitations": [
+    "Hosted workflow conclusions verified for all seven runs; service and installed-package archives for this source were not downloaded or verified",
+    "Qualifies HTTPS renewal source, not subsequent native renewal changes",
+    "Virtual authenticators do not establish physical hardware custody"
+  ],
+  "acceptance": {
+    "implemented": 7,
+    "planned": 84,
+    "total": 91
+  }
+}

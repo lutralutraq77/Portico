@@ -89,9 +89,16 @@ func (t *Tx) policyRevision() (int64, error) {
 // match rejects ambiguous grants or hosting bindings. IDs/names supplied by a
 // client are never substituted for the authenticated principal or destination.
 func (p *PolicyEngine) match(t *Tx, client, connector peer, id string, revision int64) (policyMatch, error) {
+	m, err := p.readMatch(t.readPolicy(), client, connector, id, revision)
+	if err != nil {
+		return m, t.fail(err)
+	}
+	return m, nil
+}
+func (p *PolicyEngine) readMatch(t policyReader, client, connector peer, id string, revision int64) (policyMatch, error) {
 	var m policyMatch
 	if !validID(id) || revision < 1 || client.credential.Profile != pki.Device || connector.credential.Profile != pki.Connector {
-		return m, t.fail(ErrDenied)
+		return m, ErrDenied
 	}
 	now := t.now.UnixNano()
 	rows, e := t.tx.QueryContext(t.ctx, `SELECT r.id,r.revision,r.name,r.connector_id,k.name,r.address,r.port,r.protocol,d.user_id,g.id,h.id,min(d.not_after,g.valid_until,h.valid_until)
@@ -103,21 +110,27 @@ func (p *PolicyEngine) match(t *Tx, client, connector peer, id string, revision 
  WHERE r.id=? AND r.revision=? AND d.id=? AND k.id=? AND r.enabled=1 AND r.kind='application' AND k.enabled=1 AND u.enabled=1 AND d.enabled=1
  AND g.enabled=1 AND h.enabled=1 AND g.valid_from<=? AND g.valid_until>? AND h.valid_from<=? AND h.valid_until>? AND d.not_after>? LIMIT 2`, id, revision, client.credential.PrincipalID, connector.credential.PrincipalID, now, now, now, now, now)
 	if e != nil {
-		return m, t.fail(ErrStorage)
+		return m, ErrStorage
 	}
 	defer func() { _ = rows.Close() }()
 	var bound int64
 	if !rows.Next() {
 		if rows.Err() != nil {
-			return m, t.fail(ErrStorage)
+			return m, ErrStorage
 		}
-		return m, t.fail(ErrDenied)
+		return m, ErrDenied
 	}
 	if rows.Scan(&m.resource.ID, &m.resource.Revision, &m.resource.Name, &m.resource.ConnectorID, &m.resource.ConnectorName, &m.resource.Address, &m.resource.Port, &m.resource.Protocol, &m.user, &m.grant, &m.host, &bound) != nil {
-		return m, t.fail(ErrStorage)
+		return m, ErrStorage
 	}
-	if rows.Next() || rows.Err() != nil || m.resource.Protocol != "tcp" || !p.destination(m.resource.Address) {
-		return m, t.fail(ErrDenied)
+	if rows.Next() {
+		return m, ErrDenied
+	}
+	if rows.Err() != nil {
+		return m, ErrStorage
+	}
+	if m.resource.Protocol != "tcp" || !p.destination(m.resource.Address) {
+		return m, ErrDenied
 	}
 	m.until = time.Unix(0, bound).UTC()
 	for _, end := range []time.Time{client.credential.NotAfter, connector.credential.NotAfter, t.now.Add(p.config.SessionLifetime)} {
@@ -126,20 +139,26 @@ func (p *PolicyEngine) match(t *Tx, client, connector peer, id string, revision 
 		}
 	}
 	if !m.until.After(t.now) {
-		return m, t.fail(ErrDenied)
+		return m, ErrDenied
 	}
 	m.resource.Until = m.until
 	return m, nil
 }
 
 func (p *PolicyEngine) quota(t *Tx, client, connector string) error {
+	if err := p.readQuota(t.readPolicy(), client, connector); err != nil {
+		return t.fail(err)
+	}
+	return nil
+}
+func (p *PolicyEngine) readQuota(t policyReader, client, connector string) error {
 	var total, device, server int
 	e := t.tx.QueryRowContext(t.ctx, `SELECT count(*),coalesce(sum(s.device_id=?),0),coalesce(sum(a.connector_id=?),0) FROM authorized_sessions a JOIN sessions s ON s.id=a.id WHERE a.state IN ('authorized','active') AND s.state='requested' AND a.lease_until>?`, client, connector, t.now.UnixNano()).Scan(&total, &device, &server)
 	if e != nil {
-		return t.fail(ErrStorage)
+		return ErrStorage
 	}
 	if total >= p.config.MaxSessions || device >= p.config.MaxDeviceSessions || server >= p.config.MaxConnectorSessions {
-		return t.fail(ErrDenied)
+		return ErrDenied
 	}
 	return nil
 }

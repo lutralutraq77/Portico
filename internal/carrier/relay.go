@@ -40,16 +40,18 @@ type Config struct {
 
 type Relay struct {
 	pb.UnimplementedCarrierServer
-	config      Config
-	server      *grpc.Server
-	mu          sync.Mutex
-	streams     int
-	peers       map[string]int
-	slots       map[string][]*slot
-	endpoints   map[string]*endpoint
-	connections atomic.Int64
-	workers     atomic.Int64
-	work        sync.WaitGroup
+	config        Config
+	server        *grpc.Server
+	mu            sync.Mutex
+	streams       int
+	peers         map[string]int
+	slots         map[string][]*slot
+	endpoints     map[string]*endpoint
+	connections   atomic.Int64
+	workers       atomic.Int64
+	work          sync.WaitGroup
+	clientProfile pki.Profile
+	connectorID   string
 }
 
 type stream interface {
@@ -84,10 +86,16 @@ type pair struct {
 func (p *pair) close() { p.once.Do(func() { close(p.done) }) }
 
 func New(c Config) (*Relay, error) {
-	if c.Devices == nil || c.Connectors == nil || c.Devices.Profile() != pki.Device || c.Connectors.Profile() != pki.Connector || c.Devices.DeploymentID() != c.Connectors.DeploymentID() || c.Devices.IssuerFingerprint() == c.Connectors.IssuerFingerprint() || c.Admit == nil || len(c.ServerIdentity.Certificate) == 0 || c.ServerIdentity.PrivateKey == nil || c.MaxConnections < 1 || c.MaxConnections > 128 || c.MaxStreams < 2 || c.MaxStreams > 1024 || c.MaxPeerStreams < 1 || c.MaxPeerStreams > 64 || c.MaxPeerStreams > c.MaxStreams || c.HelloTimeout <= 0 || c.HelloTimeout > 5*time.Second || c.PairTimeout <= 0 || c.PairTimeout > 30*time.Second || c.MaxLifetime <= 0 || c.MaxLifetime > time.Hour || c.PairTimeout > c.MaxLifetime {
+	return newRelay(c, pki.Device, "")
+}
+
+// newRelay is shared framing and quota machinery. Only the two public typed
+// constructors select a profile; no wire field or RPC can change that choice.
+func newRelay(c Config, profile pki.Profile, connectorID string) (*Relay, error) {
+	if c.Devices == nil || c.Connectors == nil || c.Devices.Profile() != profile || c.Connectors.Profile() != pki.Connector || c.Devices.DeploymentID() != c.Connectors.DeploymentID() || c.Devices.IssuerFingerprint() == c.Connectors.IssuerFingerprint() || c.Admit == nil || len(c.ServerIdentity.Certificate) == 0 || c.ServerIdentity.PrivateKey == nil || c.MaxConnections < 1 || c.MaxConnections > 128 || c.MaxStreams < 2 || c.MaxStreams > 1024 || c.MaxPeerStreams < 1 || c.MaxPeerStreams > 64 || c.MaxPeerStreams > c.MaxStreams || c.HelloTimeout <= 0 || c.HelloTimeout > 5*time.Second || c.PairTimeout <= 0 || c.PairTimeout > 30*time.Second || c.MaxLifetime <= 0 || c.MaxLifetime > time.Hour || c.PairTimeout > c.MaxLifetime {
 		return nil, ErrRejected
 	}
-	r := &Relay{config: c, peers: map[string]int{}, slots: map[string][]*slot{}, endpoints: map[string]*endpoint{}}
+	r := &Relay{config: c, peers: map[string]int{}, slots: map[string][]*slot{}, endpoints: map[string]*endpoint{}, clientProfile: profile, connectorID: connectorID}
 	identity := tls.Certificate{PrivateKey: c.ServerIdentity.PrivateKey}
 	for _, der := range c.ServerIdentity.Certificate {
 		identity.Certificate = append(identity.Certificate, bytes.Clone(der))
@@ -100,7 +108,7 @@ func New(c Config) (*Relay, error) {
 		if _, e := c.Devices.VerifyPeer(s.PeerCertificates[0].Raw, time.Now()); e == nil {
 			return nil
 		}
-		if _, e := c.Connectors.VerifyPeer(s.PeerCertificates[0].Raw, time.Now()); e == nil {
+		if peer, e := c.Connectors.VerifyPeer(s.PeerCertificates[0].Raw, time.Now()); e == nil && (connectorID == "" || peer.PrincipalID == connectorID) {
 			return nil
 		}
 		return ErrRejected
@@ -202,7 +210,7 @@ func (r *Relay) hello(ctx context.Context, ch <-chan received) (*pb.Frame, error
 }
 
 func (r *Relay) serve(s stream, binding bool) error {
-	role := pki.Device
+	role := r.clientProfile
 	if binding {
 		role = pki.Connector
 	}
@@ -233,7 +241,7 @@ func (r *Relay) serve(s stream, binding bool) error {
 	defer cancel()
 	frames := r.receive(ctx, s)
 	hello, e := r.hello(ctx, frames)
-	if e != nil {
+	if e != nil || (r.connectorID != "" && hello.ConnectorId != r.connectorID) {
 		return reject()
 	}
 	local := &endpoint{leaf: v.LeafSHA256, connector: hello.ConnectorId, id: bytes.Clone(hello.StreamId), ctx: ctx, cancel: cancel, watched: make(chan struct{})}
@@ -382,10 +390,10 @@ func (r *Relay) Dial(s grpc.BidiStreamingServer[pb.Frame, pb.Frame]) error { ret
 func (r *Relay) Bind(s grpc.BidiStreamingServer[pb.Frame, pb.Frame]) error { return r.serve(s, true) }
 
 func (r *Relay) Watch(req *pb.Frame, s grpc.ServerStreamingServer[pb.Frame]) error {
-	if req == nil || !valid(req, pb.Kind_KIND_HELLO, req.ConnectorId) {
+	if req == nil || !valid(req, pb.Kind_KIND_HELLO, req.ConnectorId) || (r.connectorID != "" && req.ConnectorId != r.connectorID) {
 		return reject()
 	}
-	v, e := r.identity(s.Context(), pki.Device)
+	v, e := r.identity(s.Context(), r.clientProfile)
 	if e != nil {
 		v, e = r.identity(s.Context(), pki.Connector)
 	}

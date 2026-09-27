@@ -1,0 +1,121 @@
+{
+  "source": "4e2416a15eb730dfb4f860c1d1422bcc0a8cc4a6",
+  "testedMerge": "fee06012aa8c2527d4c991d09a713c191216d523",
+  "tree": "d3cc058137baeb814fc7af2d1b04d3ce22e4b9da",
+  "workflows": [
+    {
+      "id": 34847763621,
+      "name": "Dependency review",
+      "status": "completed",
+      "conclusion": "success",
+      "head_sha": "4e2416a15eb730dfb4f860c1d1422bcc0a8cc4a6",
+      "html_url": "https://github.com/lutralutraq77/Portico/actions/runs/34847763621"
+    },
+    {
+      "id": 34847763652,
+      "name": "Arch development package",
+      "status": "completed",
+      "conclusion": "success",
+      "head_sha": "4e2416a15eb730dfb4f860c1d1422bcc0a8cc4a6",
+      "html_url": "https://github.com/lutralutraq77/Portico/actions/runs/34847763652"
+    },
+    {
+      "id": 34847763672,
+      "name": "Native administrator window",
+      "status": "completed",
+      "conclusion": "success",
+      "head_sha": "4e2416a15eb730dfb4f860c1d1422bcc0a8cc4a6",
+      "html_url": "https://github.com/lutralutraq77/Portico/actions/runs/34847763672"
+    },
+    {
+      "id": 34847763643,
+      "name": "CodeQL",
+      "status": "completed",
+      "conclusion": "success",
+      "head_sha": "4e2416a15eb730dfb4f860c1d1422bcc0a8cc4a6",
+      "html_url": "https://github.com/lutralutraq77/Portico/actions/runs/34847763643"
+    },
+    {
+      "id": 34847763824,
+      "name": "Arch user service runtime",
+      "status": "completed",
+      "conclusion": "success",
+      "head_sha": "4e2416a15eb730dfb4f860c1d1422bcc0a8cc4a6",
+      "html_url": "https://github.com/lutralutraq77/Portico/actions/runs/34847763824"
+    },
+    {
+      "id": 34847763637,
+      "name": "Repository quality",
+      "status": "completed",
+      "conclusion": "success",
+      "head_sha": "4e2416a15eb730dfb4f860c1d1422bcc0a8cc4a6",
+      "html_url": "https://github.com/lutralutraq77/Portico/actions/runs/34847763637"
+    },
+    {
+      "id": 34847763692,
+      "name": "Isolated Linux runtime",
+      "status": "completed",
+      "conclusion": "success",
+      "head_sha": "4e2416a15eb730dfb4f860c1d1422bcc0a8cc4a6",
+      "html_url": "https://github.com/lutralutraq77/Portico/actions/runs/34847763692"
+    }
+  ],
+  "nativeArchive": "d5c9e801ea988a3963703da8faa7520353bd610b20cf41cadfa1735a59a10608",
+  "linuxArchive": "135ba0b4f84bafce82e257ab9fa880b508cb5b30bb537edf2dc6e03c934564c6",
+  "serviceArchive": "3d5e753e6f5bb4fffad4ecf4848497133406d906d7790646438fe00eca95029e",
+  "linux": {
+    "passedTests": 266,
+    "skipped": 5,
+    "failed": 0,
+    "passedSubcases": 1210
+  },
+  "native": {
+    "keySubcases": 16,
+    "browserFailureSeconds": 0.77,
+    "nodeTests": 15,
+    "browserClockSeconds": 0.79,
+    "transportSubcases": 65,
+    "browserFunctionalSeconds": 6.35,
+    "transportTests": 15,
+    "keyRaceSeconds": 48.146,
+    "keyTests": 6,
+    "linuxKeyTLSSeconds": 15.62
+  },
+  "service": {
+    "httpsSeconds": 43.44,
+    "sshSeconds": 50.72,
+    "installedSeconds": 52.16,
+    "runtimeSHA256": "cd43c5b277c2f406f1d56add6f474986bde90144a68420c3dc031ffbebb32b2f"
+  },
+  "embeddedArtifacts": [
+    {
+      "path": "arch-systemd/fee06012aa8c2527d4c991d09a713c191216d523/portico-issuer",
+      "sha256": "e9de6a2cb60551b812ea00da5eb87b0fdb4b87e5f85da9a0fcdc58446cd9b8a2"
+    },
+    {
+      "path": "arch-systemd/fee06012aa8c2527d4c991d09a713c191216d523/systemd-initramfs.cpio.gz",
+      "sha256": "7f4ba6f1d2c20f698c6fca0e0bcacd1d1cc09c229108de64df50472c234f0761"
+    },
+    {
+      "path": "arch-package/fee06012aa8c2527d4c991d09a713c191216d523/output/portico-cli-development-0.6.0.dev.gfee06012aa8c-1-x86_64.pkg.tar.zst",
+      "sha256": "72f42a2c5c3f8cc91c3228db786fa04fcb0e5508c963ef4fd16bc53ff1a26832"
+    },
+    {
+      "path": "arch-package/fee06012aa8c2527d4c991d09a713c191216d523/portico-agent.service",
+      "sha256": "29a26f3c83e42a72d214d3c79b07939d7e9da1229b904c2e98e393508bfe39fc"
+    },
+    {
+      "path": "arch-package/fee06012aa8c2527d4c991d09a713c191216d523/portico",
+      "sha256": "404392a0674d559d15ccadd366c2e731fa20967217d2f2248c5ad993023af3fb"
+    },
+    {
+      "path": "arch-systemd/fee06012aa8c2527d4c991d09a713c191216d523/controller",
+      "sha256": "5fdda01b95281cdc16d57b15f5beea0be9e58d31ebc272fe31242f2ae5aa39a3"
+    }
+  ],
+  "limitations": [
+    "Source 4e2416a only; subsequent administrator command requires new-source hosted qualification",
+    "Virtual keys; no physical hardware, installed administrator ceremony, management route or complete recovery qualification",
+    "Passing service runs do not establish the cause of historical authenticated HTTPS intermittency"
+  ]
+}

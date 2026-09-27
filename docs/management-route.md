@@ -1,0 +1,13 @@
+# Private management resource gate
+
+The private HTTPS destination can now require an explicit management resource with `NewManagementRoute` and `NewManagementHTTPServer`. The route fixes the resource ID, revision, literal address, port, dedicated connector and its exact enrolled certificate in trusted local configuration. It requires a separately trusted administrator profile and does not change ordinary device catalogs or application authorization.
+
+Each TLS handshake and request rechecks the actual end-to-end administrator certificate, current administrator/user/device authority, connector certificate and issuer, exact enabled management revision, one current grant and one current hosting binding. Future, expired or ambiguous bindings deny. The dedicated connector must have no other enabled current resource, including resources whose hosting is temporarily disabled. Changing the destination or revision requires a new locally configured route. A forwarded username or administrator header cannot satisfy any check.
+
+The HTTP server installs a private in-process request context from the actual TLS connection. Every controller transaction performed for that request rechecks the route in the same database transaction as its operation. Revocation after HTTP dispatch therefore denies before the mutation callback can run. A context bound to another store denies. Existing TLS connections receive a denial after revocation, and new handshakes fail. The ordinary device and connector HTTPS constructors cannot select this management handler.
+
+`ManagementAccess` reports the observed administrator, exact resource, grant/binding IDs, connector certificate ID, policy revision, observation time and route fingerprint. It creates no session, lease, audit grant or bearer permit. Sensitive dashboard operations still require their existing exact WebAuthn approval.
+
+The current listener remains explicitly supplied loopback. This component is the destination authorization gate, not a complete management carrier or connector runtime: reverse transport, native route selection, connector possession on that transport, stream accounting and cancellation still require integration and tests. It does not prove the intended remote management path for bootstrap finalization. Owner bootstrap, independent recovery and physical key/origin qualification also remain open.
+
+The [source-bound management evidence](phase-7-management-route-evidence.json) records real TLS, live-denial and transaction tests. These do not change the canonical seven implemented and 84 planned acceptance scenarios. No developer-host networking, DNS, firewall, service, clock or trust settings are changed.

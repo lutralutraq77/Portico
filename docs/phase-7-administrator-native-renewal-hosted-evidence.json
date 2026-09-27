@@ -1,0 +1,85 @@
+{
+  "source_revision": "84b439307d3a6f38d2d0ad93a144703e8fe9fcf5",
+  "merge_reference": "613e474a4f67159dbdb072c61f74f1deeeb0979c",
+  "equal_source_merge_tree": "c50ac99c8e7ff8b6a543ae98892ada95e360d127",
+  "native_run": 34917158193,
+  "conclusion": "failure",
+  "archive_sha256": "9612ce345b64cbfdfbffc89e86b2bdf13f4780d91dedc1e95a77657cd2ef5dcc",
+  "artifact_id": 10376538479,
+  "checks": [
+    {
+      "report": "work/reports/native-renewal-linux-84b4393/native-admin-key.log",
+      "sha256": "29a2f56fb2145fe3fd1a68b4625e51337d73db8329eddb94fbace8f13321bb18",
+      "passing_top_level": 6,
+      "passing_subcases": 16,
+      "failed_top_level": 0
+    },
+    {
+      "report": "work/reports/native-renewal-linux-84b4393/native-admin-app.log",
+      "sha256": "9214f1f457ea553a19fa0d75a67d3540d770fa7adea33eb39c69678b2418fb9a",
+      "passing_top_level": 20,
+      "passing_subcases": 88,
+      "failed_top_level": 0
+    },
+    {
+      "report": "work/reports/native-renewal-linux-84b4393/native-admin-transport.log",
+      "sha256": "3138044c0f62a8cc428d58cad0c026f996d1501823f0d4d8d14e074415b32f08",
+      "passing_top_level": 17,
+      "passing_subcases": 75,
+      "failed_top_level": 0
+    },
+    {
+      "report": "work/reports/native-renewal-linux-84b4393/native-admin-browser.log",
+      "sha256": "37de21771fc16aa171a23eb3bd6d1b39f7b08c6d568f104536a2155c0709807d",
+      "passing_top_level": 3,
+      "passing_subcases": 0,
+      "failed_top_level": 0
+    },
+    {
+      "report": "work/reports/native-renewal-linux-84b4393/native-admin-renewal-browser.log",
+      "sha256": "c85adccf6639cae45b5633901e0bb148cb6c9ee32976df5933f185337c806053",
+      "passing_top_level": 0,
+      "passing_subcases": 0,
+      "failed_top_level": 1
+    }
+  ],
+  "native_application": "20 Linux top-level tests and 88 subcases passed, including real protected credential files, durability fault/reopen tests and version-2 encrypted-key command lifecycle.",
+  "transport": "17 top-level tests and 75 subcases passed; key package 6/16 passed; Node channel 15 passed; existing actual windows 5.92s/.73s/.74s passed.",
+  "renewal_failure": "New actual renewal window failed at phone-width document overflow after registering/testing two virtual factors and reviewing/cancelling renewal. It did not submit renewal approval. The failure JSON and desktop screenshot are retained in the verified archive. The mobile screenshot was after the assertion and was not created.",
+  "correction": "At phone width the heading and Refresh control remained in one flex row. The following source stacks them vertically. The harness now captures and records mobile layout measurements before asserting no horizontal overflow.",
+  "installed_package": "Not reached because the native test step failed. No installed-current-source pass claimed.",
+  "other_workflows": {
+    "quality": 34917158336,
+    "dependency": 34917158289,
+    "codeql": 34917158241,
+    "service": 34917158270,
+    "artifact_verification": "Workflow conclusions only; archives not fetched for service/package.",
+    "conclusions": "success",
+    "arch_package": 34917158272
+  },
+  "full_linux": {
+    "passing_top_level": 305,
+    "log_sha256": "4d8cd9ac54e438bb7757b7d20f4cdb0d52478359d0c93ceea954071b184a70b7",
+    "archive_sha256": "940ce012cf54f9759d7b4dbe9ba5ba6bda72fb09f1e9aad3edcc294bbe5b8d34",
+    "passing_subcases": 1362,
+    "log": "work/reports/final-ack-hosted/84b4393-linux-runtime.log",
+    "state": "success",
+    "skipped_top_level": 5,
+    "failures": 0,
+    "run": 34917158174
+  },
+  "limitations": [
+    "Virtual security keys and fixture issuer do not establish physical custody or operational issuer deployment.",
+    "Management destination gate, reverse routing, bootstrap/finalization and independent recovery are separately qualified."
+  ],
+  "acceptance": {
+    "total": 91,
+    "implemented": 7,
+    "planned": 84
+  },
+  "tested_merge_job_log": {
+    "report": "work/reports/native-renewal-linux-84b4393/hosted-job.log",
+    "checkout": "613e474a4f67159dbdb072c61f74f1deeeb0979c",
+    "sha256": "25de4d24f9f81da96d845671da6665a4ff4c19a94801c2e29243795b718a55fe"
+  }
+}

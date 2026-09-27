@@ -6,7 +6,7 @@ $lock = Get-Content -LiteralPath (Join-Path $PorticoRoot 'tools/toolchain.lock.j
 function Get-VerifiedArchive {
     param([string]$Url, [string]$ExpectedSHA256, [string]$Destination)
     if (-not (Test-Path -LiteralPath $Destination)) {
-        Invoke-WebRequest -Uri $Url -OutFile $Destination
+        Invoke-WebRequest -Uri $Url -OutFile $Destination -MaximumRetryCount 2 -RetryIntervalSec 2 -ConnectionTimeoutSeconds 30 -OperationTimeoutSeconds 60
     }
     $actual = (Get-FileHash -LiteralPath $Destination -Algorithm SHA256).Hash
     if ($actual -ine $ExpectedSHA256) { throw "Archive checksum mismatch: $Destination" }
@@ -54,7 +54,16 @@ if ($LASTEXITCODE -ne 0 -or $actualVersion -ne ('go' + $lock.go.version)) {
 }
 Push-Location (Join-Path $PorticoRoot 'tools')
 try {
-    & go mod download
+    # Cache completed public modules and retry a bounded number of interrupted
+    # transfers. Go's pinned checksums and the verification below still apply.
+    for ($downloadAttempt = 1; $downloadAttempt -le 3; $downloadAttempt++) {
+        & go mod download
+        if ($LASTEXITCODE -eq 0) { break }
+        if ($downloadAttempt -lt 3) {
+            Write-Output ('Retrying public tool module download (' + $downloadAttempt + '/2)')
+            Start-Sleep -Seconds 2
+        }
+    }
     if ($LASTEXITCODE -ne 0) { throw 'Tool dependency download failed' }
     & go mod verify
     if ($LASTEXITCODE -ne 0) { throw 'Tool checksum verification failed' }
@@ -69,4 +78,3 @@ try {
     }
 } finally { Pop-Location }
 Write-Output ('Pinned development tools ready under ' + $PorticoWork)
-

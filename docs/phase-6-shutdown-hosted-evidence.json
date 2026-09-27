@@ -1,0 +1,176 @@
+{
+  "failure": "Main HTTPS positive_control_repeat_00 exited 1 after destination/HTTP/authenticated deltas 1/1/1. All four service cases and the other twenty HTTPS cases passed. SSH was not reached. No new shutdown failure occurred.",
+  "limitations": [
+    "Source-specific component qualification; full Phases 6 and 7 remain incomplete.",
+    "Successful dashboard HTTPS run does not erase the same-binary main HTTPS failure.",
+    "No physical hardware, platform custody, deployment or complete recovery qualification."
+  ],
+  "status": "Corrected daemon shutdown source passed Linux on both branches and the full dashboard Arch service run; main HTTPS remains intermittent",
+  "artifact_root": "E:/Portico/work/reports/final-ack-hosted",
+  "schema": 1,
+  "canonical_acceptance": {
+    "planned": 84,
+    "implemented": 7,
+    "total": 91
+  },
+  "runs": [
+    {
+      "source_revision": "33d7807b87fe9935790cc3c99bcbf7d6c2b887b9",
+      "linux": {
+        "runtime_sha256": "428bb71ceeb5e97cd79ae98b167e980963f15ac512ab62067138fdf6d4311199",
+        "run": 34796850515,
+        "skipped": 5,
+        "archive_digest": "sha256:5bfd9a6d8ebf3b719c6ade415a36dcd0dd750493d7981fc143bf06762d3e5d82",
+        "artifact_id": 10330172467,
+        "top_pass": 234,
+        "sub_pass": 1134,
+        "failed": 0
+      },
+      "tested_service_merge": "9e5dbced7f1b889c605e5c0fe5bd35d73d6c7c25",
+      "tested_service_tree": "e9f9b543066702d1b6fb61f667b35f65bcf2337e",
+      "service": {
+        "ssh": "not reached after HTTPS failure",
+        "runtime_sha256": "048b6da0a476994191e25e31f023b99375ec1f74d2cc95c8b33abd062634e9db",
+        "environment": {
+          "schema": 1,
+          "source_revision": "9e5dbced7f1b889c605e5c0fe5bd35d73d6c7c25",
+          "image": "quay.io/archlinux/archlinux@sha256:2685bf92cc6215cc922488ae8e80b4875f4bdf19fef648818b1742517ce27077",
+          "package_sha256": "8b0dae7b90d75b5cf70df121ad10bfd3593f6ee6bc3f6fb7c1d2038feeb748f5",
+          "unit_sha256": "29a26f3c83e42a72d214d3c79b07939d7e9da1229b904c2e98e393508bfe39fc",
+          "binary_sha256": "404392a0674d559d15ccadd366c2e731fa20967217d2f2248c5ad993023af3fb",
+          "controller_test_sha256": "4f39e6e07f427ce0c69c3a302228b57f710202eb9793ecfab73477181996a063",
+          "qemu_version": "QEMU emulator version 11.1.1",
+          "qemu_sha256": "2aa2409f942b1bcdf47ad695658a25528d38c1e7a0555569256dcfb0bedf8635",
+          "kernel_sha256": "1e6bf9027720c75c3ed0d79171f21b5791ee40ca9795d07c7c6e04dc5ea2ae90",
+          "initramfs_sha256": "8689eb4e01c0cb04fe59caeb34762df1923d1e8635cc12531a5a8aed120f7874",
+          "acceleration": "tcg",
+          "virtual_cpus": 2,
+          "memory_mib": 3072,
+          "network_devices": 0,
+          "host_filesystem_shares": 0,
+          "issuer_binary_sha256": "e9de6a2cb60551b812ea00da5eb87b0fdb4b87e5f85da9a0fcdc58446cd9b8a2",
+          "ssh_package_lock_sha256": "24f20e29f06516768a8d67af1797fbd9381449c85b501e8b8efa62db8787d51a",
+          "ssh_binaries_manifest_sha256": "3f1fe4776e6a0f0d3a86aca5e953cfb9e799a7907c4b37e1d1c2710aba9a1b03"
+        },
+        "artifact_id": 10330205999,
+        "conclusion": "failure",
+        "https_cases_pass": 20,
+        "https_cases_fail": 1,
+        "installed_service_cases_pass": 4,
+        "run": 34796850505,
+        "archive_digest": "sha256:b77192cb3b3e01dec303e946a645436012945c8ef78144ebd527742fb687fe60"
+      },
+      "workflows": [
+        {
+          "id": 34796850505,
+          "name": "Arch user service runtime",
+          "conclusion": "failure"
+        },
+        {
+          "id": 34796850474,
+          "name": "Repository quality",
+          "conclusion": "success"
+        },
+        {
+          "id": 34796850515,
+          "name": "Isolated Linux runtime",
+          "conclusion": "success"
+        },
+        {
+          "id": 34796850465,
+          "name": "Arch development package",
+          "conclusion": "success"
+        },
+        {
+          "id": 34796850494,
+          "name": "Dependency review",
+          "conclusion": "success"
+        },
+        {
+          "id": 34796850483,
+          "name": "CodeQL",
+          "conclusion": "success"
+        }
+      ]
+    },
+    {
+      "source_revision": "5e7b0c8a89d799926f16ed9a5d9fa28f80eb1268",
+      "linux": {
+        "runtime_sha256": "acdb3d5a068ed844ebb50961403ca591bdd23d7f3970591e427f714caff06245",
+        "run": 34796954372,
+        "skipped": 5,
+        "archive_digest": "sha256:3e11129ffdf7ffc59b9d60575c7e0e83f06e5b575153f00d3e677ddb56749d8c",
+        "artifact_id": 10330740373,
+        "top_pass": 252,
+        "sub_pass": 1175,
+        "failed": 0
+      },
+      "tested_service_merge": "96f55061506b6744fbbd22f4204dd26e0a5f41bb",
+      "tested_service_tree": "f17437c395749eecb8eae4f9eee5efb302c1cc8d",
+      "service": {
+        "ssh": "17 cases passed",
+        "runtime_sha256": "d20990c60dffde261687ad107bc2c4f8138f5a0e5ddfe1c56bce95e3b00636ad",
+        "environment": {
+          "schema": 1,
+          "source_revision": "96f55061506b6744fbbd22f4204dd26e0a5f41bb",
+          "image": "quay.io/archlinux/archlinux@sha256:2685bf92cc6215cc922488ae8e80b4875f4bdf19fef648818b1742517ce27077",
+          "package_sha256": "0b37beb4cb289a369b372419844d5cc1c7ac3d6457660d3e8892a54cfe9e2227",
+          "unit_sha256": "29a26f3c83e42a72d214d3c79b07939d7e9da1229b904c2e98e393508bfe39fc",
+          "binary_sha256": "404392a0674d559d15ccadd366c2e731fa20967217d2f2248c5ad993023af3fb",
+          "controller_test_sha256": "171ca6c03a144b0db4d65bbe68c7d0c38b70088799e36da36a28e6de7afd45b3",
+          "qemu_version": "QEMU emulator version 11.1.1",
+          "qemu_sha256": "2aa2409f942b1bcdf47ad695658a25528d38c1e7a0555569256dcfb0bedf8635",
+          "kernel_sha256": "1e6bf9027720c75c3ed0d79171f21b5791ee40ca9795d07c7c6e04dc5ea2ae90",
+          "initramfs_sha256": "fea515f5bfa1b8215bf2ab6dc4b14489e46ee43a818b9b0ebbf9e3e7e11f6176",
+          "acceleration": "tcg",
+          "virtual_cpus": 2,
+          "memory_mib": 3072,
+          "network_devices": 0,
+          "host_filesystem_shares": 0,
+          "issuer_binary_sha256": "e9de6a2cb60551b812ea00da5eb87b0fdb4b87e5f85da9a0fcdc58446cd9b8a2",
+          "ssh_package_lock_sha256": "24f20e29f06516768a8d67af1797fbd9381449c85b501e8b8efa62db8787d51a",
+          "ssh_binaries_manifest_sha256": "3f1fe4776e6a0f0d3a86aca5e953cfb9e799a7907c4b37e1d1c2710aba9a1b03"
+        },
+        "artifact_id": 10329034832,
+        "conclusion": "success",
+        "https_cases_pass": 21,
+        "https_cases_fail": 0,
+        "installed_service_cases_pass": 4,
+        "run": 34796954339,
+        "archive_digest": "sha256:31e7f28a0a702d3d67247f4bdb66e3159e0189fa70972af06813d59381f1f797"
+      },
+      "workflows": [
+        {
+          "id": 34796954351,
+          "name": "Arch development package",
+          "conclusion": "success"
+        },
+        {
+          "id": 34796954331,
+          "name": "CodeQL",
+          "conclusion": "success"
+        },
+        {
+          "id": 34796954339,
+          "name": "Arch user service runtime",
+          "conclusion": "success"
+        },
+        {
+          "id": 34796954367,
+          "name": "Repository quality",
+          "conclusion": "success"
+        },
+        {
+          "id": 34796954372,
+          "name": "Isolated Linux runtime",
+          "conclusion": "success"
+        },
+        {
+          "id": 34796954362,
+          "name": "Dependency review",
+          "conclusion": "success"
+        }
+      ]
+    }
+  ]
+}

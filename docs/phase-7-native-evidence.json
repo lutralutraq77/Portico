@@ -1,0 +1,116 @@
+{
+  "schema": 1,
+  "recordedUTC": "2026-09-14T05:09:10.2013335Z",
+  "scope": "Native administrator transport/window component; Phases 6 and 7 incomplete",
+  "baseCommit": "ca38d37a6114282d79dfc9e64a87cdf8294d6fc1",
+  "sourceBinding": "Unchanged files come from baseCommit; listed changed/new files identify tested source before commit",
+  "sourceSHA256": {
+    ".github/workflows/native-admin.yml": "0ece2f56d88403d4d108ae2448588dab35942ee7eab9ea3b1988efa151f12b78",
+    "desktop/admin/channel.cjs": "bb9fdf8bfa4778cbced6dcbf65cd836b27ae6e6022b92e8b3ade8011e4611460",
+    "desktop/admin/channel.test.cjs": "e372f234d2fd461fdbce554dea34515698b4b1e0bf7e6b3235194333a9a1be9f",
+    "desktop/admin/main.cjs": "589ef14977908a9cdb35346ea2061641c6aa0d66f90b53224d448ba865c1dda9",
+    "desktop/admin/runtime.lock.json": "756814f7054e395d180be0d4d3d6fa89426e9571aeffb6e364ebd5aa973bd0a0",
+    "desktop/admin/shell.cjs": "1f363471f6cd9aee60b4515216a02327c0ad2c4a03be319a3af06abaf0801bdf",
+    "docs/delivery-status.md": "06cf2f92bedee4beecba53ad1594e5fab99a537b1eda586e6d6c1cad9ec0b215",
+    "docs/dependency-policy.md": "888e264a6eb74cd25756a08da91e2153e8283bb88732188f8f74f2268557eab3",
+    "docs/native-administration.md": "0862eefa5fc87dbb095d4fbaed16fd85ac7a3ed41db96ff3a6bccfe5c99f8892",
+    "internal/adminbridge/client_test.go": "423f347f0919e6fd89384cfa4bb0704da096c54f9e7dc597631120915d485fc8",
+    "internal/adminbridge/client.go": "3c48f7d4649c85fbb59fec619d64b734f8be5af7e81656971b9653bcae63e220",
+    "internal/adminbridge/launch.go": "490430818afa0268ed54d4bb0c508a84178c9cd65a16fcc90e72a0d5fd9d8f38",
+    "internal/adminbridge/pipe_test.go": "4949e323a279ad36cf47932bb994aa16f9444728b766b474bbdec23f07fe9943",
+    "internal/adminbridge/pipe.go": "5df3a063bba36a1efc6607c63bc95a41e6db264fcdabc24442571fc6d04858a6",
+    "internal/controller/dashboard_native_browser_test.go": "8f52b84272f442fc1a63a28af1631bc25dadb8b5a15dadb75a7550413e78c73a",
+    "scripts/prepare-admin-runtime.ps1": "13ee6fe2dfa9c371c784897034ddc836e2bd83128938feb1457e3662047d78b2",
+    "scripts/test-dashboard-native-browser.cjs": "3c5a1ac014e95465436dd019eaa7d0b83ba6420728c76637a4d09be0cc0defe8",
+    "scripts/test-dashboard-native-failure.cjs": "2d67f2bcb45fbca1a3ca866f5ab8f5e242f7c51e5f0b77c8bc73427f152a554b",
+    "scripts/test-native-admin.ps1": "bea4b7fa971f02c2654ed876fd3bdd8ce8db3aaacc0a4808aed8668511dad838",
+    "SECURITY_CONTROL_MATRIX.md": "97be46912041c0bd80bc6a2b84d4b02af1f6fc8a3833fd1d2a2764548cf44bbc"
+  },
+  "reportRoot": "E:/Portico/work/reports",
+  "artifactSHA256": [
+    {
+      "path": "admin-runtime.json",
+      "sha256": "7e364915fb01689a25c595ae2044d24d35dad0806036c52d9713cd6558ab6365"
+    },
+    {
+      "path": "native-admin-verified-summary.json",
+      "sha256": "9e99676553427681bb8da63828009502009fd55e842f67bb273cf999da640c41"
+    },
+    {
+      "path": "native-admin-verified-transport.log",
+      "sha256": "0b43e84718e776eacffbc2be1e295e55bdd3630b4c672bbb57e81aab502d43a3"
+    },
+    {
+      "path": "native-admin-verified-channel.log",
+      "sha256": "f0bfb2ae2df7ef210c02e49b022cc818e4dcabf1ca7681603e6ded486c82c794"
+    },
+    {
+      "path": "native-admin-verified-browser.log",
+      "sha256": "2d9344f90408001e153a96a41bd2dd36e5152cb508896a95e492c32a85c28476"
+    },
+    {
+      "path": "native-admin-verified-browser/result.json",
+      "sha256": "97b7c24efc20e97328ed388e299c1ce62ccc58d2a3c585a871225be3d4fc5f16"
+    },
+    {
+      "path": "native-admin-verified-browser/native-desktop-key-review.png",
+      "sha256": "614c5cac3b4800917f6d8ce648b773ffd70447163efb44598ff330f6b15bc1bc"
+    },
+    {
+      "path": "native-admin-verified-browser/native-mobile-key-review.png",
+      "sha256": "5c336929f3caec1414f9bc02aae69176873a64b0bc9b2b58e7e9db9dd4e360d8"
+    },
+    {
+      "path": "native-admin-verified-browser-intentional-failure/intentional-failure.txt",
+      "sha256": "e411bc7b39006008b556383ce30b40f2186ce7641d2062c152e28df8c3fac505"
+    },
+    {
+      "path": "native-admin-docs.json",
+      "sha256": "06272d47df3a0165d52cb62f6b3bc4bff9abfd3da04fa9846194266637901c4f"
+    },
+    {
+      "path": "native-admin-gitleaks.json",
+      "sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570"
+    }
+  ],
+  "failedRunLogSHA256": {
+    "dashboard-native-browser-v1.log": "80b50ecbf76ae4ee84ed47afeb15d308b3b2655ab757db1fcf4cff4d164e7ca7",
+    "dashboard-native-browser-v2.log": "a84d7ab4f073858ed668ca79f55b42a2c4b668ca09da37a387cc6416046c6430",
+    "dashboard-native-browser-v3.log": "6a828637c05881202906199af4d0b03a25e1b646275a389dd65153bf266ed328",
+    "dashboard-native-browser-v4.log": "7474a1e98135ab8e4ff2fc46e17a25b861405dae156094e72df087f83170c583",
+    "dashboard-native-browser-v5.log": "2a99a9da58990d75b2aaae597f56c1cca6dc015ed92a334f934a4c78aacfc35c",
+    "dashboard-native-browser-v6.log": "c1426b210fcd359c571b7fed08f49e683aaaaba836a926d6cb145124c6dbcb6f",
+    "native-admin-browser.log": "982838a0177a44471f8025b8143f4b9e064ff3a08ec632903ce0ec0c199e202f",
+    "native-admin-final-browser.log": "5d749d594b8a3a409a4472ce54f7b11d339120e9c1a172d8c6037a92d4c203e3"
+  },
+  "validation": {
+    "goRaceTopLevel": 10,
+    "goRaceSubcases": 43,
+    "nodeChannelTests": 15,
+    "browserTopLevel": 2,
+    "browserFunctionalGroups": 9,
+    "browserFunctionalSeconds": 6.3,
+    "browserFailureSeconds": 2.24,
+    "nativeCreations": 2,
+    "nativeAssertions": 3,
+    "desktopAndMobileVisuallyInspected": true,
+    "windowsAndLinuxVetStaticcheck": "PASS",
+    "taggedControllerVetStaticcheck": "PASS",
+    "workflowSyntax": "PASS",
+    "secretScan": "0 leaks",
+    "documentation": "118 Markdown, 17 required, 91 cases, 0 errors"
+  },
+  "hosted": "New native Linux workflow and combined-source checks pending",
+  "acceptance": {
+    "implemented": 7,
+    "planned": 84,
+    "total": 91
+  },
+  "limitations": [
+    "Virtual keys and in-memory Go TLS identity do not qualify physical keys or platform key custody",
+    "No installed administration command/package, management-resource route, owner bootstrap/finalization, recovery drill or suspend-aware native lifetime qualification",
+    "Windows component execution does not advance Phase 8",
+    "Runtime archive digests are from official release metadata, not independent release authentication",
+    "Prior authenticated HTTPS intermittency remains unresolved"
+  ]
+}

@@ -13,3 +13,5 @@ func ReadDurable(path string, maximum int64) ([]byte, error) { return nil, ErrUn
 func Create(path string, data []byte) error                  { return ErrUnsupported }
 
 func OpenPrivateParent(path string) (*os.File, string, error) { return nil, "", ErrUnsupported }
+
+func OpenDirectory(path string, private bool) (*os.File, error) { return nil, ErrUnsupported }

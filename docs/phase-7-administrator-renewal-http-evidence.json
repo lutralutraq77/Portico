@@ -1,0 +1,90 @@
+{
+  "base_source": "5a4e9b98a5df69a1ed40b0ac0971fd991f6b234c",
+  "sources": [
+    {
+      "path": "internal/adminrenewal/protocol.go",
+      "sha256": "195e00ee113eff88e601e9e815132028e1247ba827880ddc6dc55fb04bc3da8c"
+    },
+    {
+      "path": "internal/controller/admin_renewal.go",
+      "sha256": "f09514827240717fa89819d78a1bbf8031c46fe21953ea119e4bdd0f97e57483"
+    },
+    {
+      "path": "internal/controller/admin_renewal_http.go",
+      "sha256": "4780a6c1ab2efd5fe6ecb9509c862663d1f77d78432d468724e9a1b040eedd73"
+    },
+    {
+      "path": "internal/controller/admin_renewal_http_test.go",
+      "sha256": "cc5bdb2ed5d18f6e09981eef8265326e832b4d8cb6d2fe4fd5d0549e9fe307d4"
+    },
+    {
+      "path": "internal/controller/admin_renewal_approval_http_test.go",
+      "sha256": "918c12003049d39f2649a4354d7145f19f4aebadcfa9498000da2dbf9dadc8d7"
+    },
+    {
+      "path": "internal/controller/policy_http.go",
+      "sha256": "e3edde60e799fd3dc652639c9040aaf57e1fc8cf4e4db9ffa4025021cb2e59cc"
+    },
+    {
+      "path": "issuer/admin_renewal_test.go",
+      "sha256": "21721f9ae47e66476dfd58dce81c71a3dd1af75aba57f32f4e7d9663226c5f2f"
+    },
+    {
+      "path": "scripts/bootstrap.ps1",
+      "sha256": "935ea26c10bea4edc29dd7580b56ad8d79ed2e734f6a045210a526292ba0ea92"
+    }
+  ],
+  "checks": [
+    {
+      "report": "work/reports/admin-renewal-https-regression.log",
+      "sha256": "5f324d1147fc15964834a6b8f46a15444cba7b099e3a44e4e7c879ac8f2f2dc9",
+      "passing_top_level": 21,
+      "passing_subcases": 86,
+      "failed_top_level": 0
+    },
+    {
+      "report": "work/reports/admin-renewal-real-https-v1.log",
+      "sha256": "6149de728a95e2b73d049d1a0ee2a61743aa952bcc392b179d8e3592c223e154",
+      "passing_top_level": 1,
+      "passing_subcases": 0,
+      "failed_top_level": 0
+    },
+    {
+      "report": "work/reports/admin-renewal-approval-https-reconcile-final.log",
+      "sha256": "7e993de4da3e7cea81e438b641bc7cdb03dbb3d80f4132c4a29be61755bbe454",
+      "passing_top_level": 1,
+      "passing_subcases": 0,
+      "failed_top_level": 0
+    }
+  ],
+  "platform": "Windows local race execution; current Windows/Linux vet and staticcheck passed",
+  "regression": "21 top-level tests and 86 subcases, zero failures, 42.523 seconds under race detector; includes renewal core and HTTPS, existing private policy, factor and invitation HTTP",
+  "real_issuer": "Actual restricted Smallstep provider and pinned mTLS/JWK adapter with separate actual HTTPS activation; 1.53 seconds (package 8.720 seconds under race detector)",
+  "historical_failure": "Activation v1 test incorrectly expected a single unambiguous case-folded or escaped JSON field alias to reject. Corrected to duplicate aliases per existing strict wire contract. No production parser weakening.",
+  "preceding_controller_hosted": {
+    "source": "5a4e9b98a5df69a1ed40b0ac0971fd991f6b234c",
+    "passed_runs": [
+      34862959151,
+      34862959189,
+      34862959154,
+      34862959158,
+      34862959122,
+      34862959119
+    ],
+    "quality_run": 34862959188,
+    "quality": "Ubuntu passed; Windows tool preparation failed on proxy.golang.org HTTP/2 INTERNAL_ERROR before checks",
+    "artifact_verification": "Current-source archives not downloaded or verified; workflow conclusions only"
+  },
+  "hosted_current_source": "pending",
+  "limitations": [
+    "Native orchestration and durable certificate replacement remain unfinished",
+    "No issuer operational custody, owner bootstrap/finalization, management route or independent recovery qualification",
+    "Virtual factors do not establish physical hardware custody",
+    "No public host, firewall, DNS, Mullvad, clock or trust changes"
+  ],
+  "acceptance": {
+    "implemented": 7,
+    "planned": 84,
+    "total": 91
+  }
+}

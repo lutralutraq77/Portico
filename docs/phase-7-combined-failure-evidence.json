@@ -1,0 +1,107 @@
+{
+  "schema": 1,
+  "status": "failed",
+  "source_commit": "c3cbc130deb9b7b785933b864909b10a3b84657e",
+  "tested_merge": "f1cd80cb6cfe65e0be4bdec1448f5f42bb031e80",
+  "shared_tree": "8bae5074dff6720f8e21ae2de6113721748c0a2e",
+  "workflows": [
+    {
+      "url": "https://github.com/lutralutraq77/Portico/actions/runs/34696557494",
+      "conclusion": "success",
+      "id": 34696557494,
+      "status": "completed",
+      "head_sha": "c3cbc130deb9b7b785933b864909b10a3b84657e",
+      "name": "Isolated Linux runtime"
+    },
+    {
+      "url": "https://github.com/lutralutraq77/Portico/actions/runs/34696557507",
+      "conclusion": "failure",
+      "id": 34696557507,
+      "status": "completed",
+      "head_sha": "c3cbc130deb9b7b785933b864909b10a3b84657e",
+      "name": "Arch user service runtime"
+    },
+    {
+      "url": "https://github.com/lutralutraq77/Portico/actions/runs/34696557531",
+      "conclusion": "success",
+      "id": 34696557531,
+      "status": "completed",
+      "head_sha": "c3cbc130deb9b7b785933b864909b10a3b84657e",
+      "name": "Repository quality"
+    },
+    {
+      "url": "https://github.com/lutralutraq77/Portico/actions/runs/34696557528",
+      "conclusion": "success",
+      "id": 34696557528,
+      "status": "completed",
+      "head_sha": "c3cbc130deb9b7b785933b864909b10a3b84657e",
+      "name": "Arch development package"
+    },
+    {
+      "url": "https://github.com/lutralutraq77/Portico/actions/runs/34696557552",
+      "conclusion": "success",
+      "id": 34696557552,
+      "status": "completed",
+      "head_sha": "c3cbc130deb9b7b785933b864909b10a3b84657e",
+      "name": "CodeQL"
+    },
+    {
+      "url": "https://github.com/lutralutraq77/Portico/actions/runs/34696557500",
+      "conclusion": "success",
+      "id": 34696557500,
+      "status": "completed",
+      "head_sha": "c3cbc130deb9b7b785933b864909b10a3b84657e",
+      "name": "Dependency review"
+    }
+  ],
+  "linux": {
+    "top_level_passes": 231,
+    "subcase_passes": 1127,
+    "failures": 0,
+    "skips": 4
+  },
+  "installed_service": {
+    "subcase_passes": 4,
+    "failures": 0,
+    "test": "TestSystemdGuestAgentEnrollmentAndRevocation",
+    "status": "passed",
+    "seconds": 52.02,
+    "skips": 0
+  },
+  "https": {
+    "test": "TestArchGuestApplicationHTTPS",
+    "failed_case": "positive_control_after_denials",
+    "seconds": 35.68,
+    "root_cause": "Unresolved; isolated stage diagnostic pending. No rerun is treated as a fix.",
+    "authenticated_requests": 1,
+    "subcase_passes": 8,
+    "destination_connections": 1,
+    "status": "failed",
+    "failures": 1,
+    "observed_failure": "Application launcher exited 1 with generic rejection after authenticated destination request.",
+    "http_requests": 1
+  },
+  "artifact_directory": "E:/Portico/work/reports/phase-7-interface-c3",
+  "sha256": {
+    "artifact-10298573062.json": "ddf9ae57ab6305d87af2c628c89d57dc4d76844025ce615ec83dd31f9cade309",
+    "artifact-10298762729.json": "539775ffe9a401b5d83fa66d66294b23713a4d11f9e17c36b49285f4dc693dd9",
+    "job-103560933047.json": "f532105e417289a8f704be0fc6231ced16d27af8a2a483e0c81384a5b663433d",
+    "job-103560933148.json": "370f1a64b83417ebad758bca742c4ace98c5b4b2d0b64466f2c45736d7ed9aa8",
+    "linux-runtime-environment.json": "0d06470600f4a72f2b4a53b615ada1b7d6ef38b7ce598d3c37ca7bbc8b246010",
+    "linux-runtime.log": "551ed9e1d98d0f94359e1dbff26b82391af8611aa984f7ba0ecf2d4377d98115",
+    "linux.zip": "b7ecc2dd99c7028e720243cdf863966acc5f1e2ace967cb977a6ef051a768999",
+    "run-34696557494.json": "3109426f3c7e8c5cb25c2485de014c7740f79902caae31d0fe2c991758692f52",
+    "run-34696557500.json": "2a283a6ccf20a4bfbb3a622e6fc5dc9aa1cfd6df26ca402ea75d8fa88689484c",
+    "run-34696557507.json": "661b8efc91ea52d65ee9cacc4e760fb3028ab5f53ebbf013bca105ad61db587b",
+    "run-34696557528.json": "fc396b91a4524602f198ad1de291b305f3144fbef9529385870254a3828d5cad",
+    "run-34696557531.json": "061c6bf5af65b94153538936e2759518f99271acf60e3d860df600f1f942c244",
+    "run-34696557552.json": "81e119f3be2cefb1320e8812bd2c3e4c5d16b9b73ba5d2940c59e1caa5474ed9",
+    "service-environment.json": "aaec433fa2c41e1efd8b9392c1040b026fab9ddf839d89fbccc407a5b55c32fa",
+    "service-runtime.log": "81969468cc649ca462ef4fb12cf45d6a33314ebc8eaea045b4a10be91b15510d",
+    "service.zip": "2456e79942cee112d959408efc016c92d2a4cee168d51f86b01c93746ef164fa"
+  },
+  "limitations": [
+    "Historical combined source failed qualification. Earlier passing source does not qualify this commit.",
+    "Software identities and isolated NIC-less guest only; no physical keys, deployment or full phase claim."
+  ]
+}

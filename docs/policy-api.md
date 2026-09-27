@@ -18,6 +18,7 @@ All routes below require POST, Content-Type application/json, exact configured H
 | Administrator | /api/v1/admin/policy/preview | Exactly one Resource, Grant or Hosting draft; ResourceID/ExpectedRevision accepted only for endpoint revision |
 | Administrator | /api/v1/admin/policy/challenge | ID and Digest of an owned current preview; starts operation-bound WebAuthn approval |
 | Administrator | /api/v1/admin/policy/confirm | ID of the challenge and Response containing the WebAuthn JSON; consumes the exact stored operation atomically |
+| Administrator | /api/v1/admin/dashboard/inventory | Section, Limit (1–50), optional After and PolicyRevision; returns a bounded page of allowlisted metadata, with live administrator revalidation and no secret fields; see [inventory contract](dashboard-inventory.md) |
 
 Resource draft fields are Name, ConnectorID, Address, Port and Protocol. Grant fields are UserID, DeviceID, ResourceID, Revision, From and Until. Hosting fields are ConnectorID, ResourceID, Revision, From and Until. Times use JSON RFC3339 timestamps. IDs, enabled flags, resource kind and approval references are server-generated. No grant or hosting permission is inferred from creating a resource.
 

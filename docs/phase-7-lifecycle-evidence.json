@@ -1,0 +1,310 @@
+{
+  "schema": 1,
+  "status": "component passed; full Phases 6 and 7 incomplete",
+  "source_base_commit": "e3e79c540ee4321299eb40562e006cc65e3d8de8",
+  "operations": [
+    "create-user",
+    "rename-user",
+    "disable-user",
+    "create-device",
+    "rename-device",
+    "disable-device",
+    "create-connector",
+    "rename-connector",
+    "disable-connector"
+  ],
+  "native_race": {
+    "race": true,
+    "top_pass": 41,
+    "sub_pass": 123,
+    "failed": 0,
+    "skipped": 0,
+    "seconds": 118.675
+  },
+  "lifecycle_browser_seconds": 10.84,
+  "lifecycle_browser": {
+    "browser": "152.0.4191.66",
+    "playwright": "1.62.1",
+    "checks": [
+      "altered lifecycle name is rejected before security-key approval",
+      "current administrator user and device cannot be revoked through their own session",
+      "concurrent policy change invalidates a reviewed lifecycle operation",
+      "cancelling a native lifecycle approval does not commit a record",
+      "native key approval creates the exact user once and renders hostile names as text",
+      "paged owner choices retain unsent values and a changed device owner is rejected",
+      "device and connector creation preserve owner/expiry and create no enrollment, grant or hosting",
+      "native approvals rename user, device and connector while retaining their identity IDs",
+      "lost lifecycle confirmation remains uncertain and is never automatically retried",
+      "revocation reviews name and identity, retains disabled tombstones and prevents reuse",
+      "revocation review reflows at 360px with 48px controls in dark mode",
+      "browser device revocation removes real active renewal/new-session authority and enqueues cancellation",
+      "live administrator revocation denies a previously displayed lifecycle preview",
+      "no cookies, persistent browser state, external page requests or script errors"
+    ],
+    "assertions": 23,
+    "final_state": {
+      "Users": 58,
+      "Devices": 3,
+      "Connectors": 2,
+      "EnabledUsers": 57,
+      "EnabledDevices": 0,
+      "EnabledConnectors": 1,
+      "Enrollments": 2,
+      "Grants": 1,
+      "Hosting": 1,
+      "Applied": 11
+    },
+    "limitations": [
+      "Virtual USB key and ephemeral administrator TLS proxy; physical key custody and native administrator delivery remain unqualified.",
+      "Revocation proves live controller authority and queued cancellation; destination socket termination has separate runtime qualification.",
+      "Record creation does not provide enrollment invitations or complete a supported client installation."
+    ]
+  },
+  "browser_regressions": {
+    "inventory": {
+      "groups": 19,
+      "seconds": 21.89,
+      "result": {
+        "browser": "152.0.4191.66",
+        "playwright": "1.62.1",
+        "checks": [
+          "authenticated real TLS inventory, bounded first page and CSP",
+          "forward and backward revision-bound pagination",
+          "hostile metadata rendered as text without execution",
+          "keyboard navigation and skip link",
+          "all six sections and accessible table headings",
+          "audit history has chronological bounded pages and stable backward navigation",
+          "inconsistent audit sequence is rejected and prior history is cleared",
+          "current administrator security metadata rejects inconsistent factor counts without retaining old data",
+          "audit and security views reflow at 360px in the dark scheme",
+          "effective access uses exact registered identities and controller policy snapshot",
+          "360px access selectors, fingerprints and allowed result reflow with 48px controls in light and dark schemes",
+          "changing selected identity clears the previous permission and status until a new check",
+          "mismatched destination in an inspection response is rejected and clears prior state",
+          "policy change rejects stale access snapshot, clears old result and shows fresh denial",
+          "separate device grant and connector hosting inventory",
+          "360px mobile reflow, 48px navigation targets and dark scheme",
+          "no cookies, persistent browser storage, third-party requests or script errors",
+          "network failure clears records and refresh recovers",
+          "live administrator revocation clears inventory and denies private assets"
+        ],
+        "limitations": [
+          "Ephemeral software identity; no physical security-key or platform custody qualification.",
+          "Browser automation presents the client identity through Playwright's TLS proxy; upstream TLS validates the isolated root via process-only NODE_EXTRA_CA_CERTS."
+        ]
+      }
+    },
+    "policy": {
+      "groups": 16,
+      "seconds": 32.49,
+      "result": {
+        "browser": "152.0.4191.66",
+        "playwright": "1.62.1",
+        "checks": [
+          "bounded forward and backward management choices retain unsent form values",
+          "altered destination preview rejected before hardware ceremony or policy mutation",
+          "different relying party rejected without requesting or submitting a credential",
+          "concurrent policy change invalidates the preview before approval",
+          "cancelling an in-flight native credential request submits no approval",
+          "section navigation discards the preview and aborts pending hardware approval",
+          "real controller rejects native virtual authenticator response with invalid user verification",
+          "real controller rejects native virtual authenticator response with invalid signature",
+          "exact readable preview, safe hostile text, keyboard focus and 360px dark reflow",
+          "real browser WebAuthn creates one resource, and the controller rejects assertion replay",
+          "resource revision approval shows old and new tuples and preserves resource identity",
+          "native security-key approval applies exact revision and UTC interval for hosting",
+          "native security-key approval applies exact revision and UTC interval for grants",
+          "lost confirmation response reports uncertain outcome and never retries the committed mutation",
+          "live administrator revocation denies a previously displayed preview",
+          "no cookie, persistent browser state, external page request or script error"
+        ],
+        "assertions": 16,
+        "final_state": {
+          "Resources": 3,
+          "Grants": 2,
+          "Hosting": 2,
+          "Applied": 5
+        },
+        "limitations": [
+          "Virtual USB P256 authenticator with software attestation fixtures; no physical key model qualification.",
+          "Private TLS browser fixture uses Playwright client-certificate proxy; no native administrator bridge or platform custody qualification."
+        ]
+      }
+    },
+    "factor": {
+      "groups": 15,
+      "seconds": 31.9,
+      "result": {
+        "browser": "152.0.4191.66",
+        "playwright": "1.62.1",
+        "checks": [
+          "security navigation lists only key metadata without credential handles",
+          "changed operation, target, revision and relying party stop before native assertion",
+          "concurrent policy change denies the previously reviewed key operation",
+          "cancellation and navigation abort native key requests without a confirmation",
+          "real controller rejects a native key proof without user verification",
+          "exact key test uses native assertion, keyboard activation and one-use confirmation",
+          "key review focuses its heading and reflows at 360px in dark mode",
+          "different native backup key retires primary and retired row cannot start a key test",
+          "retirement does not reopen the initial two-key registration allowance",
+          "separate native create registers the replacement with attestation but leaves it untested",
+          "newly created browser credential passes its independent exact-key test",
+          "lost key confirmation reports uncertainty without replaying the committed operation",
+          "replacement can authorize retirement but final enabled key cannot retire itself",
+          "live administrator revocation denies the key operation over the existing browser context",
+          "no cookies, browser storage, external page requests or script errors"
+        ],
+        "assertions": 7,
+        "creations": 1,
+        "final_state": {
+          "Total": 3,
+          "Enabled": 1,
+          "Tested": 1,
+          "Registered": 3,
+          "Retired": 2,
+          "Tests": 5
+        },
+        "limitations": [
+          "Virtual USB devices and the public Chromium software attestation signer are isolated test fixtures, not physical security-key qualification.",
+          "Private TLS uses an ephemeral client-certificate proxy; native administrator bridge, platform custody and complete bootstrap remain unqualified."
+        ]
+      }
+    }
+  },
+  "static_analysis": "Controller vet/staticcheck with dashboardbrowser tag passed; separate JavaScript syntax and documentation/secret checks recorded before commit.",
+  "earlier_attempts": [
+    "Initial native v1 build failed because the new test named previewRequest instead of previewApprovalRequest. The fixture type was corrected; focused v2 and the final broader regression passed."
+  ],
+  "limitations": [
+    "Virtual USB authenticator and ephemeral administrator TLS proxy do not qualify physical keys, private hostname or native administrator delivery.",
+    "Live controller revocation and cancellation queue are observed; this component does not prove destination socket termination.",
+    "Record creation does not issue credentials, enrollments, grants or hosting. Full invitation administration, bootstrap and recovery remain open.",
+    "Hosted checks on the new lifecycle source remain pending."
+  ],
+  "source_files": [
+    {
+      "path": "internal/controller/admin.go",
+      "sha256": "5b6d342f56bf6339d791a94919d60ced70665035de7c9db18582c3d4a29174ed"
+    },
+    {
+      "path": "internal/controller/admin_test.go",
+      "sha256": "d851c30b3a20311cb92175dec3443fadf7ce512195960560a0517fb6893c96fc"
+    },
+    {
+      "path": "internal/controller/dashboard.go",
+      "sha256": "53ef5683c0851e87eb07ecc0eb8de0ec45680c26586294cc26923f00e91a2bb5"
+    },
+    {
+      "path": "internal/controller/dashboard/admin.js",
+      "sha256": "86892fcfbfc64ee2b5e50a54b38a787ac18cf71e1698160cfa3763f281a593ec"
+    },
+    {
+      "path": "internal/controller/dashboard/index.html",
+      "sha256": "e939be066e840f8791555215237c52e953dc88a1da5b0ad7d54f965691d91089"
+    },
+    {
+      "path": "internal/controller/dashboard_browser_test.go",
+      "sha256": "e4c729fd0e99dd7e0d4ee283bf77a32e83bbab7038b85225f659515e29fa922d"
+    },
+    {
+      "path": "internal/controller/dashboard_factor_model_browser_test.go",
+      "sha256": "1527012b2c3629fac1fbb513826033d86f51b5c740358a63a766a38f003ac28a"
+    },
+    {
+      "path": "internal/controller/policy_http.go",
+      "sha256": "32dee9f1475b3bccfd45999edbf89ccb12bd59ba81287bcf75e3e161a7dd8932"
+    },
+    {
+      "path": "internal/controller/policy_preview.go",
+      "sha256": "408e88b6e80ea85f406632e449e6969e56163ee49ac3d8876c744cec9db61e9c"
+    },
+    {
+      "path": "internal/controller/policy_lifecycle.go",
+      "sha256": "bfdab84761f7a1c3f33bf5402c4a3884cfd446ea1e4565721647f065af185489"
+    },
+    {
+      "path": "internal/controller/policy_lifecycle_test.go",
+      "sha256": "9fc2538d572a70ae35633c74bb8bc56124b50218124231f5c1294648227fd2fe"
+    },
+    {
+      "path": "scripts/test-dashboard-lifecycle-browser.cjs",
+      "sha256": "a9e68b6a3f9f9a2072761c8062db89d43aaab7f6901a37e19ae828ea7d18d5f1"
+    },
+    {
+      "path": "scripts/test-dashboard-browser.cjs",
+      "sha256": "2de862eaf7d957edafdf2e281a67fcb0672559e8c320ec4b68e9b218ea50f3b5"
+    },
+    {
+      "path": "scripts/test-dashboard-policy-browser.cjs",
+      "sha256": "91e9a39b93592bdf97a8f0d12f3da8be29c159adfd56659bddb7b69ef3b24d5a"
+    },
+    {
+      "path": "scripts/test-dashboard-factor-browser.cjs",
+      "sha256": "c392020ca6db817ee9d0ac053d7b4755f438c42be71632e813ae21b4e392e896"
+    }
+  ],
+  "artifact_root": "E:/Portico/work/reports",
+  "artifacts": [
+    {
+      "path": "dashboard-lifecycle-native-v1.jsonl",
+      "sha256": "3af42e44062649001432c060edaa71ecf30fac328fe4c878a981d198adaefbae"
+    },
+    {
+      "path": "dashboard-lifecycle-native-v2.jsonl",
+      "sha256": "6c3b033e5e6b846f7db1e1c1cab42369091dd5ec91a38220069a2f40699e60c0"
+    },
+    {
+      "path": "dashboard-lifecycle-native-final.jsonl",
+      "sha256": "b831e74ebfab25cbd9667c2030cc157761c2fd764971bc6c1cd50a85c127ad43"
+    },
+    {
+      "path": "dashboard-lifecycle-static-final.log",
+      "sha256": "794996b7c7835405ea9625e69954e44711ba4b98f48a136a15233153cda07a3a"
+    },
+    {
+      "path": "dashboard-lifecycle-browser-v1.log",
+      "sha256": "5774b88b9d49713cc9f5a5056ea801a429a46753234e6744d53d093b620d393e"
+    },
+    {
+      "path": "dashboard-lifecycle-browser-v1/result.json",
+      "sha256": "1c01d077bb87dfbab37da051c746c266892dc9c0e5d5841842c5b12cbe07fd74"
+    },
+    {
+      "path": "dashboard-lifecycle-browser-v1/desktop-revocation.png",
+      "sha256": "48710152f54eb1b437fb5365044a1cd45abc934efc75946908785b533a64f441"
+    },
+    {
+      "path": "dashboard-lifecycle-browser-v1/mobile-revocation-dark.png",
+      "sha256": "eea23d6e07cb883b7d58c9bcfe6c6c6a23a6905d4d346e18ffa0e646dd85ec3a"
+    },
+    {
+      "path": "dashboard-lifecycle-inventory-regression.log",
+      "sha256": "9b3b18fdf51e973e626122e6405b87469269bb26ee0b274a3bd5a7439b3f10bd"
+    },
+    {
+      "path": "dashboard-lifecycle-inventory-regression/result.json",
+      "sha256": "7ef7d191a3d76b4aa8c1b6486b6359490a77e3e1d35a661bac8cc8163b719fc1"
+    },
+    {
+      "path": "dashboard-lifecycle-policy-regression.log",
+      "sha256": "dd41a62fa2914de133edbd4fd519e25d52fa63be917af85fd9a8e299c2987ea8"
+    },
+    {
+      "path": "dashboard-lifecycle-policy-regression/result.json",
+      "sha256": "e20e3e1f1967b8bc8f4ccbb7329c0b52c3c0abe96fb30a538e14c83ad18a23ac"
+    },
+    {
+      "path": "dashboard-lifecycle-factor-regression.log",
+      "sha256": "f6eb3eab39dba7534305137cfb361146dba4927d97a09dbb328ab4de5f2245df"
+    },
+    {
+      "path": "dashboard-lifecycle-factor-regression/result.json",
+      "sha256": "e396188640d9582165d5b94097cc2dc9a49b48abf28e9771f1a3e6e9513b603a"
+    }
+  ],
+  "canonical_acceptance": {
+    "total": 91,
+    "implemented": 7,
+    "planned": 84
+  }
+}

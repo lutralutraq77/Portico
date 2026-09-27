@@ -29,6 +29,10 @@ type policyHTTPFixture struct {
 }
 
 func servePolicy(t *testing.T, p *PolicyEngine, c PolicyHTTPConfig, client tls.Certificate) *policyHTTPFixture {
+	return servePolicyRoute(t, p, c, client, nil)
+}
+
+func servePolicyRoute(t *testing.T, p *PolicyEngine, c PolicyHTTPConfig, client tls.Certificate, route *ManagementRoute) *policyHTTPFixture {
 	t.Helper()
 	ln, e := net.Listen("tcp", "127.0.0.1:0")
 	must(t, e)
@@ -40,7 +44,12 @@ func servePolicy(t *testing.T, p *PolicyEngine, c PolicyHTTPConfig, client tls.C
 	key := newKey(t)
 	leaf := testfixture.Certificate(t, &x509.Certificate{SerialNumber: big.NewInt(2), DNSNames: []string{c.Host}, NotBefore: time.Now().Add(-time.Hour), NotAfter: time.Now().Add(time.Hour), KeyUsage: x509.KeyUsageDigitalSignature, ExtKeyUsage: []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth}}, root, &key.PublicKey, rk)
 	c.ServerIdentity = tls.Certificate{Certificate: [][]byte{leaf.Raw}, PrivateKey: key}
-	s, e := p.NewHTTPServer(c)
+	var s *PolicyHTTPServer
+	if route == nil {
+		s, e = p.NewHTTPServer(c)
+	} else {
+		s, e = p.NewManagementHTTPServer(c, route)
+	}
 	must(t, e)
 	done := make(chan error, 1)
 	go func() { done <- s.Serve(ln) }()

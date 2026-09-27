@@ -1,0 +1,169 @@
+{
+  "schema": 1,
+  "source_revision": "ba4e0d1519730f8f357d850e4e5fe50e8757d5f8",
+  "tested_merge_revision": "66757940fe06d728fb07eef737ee79019cc2fae8",
+  "tested_tree": "d86edb3311947d4d8dcaaf9f0d8eafc24499f65f",
+  "tested_parents": [
+    "33d7807b87fe9935790cc3c99bcbf7d6c2b887b9",
+    "ba4e0d1519730f8f357d850e4e5fe50e8757d5f8"
+  ],
+  "source_and_merge_tree_identical": true,
+  "workflows": [
+    {
+      "name": "Dependency review",
+      "id": 34803575196,
+      "url": "https://github.com/lutralutraq77/Portico/actions/runs/34803575196",
+      "event": "pull_request",
+      "status": "completed",
+      "conclusion": "success",
+      "head_sha": "ba4e0d1519730f8f357d850e4e5fe50e8757d5f8"
+    },
+    {
+      "name": "Arch development package",
+      "id": 34803575195,
+      "url": "https://github.com/lutralutraq77/Portico/actions/runs/34803575195",
+      "event": "pull_request",
+      "status": "completed",
+      "conclusion": "success",
+      "head_sha": "ba4e0d1519730f8f357d850e4e5fe50e8757d5f8"
+    },
+    {
+      "name": "CodeQL",
+      "id": 34803575256,
+      "url": "https://github.com/lutralutraq77/Portico/actions/runs/34803575256",
+      "event": "pull_request",
+      "status": "completed",
+      "conclusion": "success",
+      "head_sha": "ba4e0d1519730f8f357d850e4e5fe50e8757d5f8"
+    },
+    {
+      "name": "Arch user service runtime",
+      "id": 34803575197,
+      "url": "https://github.com/lutralutraq77/Portico/actions/runs/34803575197",
+      "event": "pull_request",
+      "status": "completed",
+      "conclusion": "success",
+      "head_sha": "ba4e0d1519730f8f357d850e4e5fe50e8757d5f8"
+    },
+    {
+      "name": "Repository quality",
+      "id": 34803575204,
+      "url": "https://github.com/lutralutraq77/Portico/actions/runs/34803575204",
+      "event": "pull_request",
+      "status": "completed",
+      "conclusion": "success",
+      "head_sha": "ba4e0d1519730f8f357d850e4e5fe50e8757d5f8"
+    },
+    {
+      "name": "Isolated Linux runtime",
+      "id": 34803575210,
+      "url": "https://github.com/lutralutraq77/Portico/actions/runs/34803575210",
+      "event": "pull_request",
+      "status": "completed",
+      "conclusion": "success",
+      "head_sha": "ba4e0d1519730f8f357d850e4e5fe50e8757d5f8"
+    }
+  ],
+  "published_archives": {
+    "service": {
+      "id": 10332776739,
+      "name": "arch-user-service-runtime",
+      "run_id": 34803575197,
+      "published_digest": "sha256:64af3a36a64b61b194b79095ca02289e68167154b950d7889ad8a178bf86e48e",
+      "verified_sha256": "64af3a36a64b61b194b79095ca02289e68167154b950d7889ad8a178bf86e48e"
+    },
+    "linux": {
+      "id": 10333100792,
+      "name": "isolated-linux-runtime",
+      "run_id": 34803575210,
+      "published_digest": "sha256:af9fb4ae2e8d32789676fad55941cb4d7e3d7084e1cab5c59f00fde052c2c0c1",
+      "verified_sha256": "af9fb4ae2e8d32789676fad55941cb4d7e3d7084e1cab5c59f00fde052c2c0c1"
+    }
+  },
+  "linux_runtime": {
+    "top_pass": 265,
+    "sub_pass": 1210,
+    "top_skipped": 5,
+    "fail": 0
+  },
+  "arch_runtime": {
+    "TestSystemdGuestAgentEnrollmentAndRevocation": {
+      "seconds": 46.03,
+      "sub_pass": 4
+    },
+    "TestArchGuestApplicationHTTPS": {
+      "seconds": 39.81,
+      "sub_pass": 21
+    },
+    "TestArchGuestApplicationSSH": {
+      "seconds": 48.67,
+      "sub_pass": 17
+    }
+  },
+  "arch_environment": {
+    "schema": 1,
+    "source_revision": "66757940fe06d728fb07eef737ee79019cc2fae8",
+    "image": "quay.io/archlinux/archlinux@sha256:2685bf92cc6215cc922488ae8e80b4875f4bdf19fef648818b1742517ce27077",
+    "package_sha256": "38c4f7c5d5587602d3e5e4b3367395e3ff8e79db246a74b842686de82ddad55b",
+    "unit_sha256": "29a26f3c83e42a72d214d3c79b07939d7e9da1229b904c2e98e393508bfe39fc",
+    "binary_sha256": "404392a0674d559d15ccadd366c2e731fa20967217d2f2248c5ad993023af3fb",
+    "controller_test_sha256": "5fdda01b95281cdc16d57b15f5beea0be9e58d31ebc272fe31242f2ae5aa39a3",
+    "qemu_version": "QEMU emulator version 11.1.1",
+    "qemu_sha256": "2aa2409f942b1bcdf47ad695658a25528d38c1e7a0555569256dcfb0bedf8635",
+    "kernel_sha256": "1e6bf9027720c75c3ed0d79171f21b5791ee40ca9795d07c7c6e04dc5ea2ae90",
+    "initramfs_sha256": "617656ea586092f6ba142cf8f56fa40bebf47b0d04b3228e2a4b4aa351b8bfa3",
+    "acceleration": "tcg",
+    "virtual_cpus": 2,
+    "memory_mib": 3072,
+    "network_devices": 0,
+    "host_filesystem_shares": 0,
+    "issuer_binary_sha256": "e9de6a2cb60551b812ea00da5eb87b0fdb4b87e5f85da9a0fcdc58446cd9b8a2",
+    "ssh_package_lock_sha256": "24f20e29f06516768a8d67af1797fbd9381449c85b501e8b8efa62db8787d51a",
+    "ssh_binaries_manifest_sha256": "3f1fe4776e6a0f0d3a86aca5e953cfb9e799a7907c4b37e1d1c2710aba9a1b03"
+  },
+  "artifact_root": "E:/Portico/work/reports/final-ack-hosted",
+  "artifacts": [
+    {
+      "path": "ba4e0d1-runs-diagnostic-current.json",
+      "sha256": "38a026d5b4577ef3a108360c1cd97067b71a144bd00bb90c6fbf0107f259ed47"
+    },
+    {
+      "path": "ba4e0d1-linux-artifacts.json",
+      "sha256": "9ac3b69199ab5ec11ab5edea0663c285611d545b02df8097106032e926e1d562"
+    },
+    {
+      "path": "ba4e0d1-linux-runtime.log",
+      "sha256": "48d7a867ef9076beaa11e5dceb3d31a7f63df655af4126a697bb335689b385e8"
+    },
+    {
+      "path": "ba4e0d1-linux-runtime-environment.json",
+      "sha256": "4ca1036b440fdebf3bdc48c71c74800d34507f5740be947c354b55bdf93a6a68"
+    },
+    {
+      "path": "ba4e0d1-service-artifacts.json",
+      "sha256": "1cf18cd4299edc50ccfe602eb84946c77ffa19bb27cf6a8a8e105d62d84a2c0e"
+    },
+    {
+      "path": "ba4e0d1-service-runtime.log",
+      "sha256": "682a1def3b60e8dcb976de4eb64ab0b7d9be12c0028498364066a6266639933a"
+    },
+    {
+      "path": "ba4e0d1-service-environment.json",
+      "sha256": "8462e11f2716d340df3577668f36aec4deec45bd750987632e8d967f409ea1c1"
+    },
+    {
+      "path": "ba4e0d1-service-rootfs-build.log",
+      "sha256": "d7199b265e8dc844d775b63f3cd4d7abbc9b47a00163483542283e9d63cfae65"
+    },
+    {
+      "path": "ba4e0d1-service-ssh-binaries.sha256",
+      "sha256": "3f1fe4776e6a0f0d3a86aca5e953cfb9e799a7907c4b37e1d1c2710aba9a1b03"
+    }
+  ],
+  "limitations": [
+    "These runs qualify invitation source ba4e0d1; subsequent initial-key browser fixture changes have separate evidence.",
+    "The application binary is unchanged from recorded intermittent authenticated HTTPS failures; this pass does not establish their cause.",
+    "Five full Linux tests are explicitly skipped; Arch service, HTTPS and SSH execute in the separate guarded guest.",
+    "No physical key, private deployment hostname, complete owner bootstrap, native administrator bridge, platform custody or recovery qualification. Phases 6 and 7 remain incomplete."
+  ]
+}

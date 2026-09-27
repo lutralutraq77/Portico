@@ -1,0 +1,114 @@
+{
+  "base_source": "1ccbe15d5c5ed16759ce4e80dcb9ab0879cbf8fb",
+  "sources": [
+    {
+      "sha256": "68ee6b83faba33f1795dc0dcc912d363975fb33c6502f3e0362a10f2a9e632ae",
+      "path": "internal/controller/admin_renewal.go"
+    },
+    {
+      "sha256": "19cef6cc1c86ab0b06031bbdcc693b078f44ba20b8efb7cf30e06911c39a5acf",
+      "path": "internal/controller/admin_renewal.sql"
+    },
+    {
+      "sha256": "bbf8eea394b0824bb5a8ddc515861e3cd38a8af6adbca515f9843aa1faeca182",
+      "path": "internal/controller/admin_renewal_test.go"
+    },
+    {
+      "sha256": "33f00814a0f2bc9b61f9c940036eda2de57593e5b92c751544d7b4e0b18b34dc",
+      "path": "internal/controller/admin.go"
+    },
+    {
+      "sha256": "f204321e89bccdf5baa556c2e4e0e169e172bf5da09b464ada3e7c4d6f43158b",
+      "path": "internal/controller/store.go"
+    },
+    {
+      "sha256": "3f5edd188fbd2734078c1766deceb2a31eb69186cdff6a6cdff83ff55c101c83",
+      "path": "internal/controller/snapshot.go"
+    },
+    {
+      "sha256": "df8a86c94442a8bb920b920311e3116412fd05f2997c7baebf2045807c8a1039",
+      "path": "internal/controller/recovery.go"
+    },
+    {
+      "sha256": "f4ecdace62b305a1ea2c3eafc8b2c5af24261172c6669efb335bab131addc720",
+      "path": "internal/controller/admin_test.go"
+    },
+    {
+      "sha256": "c1691b04d55bb692205ddacef9e6afad2d05263d769a3bfefbed53d898eca13f",
+      "path": "internal/controller/enrollment_test.go"
+    },
+    {
+      "sha256": "558ff59b66999040102d6f165f9cddf345b222e7b8afe23c917096c92de1e198",
+      "path": "internal/controller/policy_migration_test.go"
+    },
+    {
+      "sha256": "c2dfa9b219b2448e8de51dfac090aeef36ed760b1dc1882c965452e36fd74ab2",
+      "path": "internal/controller/connector_policy_test.go"
+    },
+    {
+      "sha256": "e1e692158026505614081a29063b82d69dc8827ef423f1a81f87c523704fe243",
+      "path": "issuer/admin_renewal_test.go"
+    }
+  ],
+  "checks": [
+    {
+      "failed_top_level": 0,
+      "passing_top_level": 7,
+      "report": "work/reports/admin-renewal-focused-v2.log",
+      "sha256": "e87c748f42ce978e1ec75a957b6b2963bc86762ea3bdad9ecb52f7b1152b2151",
+      "passing_subcases": 20
+    },
+    {
+      "failed_top_level": 0,
+      "passing_top_level": 2,
+      "report": "work/reports/admin-renewal-remaining-race.log",
+      "sha256": "da498add63adaba1e3d480210867d63b5292a93340d4d20f7c0967b20656b801",
+      "passing_subcases": 8
+    },
+    {
+      "failed_top_level": 0,
+      "passing_top_level": 1,
+      "report": "work/reports/admin-renewal-real-issuer-v1.log",
+      "sha256": "d547d3622950f53165e794e02cee738a2ecfac64352ef88f2601ce416c328769",
+      "passing_subcases": 0
+    },
+    {
+      "failed_top_level": 0,
+      "passing_top_level": 0,
+      "report": "work/reports/admin-renewal-issuer-regression.log",
+      "sha256": "3f79e53a75281bb3f044b557cbf8b8a324c0f81dbbb2b51b93b3c101fe63d91a",
+      "passing_subcases": 0
+    },
+    {
+      "failed_top_level": 1,
+      "passing_top_level": 0,
+      "report": "work/reports/admin-renewal-controller-regression.log",
+      "sha256": "6513292f6b6b9a6a04c2fe3c3de3e08fea4be2ff2f8d83d1a438aa793c5e858c",
+      "passing_subcases": 0
+    },
+    {
+      "report": "work/reports/admin-renewal-restore-final.log",
+      "passing_subcases": 0,
+      "scope": "Snapshot revokes renewal and restore rejects reintroduced live renewal authority",
+      "failed_top_level": 0,
+      "sha256": "4c5966099a20b23842b463799ec374f622653e97b8a28819cea2d6962b2822ce",
+      "passing_top_level": 1
+    }
+  ],
+  "platform": "Windows local execution; Linux cross-platform vet/staticcheck passed",
+  "restricted_issuer": "Actual restricted Smallstep service and pinned mTLS/JWK adapter; new renewal integration passed 1.37 seconds under race detector",
+  "full_controller": "643.253 second race run completed with one failure: reconstructed version-4 fixture retained new schema-6 table. Fixture corrected; both version-4 migration/rollback cases subsequently passed. No fresh full-suite pass claimed.",
+  "historical_failure": "v1 focused test incorrectly expected a restored factor to revive an old approval. Corrected test requires a fresh approval, preserving revision invalidation.",
+  "hosted_current_source": "pending",
+  "limitations": [
+    "Controller and issuer components only; no complete native renewal flow",
+    "Activation HTTP delivery and durable native certificate replacement remain unfinished",
+    "Virtual factors do not establish physical hardware custody",
+    "Bootstrap/finalization, management routing and independent recovery remain open"
+  ],
+  "acceptance": {
+    "implemented": 7,
+    "planned": 84,
+    "total": 91
+  }
+}

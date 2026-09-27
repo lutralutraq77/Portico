@@ -1,0 +1,128 @@
+{
+  "base_source": "84b439307d3a6f38d2d0ad93a144703e8fe9fcf5",
+  "sources": [
+    {
+      "path": "internal/controller/management_route.go",
+      "sha256": "89b3e358f319e9162e4381eeedbdbf7fae827fd7e8e78cf2754da8d268ef5787"
+    },
+    {
+      "path": "internal/controller/management_route_test.go",
+      "sha256": "53dd83aa65518e91b1efaac97b99de3fc63dbae5d23602873812c9834f605c25"
+    },
+    {
+      "path": "internal/controller/policy_http.go",
+      "sha256": "53ed62d44787c25a8bfc57bd091659682cfe350584132abcf23fa20151417f01"
+    },
+    {
+      "path": "internal/controller/policy_http_test.go",
+      "sha256": "f27d4f7bb1f8aee5062265079f90449b976f4c3e79d60f3b114354fa1bf19c94"
+    },
+    {
+      "path": "internal/controller/store.go",
+      "sha256": "768bace82891b45dce7772be7c8f18de25a15418903fb3637f86da57e9ec927d"
+    },
+    {
+      "path": "internal/controller/dashboard/admin.css",
+      "sha256": "13f89faf41c9ff878cabad6fe102e9b464ab2a2d2462a028ceb3a51db51fbced"
+    },
+    {
+      "path": "internal/adminbridge/launch.go",
+      "sha256": "9de344a475f1d8a07ab8857cffb43d66dea69bcc2c500b1ce79e45d95ec945fd"
+    },
+    {
+      "path": "scripts/test-dashboard-native-browser.cjs",
+      "sha256": "6c78b8d5156231760fc717a69f8a0b81ea43f09815a1281c2aee460b1fccf502"
+    },
+    {
+      "path": "scripts/test-dashboard-renewal-native.cjs",
+      "sha256": "6597ecce2f44febc7d4f69133fc07d9af74e6de7bcd76fa6c82b50872a4ebf0a"
+    },
+    {
+      "path": ".github/workflows/native-admin.yml",
+      "sha256": "9c643f4eefc38e4446b372d8ce299edb2a907384cbdc6dc3c3feb8a3bfdb6990"
+    }
+  ],
+  "checks": [
+    {
+      "report": "work/reports/management-route-regression.log",
+      "sha256": "067bed4710381ee22ad6bff582a8957b61a2d8c85ecc5b32056206a55ece97dd",
+      "passing_top_level": 38,
+      "passing_subcases": 132,
+      "packages": [
+        "ok  \tportico.local/portico/internal/controller\t388.419s"
+      ]
+    },
+    {
+      "report": "work/reports/management-route-hardware.log",
+      "sha256": "63f072e588d800c36896ec9a874694e91cec751b9dc2f3c773be808ed83f3edb",
+      "passing_top_level": 1,
+      "passing_subcases": 0,
+      "packages": [
+        "ok  \tportico.local/portico/internal/controller\t14.836s"
+      ]
+    },
+    {
+      "report": "work/reports/management-native-final.log",
+      "sha256": "48b22ad74f99846cc83f3c83256bd4d714de9b52ec1a4c1ae63dcbc52cc31cc2",
+      "passing_top_level": 3,
+      "passing_subcases": 0,
+      "packages": [
+        "ok  \tportico.local/portico/internal/controller\t30.453s"
+      ]
+    },
+    {
+      "report": "work/reports/management-renewal-final.log",
+      "sha256": "c6e9dfce34f528b6e34b34b413073a480cf9dff9cc44d0ec7d5b8cfd74501ab1",
+      "passing_top_level": 1,
+      "passing_subcases": 0,
+      "packages": [
+        "ok  \tportico.local/portico/internal/adminapp\t26.328s"
+      ]
+    }
+  ],
+  "platform": "Local Windows race execution; Windows/Linux standard and dashboardbrowser static analysis",
+  "management": "Five management tests (40 subcases) are included in the broad 38-test/132-subcase controller regression. A sixth management test then proves an actual separately tested virtual backup key approval commits a mutation through the exact management HTTPS gate.",
+  "scope": "Destination authorization only: actual administrator TLS, exact current management resource, dedicated connector, pinned connector certificate, unambiguous grant/hosting and same-transaction recheck for every request mutation. Ordinary catalogs and device/connector policy remain denied.",
+  "browser": "Final actual windows and renewal passed on the corrected mobile layout and explicit test-owned exit. The renewal fixture uses two virtual factors, memory journal and local test issuer; Linux storage and real restricted issuer are separately qualified.",
+  "mobile": {
+    "report": "work/reports/management-renewal-final/native-renewal-mobile-layout.json",
+    "observed": {
+      "width": 344,
+      "scrollWidth": 329,
+      "overflow": []
+    },
+    "sha256": "8c9b7ab4ba38a2abea71caf5b997d3cc3827ec0ca2af11eab86ada82fb8fb1d5"
+  },
+  "shutdown": {
+    "report": "work/reports/management-native-final/native-shutdown.json",
+    "observed": {
+      "stage": "channel-closed",
+      "time": 1789437202170,
+      "inputDestroyed": true,
+      "inputClosed": true,
+      "outputDestroyed": true,
+      "outputClosed": true,
+      "outputFinished": true,
+      "outputEnded": true,
+      "outputPendingBytes": 0
+    },
+    "sha256": "2b3c4430f135cf505d55b7295e6065faa3e189b96282a3d255f6e6e652bd267d"
+  },
+  "preserved_failures": [
+    "work/reports/management-mobile-regression-browser.log: functional browser completed all nine groups and wrote result.json, but native launch cancellation failed shutdown; other two windows passed.",
+    "work/reports/management-native-shutdown-diagnostic.log: all three passed, but final asynchronous diagnostic write after destroying the last window was truncated by the default app quit. The fixture now owns exit explicitly and writes completed channel state before app.exit.",
+    "These later passes do not establish the cause of earlier native shutdown timeouts or historical Phase 6 authenticated HTTPS intermittency. The five-second shutdown limit is unchanged; an expired grace timer now has a precise error label."
+  ],
+  "lifecycle_reference": "https://www.electronjs.org/docs/latest/api/app#event-window-all-closed",
+  "hosted_current_source": "pending",
+  "remaining": [
+    "Management carrier/connector reverse transport, native route selection, stream accounting and cancellation",
+    "Owner bootstrap/finalization and independent recovery",
+    "Physical key custody, private hostname and supported deployment/platform qualification"
+  ],
+  "acceptance": {
+    "implemented": 7,
+    "planned": 84,
+    "total": 91
+  }
+}
