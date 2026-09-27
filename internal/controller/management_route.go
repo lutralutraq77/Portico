@@ -131,18 +131,9 @@ func (m *ManagementRoute) check(t *Tx, der []byte) (ManagementAccess, error) {
 	if err != nil {
 		return result, t.fail(ErrDenied)
 	}
-	connector, err := t.peer(m.config.Connectors, m.config.ConnectorLeafDER, false)
-	if err != nil || connector.credential.PrincipalID != m.config.ConnectorID {
-		return result, t.fail(ErrDenied)
-	}
-	// A dedicated connector may not have another enabled current resource,
-	// even if that resource's hosting grant is temporarily disabled.
-	var count int
-	if err := t.tx.QueryRowContext(t.ctx, `SELECT count(*) FROM resources r JOIN resource_heads h ON h.id=r.id AND h.revision=r.revision WHERE r.connector_id=? AND r.enabled=1 AND (r.id<>? OR r.revision<>? OR r.kind<>'management')`, m.config.ConnectorID, m.config.ResourceID, m.config.Revision).Scan(&count); err != nil {
-		return result, t.fail(ErrStorage)
-	}
-	if count != 0 {
-		return result, t.fail(ErrDenied)
+	connector, err := m.connector(t)
+	if err != nil {
+		return result, err
 	}
 	now := t.now.UnixNano()
 	rows, err := t.tx.QueryContext(t.ctx, `SELECT r.id,r.revision,r.name,r.connector_id,k.name,r.address,r.port,r.protocol,g.id,h.id,min(d.not_after,g.valid_until,h.valid_until)
